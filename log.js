@@ -4,8 +4,18 @@
    settings = model overrides. matchEdits/matchRemoved = archive fixes.
    The Glicko engine recalculates every rating from these at page load. */
 window.LB_PUB = {
-  "matches": [],
-  "aliases": {},
+  "matches": [
+    {
+      "a": "Kobi",
+      "b": "Slayer",
+      "sa": 15,
+      "sb": 10,
+      "date": "2026-10-04"
+    }
+  ],
+  "aliases": {
+    "Altsmurf": "Kobi"
+  },
   "aliasNotes": {},
   "inactive": [],
   "seeds": {},
