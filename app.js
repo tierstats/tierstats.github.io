@@ -59,7 +59,7 @@ function histOf(name) {
      admin-logged matches (already newest-first) on top */
   const base = (D.histories[name] || []).slice().reverse();
   const admin = [];
-  logGet().forEach((e) => {
+  logAll().forEach((e) => {
     const a = canon(e.a), b = canon(e.b);
     const mk = (opp, gf, ga) => ({ opp, for_: gf, against: ga,
       res: gf > ga ? 'W' : gf < ga ? 'L' : 'D', date: e.date });
@@ -100,9 +100,16 @@ function logSet(arr) {
   try { localStorage.setItem(ADMIN_STORE, JSON.stringify(arr)); } catch (e) { /* private mode */ }
 }
 
+/* everyone-visible published log (log.js in the repo) + this browser's
+   pending entries — newest first on both sides */
+function logAll() {
+  const pub = (Array.isArray(window.LB_LOG) ? window.LB_LOG : []).map((e) => ({ ...e, published: true }));
+  return logGet().map((e) => ({ ...e, published: false })).concat(pub);
+}
+
 /* every match: archive first, then admin-logged on top */
 function allMatches() {
-  const admin = logGet().map((e) => ({ ...e, a: canon(e.a), b: canon(e.b), admin: true }));
+  const admin = logAll().map((e) => ({ ...e, a: canon(e.a), b: canon(e.b), admin: true }));
   return admin.concat(D.matches.slice().reverse().map((m) => ({ ...m, a: canon(m.a), b: canon(m.b), admin: false })));
 }
 
@@ -193,7 +200,7 @@ function recalcAll() {
 
   /* dated matches — chronological 30-day rating periods */
   const periods = new Map();
-  for (const e of logGet().slice().reverse()) {
+  for (const e of logAll().slice().reverse()) {
     const date = e.date || new Date().toISOString().slice(0, 10);
     const idx = periodIdx(date);
     if (!periods.has(idx)) periods.set(idx, []);
@@ -367,7 +374,7 @@ function renderBattles() {
       <div class="vs">vs</div>
       <div class="who r ${bWin ? 'win' : 'lose'}" data-goto="${esc(m.b)}">${esc(m.b)}</div>
       <div class="sc mono"><span class="${aWin ? 'win' : 'lose'}">${m.sa}</span> – <span class="${bWin ? 'win' : 'lose'}">${m.sb}</span></div>
-      <div class="dt">${m.admin ? 'just now' : (m.date || 'legacy')}</div>
+      <div class="dt">${m.date || (m.admin && !m.published ? 'just now' : 'legacy')}</div>
     </div>`;
   }).join('');
 }
@@ -586,7 +593,7 @@ function renderMatches() {
         <div class="dot ${bWin ? 'w' : 'l'}"></div>
         <div class="nm" data-goto="${esc(m.b)}">${esc(m.b)}</div>
       </div>
-      <div class="dt mono">${m.admin ? '<span class="tag fresh">new</span>' : (m.date || 'legacy')}</div>
+      <div class="dt mono">${m.admin && !m.published ? '<span class="tag fresh">new</span>' : (m.date || 'legacy')}</div>
     </div>`;
   }).join('');
 }
@@ -736,10 +743,12 @@ function renderAdmin() {
   }
 
   const log = logGet();
+  const pubCount = (window.LB_LOG || []).length;
   wrap.innerHTML = `
   <div class="admin-bar anim">
     <div class="title"><span>●</span> Admin console</div>
     <div class="spacer"></div>
+    <button class="btn btn-primary" id="admin-publish" style="width:auto;margin:0">↑ Publish to everyone</button>
     <button class="btn btn-ghost" id="admin-export">Export log</button>
     <button class="btn btn-danger" id="admin-lock">Lock</button>
   </div>
@@ -774,13 +783,15 @@ function renderAdmin() {
       </div>
       <div class="form-note" style="margin-top:14px">
         Logged matches feed the same Dynamic Glicko engine as the official sheet —
-        ratings, ranks, records and head-to-heads across the whole site recalculate
-        live. Entries stay in this browser until exported.
+        ratings, ranks, records and head-to-heads recalculate instantly here.
+        Hit <b style="color:var(--gold)">Publish to everyone</b> to push the log to
+        the site so every visitor sees it (needs a GitHub token with Contents:write
+        on the site repo — kept only in this tab).
       </div>
     </div>
 
     <div class="panel" style="margin:0">
-      <h3>Pending <span class="n">log</span> — ${log.length}</h3>
+      <h3>Pending <span class="n">log</span> — ${log.length} local · ${pubCount} published</h3>
       <div class="log-list" id="adm-list">
         ${log.length ? log.map((e, i) => `
           <div class="log-item">
@@ -799,6 +810,42 @@ function renderAdmin() {
     sessionStorage.removeItem(ADMIN_UNLOCK);
     renderAdmin();
   });
+  $('#admin-publish').addEventListener('click', publishLog);
+
+  async function publishLog() {
+    let token = sessionStorage.getItem('gh_pub_tok') || '';
+    if (!token) {
+      token = (window.prompt('Paste a GitHub token with Contents:write access to iiqz/1v1-leaderboard (create one at github.com/settings/tokens):') || '').trim();
+      if (!token) { toast('Publish cancelled.'); return; }
+      sessionStorage.setItem('gh_pub_tok', token);
+    }
+    const merged = logAll().map((e) => ({ a: canon(e.a), b: canon(e.b), sa: e.sa, sb: e.sb, date: e.date || '' }));
+    const content = '/* Published match log — committed by the admin console.\n   Newest entries first. The Glicko engine recalculates all ratings from these. */\nwindow.LB_LOG = ' + JSON.stringify(merged, null, 2) + ';\n';
+    const b64 = btoa(String.fromCharCode(...new TextEncoder().encode(content)));
+    const hdrs = { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' };
+    const apiUrl = 'https://api.github.com/repos/iiqz/1v1-leaderboard/contents/log.js';
+    try {
+      const g = await fetch(apiUrl, { headers: hdrs });
+      const sha = g.ok ? (await g.json()).sha : undefined;
+      const r = await fetch(apiUrl, {
+        method: 'PUT', headers: { ...hdrs, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: `Publish match log (${merged.length} matches)`, content: b64, ...(sha ? { sha } : {}), branch: 'main' }),
+      });
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        if (r.status === 401) sessionStorage.removeItem('gh_pub_tok');
+        toast('Publish failed: ' + (err.message || ('HTTP ' + r.status)));
+        return;
+      }
+      window.LB_LOG = merged;
+      logSet([]);
+      rebuildState();
+      renderAdmin();
+      toast('Published! Everyone sees it on their next visit.');
+    } catch (err) {
+      toast('Publish failed: network error.');
+    }
+  }
   $('#admin-export').addEventListener('click', () => {
     const blob = new Blob([JSON.stringify(logGet(), null, 2)], { type: 'application/json' });
     const a = document.createElement('a');
@@ -888,3 +935,22 @@ function observeReveals() {
 rebuildState();
 renderHome();
 route();
+
+/* Re-fetch the published log with a cache-buster so every visitor sees admin
+   publishes even if the browser (or the Pages CDN) cached log.js. */
+(async () => {
+  try {
+    const r = await fetch('log.js?cb=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) return;
+    const txt = await r.text();
+    const i = txt.indexOf('window.LB_LOG');
+    if (i < 0) return;
+    const fresh = JSON.parse(txt.slice(txt.indexOf('=', i) + 1, txt.lastIndexOf(']') + 1));
+    if (JSON.stringify(fresh) !== JSON.stringify(window.LB_LOG || [])) {
+      window.LB_LOG = fresh;
+      rebuildState();
+      renderHome();
+      route();
+    }
+  } catch (e) { /* offline — keep the bundled log */ }
+})();
