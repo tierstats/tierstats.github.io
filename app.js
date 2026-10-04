@@ -7,8 +7,9 @@
 'use strict';
 
 const D = window.LB_DATA;
-/* where the published site lives — "Publish to everyone" commits log.js here */
-const SITE_REPO = 'tierstats/tierstats.github.io';
+/* "Publish to everyone" posts the log to the tierstats publish service, which
+   commits log.js to the site repo (token lives server-side, never in a browser) */
+const PUBLISH_URL = 'https://tierstats-publish.tierstats.workers.dev/publish';
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 
@@ -116,6 +117,7 @@ function deltaTag(p) {
 /* ---------- admin log (localStorage overlay) ---------- */
 const ADMIN_STORE = 'tt1v1_admin_log_v1';
 const ADMIN_UNLOCK = 'tt1v1_admin_ok';
+const ADMIN_PW_KEY = 'tt1v1_admin_pw';
 
 function logGet() {
   try { return JSON.parse(localStorage.getItem(ADMIN_STORE) || '[]'); }
@@ -922,6 +924,7 @@ function renderAdmin() {
       const v = $('#admin-pw').value;
       if (v === 'REDACTED') {
         sessionStorage.setItem(ADMIN_UNLOCK, '1');
+        sessionStorage.setItem(ADMIN_PW_KEY, v);
         renderAdmin();
         toast('Welcome back, commander.');
       } else {
@@ -1129,17 +1132,14 @@ function renderAdmin() {
 
   $('#admin-lock').addEventListener('click', () => {
     sessionStorage.removeItem(ADMIN_UNLOCK);
+    sessionStorage.removeItem(ADMIN_PW_KEY);
     renderAdmin();
   });
   $('#admin-publish').addEventListener('click', publishLog);
 
   async function publishLog() {
-    let token = sessionStorage.getItem('gh_pub_tok') || '';
-    if (!token) {
-      token = (window.prompt(`Paste a GitHub token with Contents:write access to ${SITE_REPO} (create one at github.com/settings/tokens):`) || '').trim();
-      if (!token) { toast('Publish cancelled.'); return; }
-      sessionStorage.setItem('gh_pub_tok', token);
-    }
+    const pw = sessionStorage.getItem(ADMIN_PW_KEY) || (window.prompt('Admin password:') || '').trim();
+    if (!pw) { toast('Publish cancelled.'); return; }
     /* flatten: bake pending/edited entries into one published list; keep only
        archive fixes (a:*) as ongoing overrides */
     const doc = overAll();
@@ -1161,20 +1161,15 @@ function renderAdmin() {
       matchRemoved: keepRemoved,
     };
     const content = '/* Published site data — committed by the admin console ("Publish to everyone").\n   matches = shared match log (newest first). aliases = name fixes / merges.\n   inactive = manually inactive players. seeds = start rating overrides.\n   settings = model overrides. matchEdits/matchRemoved = archive fixes.\n   The Glicko engine recalculates every rating from these at page load. */\nwindow.LB_PUB = ' + JSON.stringify(pubDoc, null, 2) + ';\nwindow.LB_LOG = window.LB_PUB.matches;\n';
-    const b64 = btoa(String.fromCharCode(...new TextEncoder().encode(content)));
-    const hdrs = { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' };
-    const apiUrl = `https://api.github.com/repos/${SITE_REPO}/contents/log.js`;
     try {
-      const g = await fetch(apiUrl, { headers: hdrs });
-      const sha = g.ok ? (await g.json()).sha : undefined;
-      const r = await fetch(apiUrl, {
-        method: 'PUT', headers: { ...hdrs, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: `Publish match log (${merged.length} matches)`, content: b64, ...(sha ? { sha } : {}), branch: 'main' }),
+      const r = await fetch(PUBLISH_URL, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pw, content, message: `Publish match log (${merged.length} matches)` }),
       });
-      if (!r.ok) {
-        const err = await r.json().catch(() => ({}));
-        if (r.status === 401) sessionStorage.removeItem('gh_pub_tok');
-        toast('Publish failed: ' + (err.message || ('HTTP ' + r.status)));
+      const out = await r.json().catch(() => ({}));
+      if (!r.ok || !out.ok) {
+        if (r.status === 403) sessionStorage.removeItem(ADMIN_PW_KEY);
+        toast('Publish failed: ' + (out.error || ('HTTP ' + r.status)));
         return;
       }
       window.LB_PUB = pubDoc;
