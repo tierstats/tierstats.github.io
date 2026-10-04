@@ -706,6 +706,22 @@ b { font-weight: 700; }
 }
 .form-note { font-family: var(--font-mono); font-size: 11px; color: var(--dimmer); line-height: 1.7; }
 .log-list { display: flex; flex-direction: column; gap: 9px; max-height: 380px; overflow-y: auto; }
+
+/* ---------- custom scrollbars (window + inner panels) ---------- */
+/* Firefox fallback only — in Chromium, scrollbar-width/color set together with
+   ::-webkit-scrollbar disables the webkit styling entirely. */
+@supports not selector(::-webkit-scrollbar) {
+  * { scrollbar-width: thin; scrollbar-color: var(--dimmer) transparent; }
+}
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #3a4557, var(--dimmer));
+  border-radius: 8px;
+  border: 2px solid var(--bg);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+::-webkit-scrollbar-corner { background: transparent; }
 .log-item {
   display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 12px;
   background: var(--bg-2); border: 1px solid var(--line); border-radius: 11px;

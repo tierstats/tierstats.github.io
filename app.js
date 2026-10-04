@@ -484,7 +484,7 @@ function renderHome() {
     <div class="fl-card r${i + 1}${i === 0 ? ' champ' : ''} reveal" data-goto="${esc(p.name)}">
       <div class="rd">RD ${p.rd.toFixed(0)}</div>
       ${rankBadge(p.rank)}
-      ${i === 0 ? '<div class="champ-tag">#1 World</div>' : ''}
+      ${i === 0 ? '<div class="champ-tag">#1 Tank</div>' : ''}
       <div class="nm">${esc(p.name)}</div>
       <div class="rating"><span class="big">${Math.round(p.rating)}</span><span class="unit">Glicko</span>${deltaTag(p)}</div>
       <div class="meta">
