@@ -867,7 +867,7 @@ function renderAnalytics() {
       ${rivalry.map(([pair, n], i) => `
         <div class="an-row reveal">
           <div class="idx mono">${i + 1}</div>
-          <div class="nm">${esc(pair.replace(' vs ', ' <span style="color:var(--dimmer);font-weight:500">vs</span> '))}</div>
+          <div class="nm">${pair.split(' vs ').map(esc).join(' <span style="color:var(--dimmer);font-weight:500">vs</span> ')}</div>
           <div class="val mono">${n}</div>
           <div class="unit mono">meetings</div>
         </div>`).join('')}
