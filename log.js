@@ -1,4 +1,18 @@
-/* Published match log — committed to the GitHub repo by the admin console.
-   Newest entries first. Every visitor loads these and the Glicko engine
-   recalculates all ratings from them live. */
-window.LB_LOG = [];
+/* Published site data — committed by the admin console ("Publish to everyone").
+   matches = shared match log (newest first). aliases = name fixes / merges.
+   inactive = manually inactive players. seeds = start rating overrides.
+   settings = model overrides. matchEdits/matchRemoved = archive fixes.
+   The Glicko engine recalculates every rating from these at page load. */
+window.LB_PUB = {
+  "matches": [],
+  "aliases": {},
+  "aliasNotes": {},
+  "inactive": [],
+  "seeds": {},
+  "seedGlicko": {},
+  "seedRd": {},
+  "settings": {},
+  "matchEdits": {},
+  "matchRemoved": []
+};
+window.LB_LOG = window.LB_PUB.matches;

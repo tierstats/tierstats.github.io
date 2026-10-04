@@ -21,6 +21,7 @@
       <div class="brand-name">1v1 <em>Leaderboard</em></div>
     </a>
     <nav class="nav">
+      <span class="nav-glide" id="nav-glide"></span>
       <a href="#/">Rankings</a>
       <a href="#/matches">Matches</a>
       <a href="#/roster">Roster</a>
@@ -270,6 +271,10 @@
 .drop-row:hover { background: rgba(255, 176, 32, .1); }
 </style>
 
+<div class="scroll-progress" id="scroll-progress"></div>
+<button class="to-top" id="to-top" aria-label="Back to top">
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 19V5M5 12l7-7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
 <script src="data.js"></script>
 <script src="log.js"></script>
 <script src="app.js"></script>

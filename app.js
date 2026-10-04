@@ -7,6 +7,8 @@
 'use strict';
 
 const D = window.LB_DATA;
+/* where the published site lives — "Publish to everyone" commits log.js here */
+const SITE_REPO = 'tierstats/tierstats.github.io';
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 
@@ -46,27 +48,29 @@ let playerByName = {};
 let topOf = [];
 let STATE = { players: [], byName: {}, qualified: [] };
 
-/* alias map for admin-logged names (lowercased lookup) */
+/* alias map for admin-logged names (lowercased lookup) — sheet aliases +
+   admin name fixes (merged at every rebuild) */
 const aliasLc = {};
-Object.entries(D.aliases).forEach(([a, c]) => { aliasLc[a.toLowerCase()] = c; });
+function rebuildAliases() {
+  for (const k in aliasLc) delete aliasLc[k];
+  Object.entries(D.aliases).forEach(([a, c]) => { aliasLc[a.toLowerCase()] = c; });
+  Object.entries(overAll().aliases || {}).forEach(([a, c]) => { aliasLc[String(a).toLowerCase()] = c; });
+}
 const canon = (n) => {
   const t = String(n).trim();
   return aliasLc[t.toLowerCase()] || t;
 };
 
 function histOf(name) {
-  /* archive order is oldest-first -> reverse for newest-first, then pin
-     admin-logged matches (already newest-first) on top */
-  const base = (D.histories[name] || []).slice().reverse();
-  const admin = [];
-  logAll().forEach((e) => {
-    const a = canon(e.a), b = canon(e.b);
+  /* newest first — mirrors allMatches() so admin fixes/edits are reflected */
+  const out = [];
+  allMatches().forEach((m) => {
     const mk = (opp, gf, ga) => ({ opp, for_: gf, against: ga,
-      res: gf > ga ? 'W' : gf < ga ? 'L' : 'D', date: e.date });
-    if (a === name) admin.push(mk(b, e.sa, e.sb));
-    else if (b === name) admin.push(mk(a, e.sb, e.sa));
+      res: gf > ga ? 'W' : gf < ga ? 'L' : 'D', date: m.date });
+    if (m.a === name) out.push(mk(m.b, m.sa, m.sb));
+    else if (m.b === name) out.push(mk(m.a, m.sb, m.sa));
   });
-  return admin.concat(base);
+  return out;
 }
 
 function h2hOf(name) {
@@ -88,6 +92,27 @@ function statusTag(name) {
   return '<span class="tag legacy">legacy</span>';
 }
 
+/* rating change vs the master-sheet archive: recomputed once at boot with the
+   site-logged matches hidden, so deltas show exactly what the admin log has
+   moved (corrections/name-fixes count as truth, not as change) */
+const BASELINE = {};
+let BASELINE_MODE = false;
+function computeBaseline() {
+  BASELINE_MODE = true;
+  try {
+    recalcAll().players.forEach((p) => { BASELINE[p.name] = p.rating; });
+  } finally {
+    BASELINE_MODE = false;
+  }
+}
+
+function deltaTag(p) {
+  const d = p.delta != null ? p.delta : 0;
+  if (Math.abs(d) < 0.05) return '';
+  const up = d > 0;
+  return `<span class="delta ${up ? 'up' : 'down'}" title="rating change since the last data sync">${up ? '▲' : '▼'} ${Math.abs(d).toFixed(1)}</span>`;
+}
+
 /* ---------- admin log (localStorage overlay) ---------- */
 const ADMIN_STORE = 'tt1v1_admin_log_v1';
 const ADMIN_UNLOCK = 'tt1v1_admin_ok';
@@ -102,15 +127,64 @@ function logSet(arr) {
 
 /* everyone-visible published log (log.js in the repo) + this browser's
    pending entries — newest first on both sides */
+/* published override document (log.js) + this browser's pending overrides.
+   Covers everything the master sheet does: name fixes, inactive flags,
+   seeds, model settings, match score/date fixes and deletions. */
+const OVER_STORE = 'tt1v1_admin_over_v1';
+function overGet() {
+  try { return JSON.parse(localStorage.getItem(OVER_STORE) || '{}') || {}; }
+  catch (e) { return {}; }
+}
+function overSet(doc) {
+  try { localStorage.setItem(OVER_STORE, JSON.stringify(doc)); } catch (e) { /* private mode */ }
+}
+function overAll() {
+  const pub = window.LB_PUB || {};
+  const loc = overGet();
+  return {
+    aliases: { ...(pub.aliases || {}), ...(loc.aliases || {}) },
+    aliasNotes: { ...(pub.aliasNotes || {}), ...(loc.aliasNotes || {}) },
+    seeds: { ...(pub.seeds || {}), ...(loc.seeds || {}) },
+    seedGlicko: { ...(pub.seedGlicko || {}), ...(loc.seedGlicko || {}) },
+    seedRd: { ...(pub.seedRd || {}), ...(loc.seedRd || {}) },
+    settings: { ...(pub.settings || {}), ...(loc.settings || {}) },
+    matchEdits: { ...(pub.matchEdits || {}), ...(loc.matchEdits || {}) },
+    inactive: loc.inactive || pub.inactive || [],
+    matchRemoved: [...new Set([...(pub.matchRemoved || []), ...(loc.matchRemoved || [])])],
+  };
+}
+function overLocal(patch) {
+  const loc = overGet();
+  overSet({ ...loc, ...patch });
+}
+function pubMatches() {
+  return (window.LB_PUB && Array.isArray(window.LB_PUB.matches)) ? window.LB_PUB.matches
+       : (Array.isArray(window.LB_LOG) ? window.LB_LOG : []);
+}
+
 function logAll() {
-  const pub = (Array.isArray(window.LB_LOG) ? window.LB_LOG : []).map((e) => ({ ...e, published: true }));
+  if (BASELINE_MODE) return [];
+  const pub = pubMatches().map((e) => ({ ...e, published: true }));
   return logGet().map((e) => ({ ...e, published: false })).concat(pub);
 }
 
-/* every match: archive first, then admin-logged on top */
+/* every match: local pending + published on top, archive below — with the
+   admin's score/date fixes and deletions applied (keys l:i / p:i / a:i) */
 function allMatches() {
-  const admin = logAll().map((e) => ({ ...e, a: canon(e.a), b: canon(e.b), admin: true }));
-  return admin.concat(D.matches.slice().reverse().map((m) => ({ ...m, a: canon(m.a), b: canon(m.b), admin: false })));
+  const O = overAll();
+  const edits = O.matchEdits || {};
+  const removed = new Set(O.matchRemoved || []);
+  const apply = (m, key) => {
+    if (removed.has(key)) return null;
+    const e = edits[key];
+    const src = e ? { ...m, sa: e.sa, sb: e.sb, date: e.date != null ? e.date : m.date } : m;
+    return { ...src, a: canon(src.a), b: canon(src.b), sa: +src.sa, sb: +src.sb, key };
+  };
+  const local = BASELINE_MODE ? [] : logGet().map((e, i) => apply({ ...e, admin: true, published: false }, 'l:' + i)).filter(Boolean);
+  const pub = BASELINE_MODE ? [] : pubMatches().map((e, i) => apply({ ...e, admin: true, published: true }, 'p:' + i)).filter(Boolean);
+  const arch = D.matches.map((m, i) => apply({ ...m, admin: false, published: false }, 'a:' + i))
+                 .filter(Boolean).reverse();
+  return local.concat(pub, arch);
 }
 
 /* ============================================================
@@ -134,8 +208,21 @@ const QQ = Math.log(10) / 400;
 const gOf = (rd) => 1 / Math.sqrt(1 + 3 * QQ * QQ * rd * rd / (Math.PI * Math.PI));
 const eOf = (r, ro, rdo) => 1 / (1 + Math.pow(10, -gOf(rdo) * (r - ro) / 400));
 
+function seedOf(name) {
+  const s = overAll().seeds || {};
+  return (s[name] != null && s[name] !== '') ? Number(s[name]) : D.seeds[name];
+}
+
 function seedState(name) {
-  const old = D.seeds[name];
+  /* explicit Glicko/RD override wins; else derive from the Old 0-100 seed */
+  const sg = (overAll().seedGlicko || {})[name];
+  const sr = (overAll().seedRd || {})[name];
+  const g = (sg != null && sg !== '') ? Number(sg) : null;
+  const r = (sr != null && sr !== '') ? Number(sr) : null;
+  if (g != null || r != null) {
+    return [g != null ? g : ENGINE.unratedR, r != null ? r : ENGINE.unratedRd];
+  }
+  const old = seedOf(name);
   if (old != null) return [ENGINE.seedMid + (old - ENGINE.oldMid) * ENGINE.ptsPer, ENGINE.knownRd];
   return [ENGINE.unratedR, ENGINE.unratedRd];
 }
@@ -162,9 +249,51 @@ function roundHalfEven(x, dp) {
 }
 
 const periodIdx = (dateStr) => Math.floor(Date.parse(dateStr + 'T00:00:00Z') / (ENGINE.periodDays * DAY));
-const GRACE_IDX = periodIdx(ENGINE.graceStart);
+let GRACE_IDX = periodIdx(ENGINE.graceStart);
+
+/* sheet Settings tab -> engine knobs; admin overrides win over the sheet */
+const SETTING_MAP = {
+  'Seed Glicko midpoint': 'seedMid',
+  'Old rating midpoint': 'oldMid',
+  'Glicko points per old rating point': 'ptsPer',
+  'Known-player starting RD': 'knownRd',
+  'Unrated-player starting rating': 'unratedR',
+  'Unrated-player starting RD': 'unratedRd',
+  'Maximum RD': 'maxRd',
+  'RD growth per rating period': 'growth',
+  'Rating period length (days)': 'periodDays',
+  'Conservative RD multiplier': 'conservative',
+  'Minimum matches for leaderboard': 'minMatches',
+  'Minimum different opponents': 'minOpp',
+  'Inactive after days': 'inactiveDays',
+  'Legacy grace start date': 'graceStart',
+  'Legacy grace days': 'graceDays',
+};
+function effectiveSettings() {
+  const over = overAll().settings || {};
+  return (D.settings || []).map((s) => ({
+    ...s,
+    value: Object.prototype.hasOwnProperty.call(over, s.name) ? over[s.name] : s.value,
+  }));
+}
+function applyEngineSettings() {
+  for (const s of effectiveSettings()) {
+    const key = SETTING_MAP[s.name];
+    if (!key) continue;
+    if (key === 'graceStart') {
+      const v = String(s.value == null ? '' : s.value).slice(0, 10);
+      if (/^\d{4}-\d{2}-\d{2}$/.test(v)) ENGINE.graceStart = v;
+      continue;
+    }
+    const v = Number(s.value);
+    if (Number.isFinite(v)) ENGINE[key] = v;
+  }
+  GRACE_IDX = periodIdx(ENGINE.graceStart);
+}
 
 function recalcAll() {
+  applyEngineSettings();
+  rebuildAliases();
   const st = {};
   const get = (n) => {
     if (!st[n]) {
@@ -182,8 +311,9 @@ function recalcAll() {
 
   /* period 0 — all undated legacy matches, processed simultaneously */
   const legacy = {};
-  for (const m of D.matches) {
-    const a = canon(m.a), b = canon(m.b);
+  for (const m of allMatches()) {
+    if (m.date) continue;
+    const a = m.a, b = m.b;
     const s = m.sa > m.sb ? 1 : m.sa < m.sb ? 0 : 0.5;
     (legacy[a] = legacy[a] || []).push([b, s]);
     (legacy[b] = legacy[b] || []).push([a, 1 - s]);
@@ -200,8 +330,8 @@ function recalcAll() {
 
   /* dated matches — chronological 30-day rating periods */
   const periods = new Map();
-  for (const e of logAll().slice().reverse()) {
-    const date = e.date || new Date().toISOString().slice(0, 10);
+  for (const e of allMatches().filter((m) => m.date).slice().reverse()) {
+    const date = e.date;
     const idx = periodIdx(date);
     if (!periods.has(idx)) periods.set(idx, []);
     periods.get(idx).push({ a: canon(e.a), b: canon(e.b), sa: +e.sa, sb: +e.sb, date });
@@ -246,12 +376,16 @@ function recalcAll() {
     st[p.name].opps.forEach((o) => { sum += gOf2[o] != null ? gOf2[o] : ENGINE.unratedR; });
     p.avgOpp = st[p.name].opps.size ? sum / st[p.name].opps.size : 0;
   });
+  players.forEach((p) => {
+    p.delta = p.rating - (BASELINE[p.name] != null ? BASELINE[p.name] : p.rating);
+  });
   const now = Date.now();
   const graceEnd = Date.parse(ENGINE.graceStart + 'T00:00:00Z') + ENGINE.graceDays * DAY;
+  const inactList = new Set([...(D.inactiveList || []), ...(overAll().inactive || [])]);
   players.forEach((p) => {
-    p.inactive = p.lastMatch
+    p.inactive = inactList.has(p.name) || (p.lastMatch
       ? (now - Date.parse(p.lastMatch + 'T00:00:00Z')) > ENGINE.inactiveDays * DAY
-      : now > graceEnd;
+      : now > graceEnd);
   });
   const qualified = players.filter((p) => !p.provisional).sort((a, b) => b.rating - a.rating);
   qualified.forEach((p, i) => { p.rank = i + 1; });
@@ -279,6 +413,15 @@ function route() {
     const href = a.getAttribute('href');
     a.classList.toggle('active', href === base || (h === '#/' && href === '#/'));
   });
+  const glide = $('#nav-glide');
+  const act = document.querySelector('.nav a.active');
+  if (glide && act) {
+    glide.style.width = act.offsetWidth + 'px';
+    glide.style.transform = `translateX(${act.offsetLeft}px)`;
+    glide.style.opacity = '1';
+  } else if (glide) {
+    glide.style.opacity = '0';
+  }
 
   if (h.startsWith('#/player/')) {
     renderPlayer(unslug(h.slice('#/player/'.length)));
@@ -328,7 +471,7 @@ function renderHome() {
   $('#hero-matches').textContent = totalMatches;
   $('#stat-strip').innerHTML = `
     <div class="stat-card"><div class="k">Ranked players</div>
-      <div class="v"><span class="cu" data-target="${D.qualified.length}">0</span><small>/ ${totalPlayers} total</small></div></div>
+      <div class="v"><span class="cu" data-target="${topOf.length}">0</span><small>/ ${totalPlayers} total</small></div></div>
     <div class="stat-card"><div class="k">Matches logged</div>
       <div class="v"><span class="cu" data-target="${totalMatches}">0</span></div></div>
     <div class="stat-card"><div class="k">Highest rating</div>
@@ -338,11 +481,12 @@ function renderHome() {
 
   /* front line — top 5 cards */
   $('#fl-cards').innerHTML = topOf.slice(0, 5).map((p, i) => `
-    <div class="fl-card r${i + 1} reveal" data-goto="${esc(p.name)}">
+    <div class="fl-card r${i + 1}${i === 0 ? ' champ' : ''} reveal" data-goto="${esc(p.name)}">
       <div class="rd">RD ${p.rd.toFixed(0)}</div>
       ${rankBadge(p.rank)}
+      ${i === 0 ? '<div class="champ-tag">#1 World</div>' : ''}
       <div class="nm">${esc(p.name)}</div>
-      <div class="rating"><span class="big">${Math.round(p.rating)}</span><span class="unit">Glicko</span></div>
+      <div class="rating"><span class="big">${Math.round(p.rating)}</span><span class="unit">Glicko</span>${deltaTag(p)}</div>
       <div class="meta">
         <span><span class="w">${p.w}W</span> <span class="l">${p.l}L</span> ${p.d}D</span>
         <span style="margin-left:auto">${p.winPct}%</span>
@@ -354,7 +498,7 @@ function renderHome() {
     <div class="fl-row reveal" data-goto="${esc(p.name)}">
       ${rankBadge(p.rank, 'sm')}
       <div class="nm">${esc(p.name)}</div>
-      <div class="rating">${Math.round(p.rating)}</div>
+      <div class="rating">${Math.round(p.rating)}${deltaTag(p)}</div>
       <div class="rec"><span class="w">${p.w}W</span> · <span class="l">${p.l}L</span> · ${p.d}D</div>
       <div class="pct">${p.winPct}%</div>
       <div class="go">›</div>
@@ -381,7 +525,11 @@ function renderBattles() {
 
 function renderLeaderboard(filter = 'all', sortKey = 'rank', sortDir = 1) {
   const box = $('#lb-body');
-  let rows = (qualOnly ? topOf.slice() : STATE.players.slice())
+  /* filter chips describe their own population — only the "all" view is
+     scoped by the Qualified-only toggle (otherwise Provisional/Inactive
+     would both filter an already-qualified list and look identical) */
+  const scope = (filter === 'all' && qualOnly) ? topOf : STATE.players;
+  let rows = scope.slice()
     .map((p) => ({ ...p, rank: p.rank != null ? p.rank : 9999 }));
   if (nameFilter) rows = rows.filter((p) => p.name.toLowerCase().includes(nameFilter));
   if (filter === 'provisional') rows = rows.filter((p) => (playerByName[p.name] || {}).provisional);
@@ -402,7 +550,7 @@ function renderLeaderboard(filter = 'all', sortKey = 'rank', sortDir = 1) {
     <div class="lb-row ${p.rank <= 3 ? 'top' + p.rank : ''}" data-name="${esc(p.name)}" data-goto="${esc(p.name)}">
       <div class="rank">${p.rank <= topOf.length ? rankBadge(p.rank, 'sm') : '<div class="rank-badge sm">–</div>'}</div>
       <div class="name-cell"><div class="pname">${esc(p.name)}</div></div>
-      <div class="rating-cell mono">${p.rating.toFixed(1)}</div>
+      <div class="rating-cell mono">${p.rating.toFixed(1)}${deltaTag(p)}</div>
       <div class="num-cell mono col-hide">${p.rd.toFixed(1)}</div>
       <div class="num-cell mono col-hide">${p.matches}</div>
       <div class="num-cell mono col-hide"><span class="w">${p.w}</span></div>
@@ -415,7 +563,12 @@ function renderLeaderboard(filter = 'all', sortKey = 'rank', sortDir = 1) {
       <div class="num-cell mono col-hide">${p.avgOpp.toFixed(0)}</div>
       <div class="col-status">${statusTag(p.name)}</div>
       <div class="row-arrow">→</div>
-    </div>`).join('');
+    </div>`).join('') || `<div class="empty" style="padding:30px;text-align:center;color:var(--dim)">${
+        filter === 'inactive'
+          ? 'Nobody is inactive right now — a player goes inactive 365 days after their last match (or when flagged in the master sheet).'
+          : filter === 'provisional'
+            ? 'No provisional players right now.'
+            : 'No players match this filter.'}</div>`;
 
   // FLIP: play
   requestAnimationFrame(() => {
@@ -498,7 +651,7 @@ function renderPlayer(name) {
   const hist = histOf(name);
   const recent = hist.slice(0, 10);
   const h2h = h2hOf(name);
-  const seed = D.seeds[name];
+  const seed = seedOf(name);
   const rdPct = Math.max(3, Math.min(100, 100 - (p.rd / 120) * 100));
 
   el.innerHTML = `
@@ -519,6 +672,7 @@ function renderPlayer(name) {
         <div class="player-rating-block">
           <div class="lbl">Visible rating</div>
           <div class="big mono" id="pv-rating">0</div>
+          ${deltaTag(p)}
           <div class="rd-bar">
             <div class="bar-track"><div class="bar-fill" style="width:${rdPct}%"></div></div>
             <div class="caption"><span>certainty</span><span class="mono">RD ${p.rd.toFixed(1)}</span></div>
@@ -647,11 +801,31 @@ function renderAnalytics() {
 
   /* most contested rivalries */
   const rivs = {};
-  D.matches.forEach((m) => {
+  allMatches().forEach((m) => {
     const k = [m.a, m.b].sort().join(' vs ');
     rivs[k] = (rivs[k] || 0) + 1;
   });
   const rivalry = Object.entries(rivs).sort((a, b) => b[1] - a[1]).slice(0, 10);
+
+  /* rating distribution histogram + matches-played bars */
+  const ratings = all.map((p) => p.rating);
+  const rMin = Math.min(...ratings), rMax = Math.max(...ratings);
+  const B = 12, span = (rMax - rMin) / B || 1;
+  const buckets = Array.from({ length: B }, () => 0);
+  ratings.forEach((r) => { buckets[Math.min(B - 1, Math.max(0, Math.floor((r - rMin) / span)))]++; });
+  const peak = Math.max(...buckets, 1);
+  const histHTML = buckets.map((n, i) => `
+    <div class="hcol" title="${n} player${n === 1 ? '' : 's'} near ${Math.round(rMin + i * span)}">
+      <div class="hbar" data-h="${Math.round((n / peak) * 100)}"></div>
+      <div class="hlbl">${Math.round(rMin + i * span)}</div>
+    </div>`).join('');
+  const mMax = Math.max(...byActive.map((r) => r.matches), 1);
+  const matchBarsHTML = byActive.slice(0, 8).map((r) => `
+    <div class="mrow reveal" data-goto="${esc(r.name)}">
+      <div class="nm">${esc(r.name)}</div>
+      <div class="mtrack"><div class="abar" data-w="${Math.round((r.matches / mMax) * 100)}"></div></div>
+      <div class="val mono">${r.matches}</div>
+    </div>`).join('');
 
   const list = (rows, val, unit) => rows.map((r, i) => `
     <div class="an-row reveal" data-goto="${esc(r.name)}">
@@ -697,13 +871,31 @@ function renderAnalytics() {
           <div class="val mono">${n}</div>
           <div class="unit mono">meetings</div>
         </div>`).join('')}
+    </div>
+    <div class="an-panel">
+      <div class="head"><h3>Rating distribution</h3>
+        <svg class="ico" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 20V10M10 20V4M16 20v-8M2 20h20" stroke-linecap="round"/></svg>
+      </div>
+      <div class="hist">${histHTML}</div>
+    </div>
+    <div class="an-panel">
+      <div class="head"><h3>Matches played</h3>
+        <svg class="ico" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 4v5M12 15v5" stroke-linecap="round"/></svg>
+      </div>
+      ${matchBarsHTML}
     </div>`;
+  const growBars = () => {
+    $$('#an-grid .hbar').forEach((b) => { b.style.height = b.dataset.h + '%'; });
+    $$('#an-grid .abar').forEach((b) => { b.style.width = b.dataset.w + '%'; });
+  };
+  requestAnimationFrame(growBars);
+  setTimeout(growBars, 140);
   observeReveals();
 }
 
 /* ---------- method page ---------- */
 function renderMethod() {
-  $('#settings-body').innerHTML = D.settings.map((s) => `
+  $('#settings-body').innerHTML = effectiveSettings().map((s) => `
     <tr><td><b>${esc(s.name)}</b><div style="color:var(--dimmer);font-size:12.5px">${esc(s.desc)}</div></td>
         <td class="val">${esc(String(s.value))}</td></tr>`).join('');
 }
@@ -743,7 +935,43 @@ function renderAdmin() {
   }
 
   const log = logGet();
-  const pubCount = (window.LB_LOG || []).length;
+  const pubCount = pubMatches().length;
+  const O = overAll();
+  const trashSvg = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 7h14M10 11v6M14 11v6M8 7l1-3h6l1 3M7 7l1 13h8l1-13" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const aliasRows = Object.entries(O.aliases).map(([a, b]) => `
+    <div class="log-item">
+      <div class="txt"><b>${esc(a)}</b> → <b>${esc(b)}</b>${O.aliasNotes && O.aliasNotes[a] ? ` <span style="color:var(--dimmer)">— ${esc(O.aliasNotes[a])}</span>` : ''}</div>
+      <button class="icon-btn" data-alias-del="${esc(a)}" title="Remove name fix">${trashSvg}</button>
+    </div>`).join('') || '<div class="empty">No name fixes yet.</div>';
+  const inactRows = O.inactive.map((n) => `
+    <div class="log-item">
+      <div class="txt"><b>${esc(n)}</b> <span style="color:var(--dimmer)">— inactive</span></div>
+      <button class="icon-btn" data-inact-del="${esc(n)}" title="Mark active again">${trashSvg}</button>
+    </div>`).join('') || '<div class="empty">Nobody marked inactive.</div>';
+  const seedRows = Object.keys({ ...(O.seeds || {}), ...(O.seedGlicko || {}), ...(O.seedRd || {}) }).map((n) => `
+    <div class="log-item">
+      <div class="txt"><b>${esc(n)}</b> · <span style="color:var(--dimmer)">old</span> <b class="mono">${esc(String((O.seeds || {})[n] != null ? (O.seeds || {})[n] : '—'))}</b>${(O.seedGlicko || {})[n] != null ? ` · <span style="color:var(--dimmer)">glicko</span> <b class="mono">${esc(String(O.seedGlicko[n]))}</b>` : ''}${(O.seedRd || {})[n] != null ? ` · <span style="color:var(--dimmer)">rd</span> <b class="mono">${esc(String(O.seedRd[n]))}</b>` : ''}</div>
+      <button class="icon-btn" data-seed-del="${esc(n)}" title="Remove seed">${trashSvg}</button>
+    </div>`).join('') || '<div class="empty">No seed overrides — players start from the sheet values.</div>';
+  const settingRows = effectiveSettings().map((s) => `
+    <div class="set-row">
+      <div class="lbl"><b>${esc(s.name)}</b><div class="d">${esc(String(s.desc || ''))}</div></div>
+      <input class="set-val mono" data-set-name="${esc(s.name)}" value="${esc(String(s.value))}">
+    </div>`).join('');
+  const matchRows = (q) => {
+    const ql = (q || '').trim().toLowerCase();
+    const list = allMatches().filter((m) =>
+      !ql || m.a.toLowerCase().includes(ql) || m.b.toLowerCase().includes(ql)).slice(0, 20);
+    return list.map((m) => `
+      <div class="log-item fix-row" data-mkey="${m.key}">
+        <div class="txt"><b>${esc(m.a)}</b> <span style="color:var(--dimmer)">vs</span> <b>${esc(m.b)}</b>${m.date ? '' : ' <span class="tag legacy">legacy</span>'}</div>
+        <input class="mono" data-f="sa" type="number" min="0" value="${m.sa}" title="Score 1">
+        <input class="mono" data-f="sb" type="number" min="0" value="${m.sb}" title="Score 2">
+        <input data-f="date" type="date" value="${m.date || ''}" title="Match date">
+        <button class="icon-btn" data-msave="${m.key}" title="Save fix"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 12l6 6L20 6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button class="icon-btn" data-mdel="${m.key}" title="Delete match">${trashSvg}</button>
+      </div>`).join('') || '<div class="empty">No matches found.</div>';
+  };
   wrap.innerHTML = `
   <div class="admin-bar anim">
     <div class="title"><span>●</span> Admin console</div>
@@ -786,7 +1014,8 @@ function renderAdmin() {
         ratings, ranks, records and head-to-heads recalculate instantly here.
         Hit <b style="color:var(--gold)">Publish to everyone</b> to push the log to
         the site so every visitor sees it (needs a GitHub token with Contents:write
-        on the site repo — kept only in this tab).
+        on the site repo — kept only in this tab). Use <b>Customize everything</b>
+        below to fix names, dates, seeds, settings or any past match.
       </div>
     </div>
 
@@ -804,6 +1033,98 @@ function renderAdmin() {
       </div>
     </div>
   </div>
+
+  <div class="admin-bar anim" style="margin-top:22px">
+    <div class="title"><span>●</span> Customize everything</div>
+    <div class="spacer"></div>
+    <div class="form-note" style="margin:0">Everything the master sheet can do — names, inactive, seeds, settings, match fixes & dates. Changes apply live here; <b style="color:var(--gold)">Publish to everyone</b> makes them public.</div>
+  </div>
+
+  <div class="admin-grid anim">
+    <div class="panel" style="margin:0">
+      <h3>Fix <span class="n">names</span> & merge players</h3>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Name as written</label>
+          <input id="ov-alias-a" placeholder="e.g. sneakyonyxdragon" autocomplete="off">
+        </div>
+        <div class="form-field">
+          <label>Correct player</label>
+          <input id="ov-alias-b" list="player-list" placeholder="e.g. _Eddie_" autocomplete="off">
+        </div>
+        <div class="form-field full">
+          <label>Note (optional)</label>
+          <input id="ov-alias-note" placeholder="e.g. same person, alt account" autocomplete="off">
+        </div>
+        <div class="form-field full">
+          <button class="btn btn-primary" id="ov-alias-add" style="margin-top:6px">+) Save name fix</button>
+        </div>
+      </div>
+      <div class="log-list" id="ov-alias-list" style="margin-top:12px">${aliasRows}</div>
+    </div>
+
+    <div class="panel" style="margin:0">
+      <h3>Active / <span class="n">inactive</span></h3>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Player</label>
+          <input id="ov-inact-n" list="player-list" placeholder="e.g. Warren" autocomplete="off">
+        </div>
+        <div class="form-field">
+          <label>&nbsp;</label>
+          <button class="btn btn-primary" id="ov-inact-toggle">Toggle inactive</button>
+        </div>
+      </div>
+      <div class="log-list" id="ov-inact-list" style="margin-top:12px">${inactRows}</div>
+    </div>
+
+    <div class="panel" style="margin:0">
+      <h3>Start <span class="n">ratings</span> (seeds)</h3>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Player</label>
+          <input id="ov-seed-n" list="player-list" autocomplete="off">
+        </div>
+        <div class="form-field">
+          <label>Old 0–100 rating</label>
+          <input id="ov-seed-v" type="number" step="0.5" placeholder="90">
+        </div>
+        <div class="form-field">
+          <label>Starting Glicko <span style="color:var(--dimmer)">(opt)</span></label>
+          <input id="ov-seed-g" type="number" step="1" placeholder="auto">
+        </div>
+        <div class="form-field">
+          <label>Starting RD <span style="color:var(--dimmer)">(opt)</span></label>
+          <input id="ov-seed-rd" type="number" step="1" placeholder="auto">
+        </div>
+        <div class="form-field full">
+          <button class="btn btn-primary" id="ov-seed-add" style="margin-top:6px">+) Save seed</button>
+        </div>
+      </div>
+      <div class="log-list" id="ov-seed-list" style="margin-top:12px">${seedRows}</div>
+    </div>
+
+    <div class="panel" style="margin:0">
+      <h3>Model <span class="n">settings</span></h3>
+      <div id="ov-settings">${settingRows}</div>
+      <button class="btn btn-ghost" id="ov-set-reset" style="margin-top:12px">Reset to sheet values</button>
+    </div>
+
+    <div class="panel" style="margin:0;grid-column:1/-1">
+      <h3>Fix or delete <span class="n">any match</span></h3>
+      <div class="form-note" style="margin:0 0 10px">Search a player, then fix scores, set or fix the date, or delete the match. Ratings recalculate instantly.</div>
+      <input id="ov-mq" placeholder="Search a player to find their matches…" autocomplete="off" style="width:100%">
+      <div class="fix-row" style="margin-top:12px;opacity:.5">
+        <div class="txt" style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--dimmer)">Players</div>
+        <div style="font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--dimmer)">Score</div>
+        <div style="font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--dimmer)">Score</div>
+        <div style="font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--dimmer)">Date</div>
+        <div></div><div></div>
+      </div>
+      <div class="log-list" id="ov-mresults"><div class="empty">Search to edit scores, dates, or delete a match.</div></div>
+    </div>
+  </div>
+
   <datalist id="player-list">${STATE.players.map((p) => `<option value="${esc(p.name)}">`).join('')}</datalist>`;
 
   $('#admin-lock').addEventListener('click', () => {
@@ -815,15 +1136,34 @@ function renderAdmin() {
   async function publishLog() {
     let token = sessionStorage.getItem('gh_pub_tok') || '';
     if (!token) {
-      token = (window.prompt('Paste a GitHub token with Contents:write access to iiqz/1v1-leaderboard (create one at github.com/settings/tokens):') || '').trim();
+      token = (window.prompt(`Paste a GitHub token with Contents:write access to ${SITE_REPO} (create one at github.com/settings/tokens):`) || '').trim();
       if (!token) { toast('Publish cancelled.'); return; }
       sessionStorage.setItem('gh_pub_tok', token);
     }
-    const merged = logAll().map((e) => ({ a: canon(e.a), b: canon(e.b), sa: e.sa, sb: e.sb, date: e.date || '' }));
-    const content = '/* Published match log — committed by the admin console.\n   Newest entries first. The Glicko engine recalculates all ratings from these. */\nwindow.LB_LOG = ' + JSON.stringify(merged, null, 2) + ';\n';
+    /* flatten: bake pending/edited entries into one published list; keep only
+       archive fixes (a:*) as ongoing overrides */
+    const doc = overAll();
+    const keepEdits = {}, keepRemoved = [];
+    for (const [k, v] of Object.entries(doc.matchEdits || {})) if (k.startsWith('a:')) keepEdits[k] = v;
+    for (const k of (doc.matchRemoved || [])) if (k.startsWith('a:')) keepRemoved.push(k);
+    const merged = allMatches().filter((m) => m.admin)
+      .map((e) => ({ a: e.a, b: e.b, sa: e.sa, sb: e.sb, date: e.date || '' }));
+    const pubDoc = {
+      matches: merged,
+      aliases: doc.aliases || {},
+      aliasNotes: doc.aliasNotes || {},
+      inactive: doc.inactive || [],
+      seeds: doc.seeds || {},
+      seedGlicko: doc.seedGlicko || {},
+      seedRd: doc.seedRd || {},
+      settings: doc.settings || {},
+      matchEdits: keepEdits,
+      matchRemoved: keepRemoved,
+    };
+    const content = '/* Published site data — committed by the admin console ("Publish to everyone").\n   matches = shared match log (newest first). aliases = name fixes / merges.\n   inactive = manually inactive players. seeds = start rating overrides.\n   settings = model overrides. matchEdits/matchRemoved = archive fixes.\n   The Glicko engine recalculates every rating from these at page load. */\nwindow.LB_PUB = ' + JSON.stringify(pubDoc, null, 2) + ';\nwindow.LB_LOG = window.LB_PUB.matches;\n';
     const b64 = btoa(String.fromCharCode(...new TextEncoder().encode(content)));
     const hdrs = { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' };
-    const apiUrl = 'https://api.github.com/repos/iiqz/1v1-leaderboard/contents/log.js';
+    const apiUrl = `https://api.github.com/repos/${SITE_REPO}/contents/log.js`;
     try {
       const g = await fetch(apiUrl, { headers: hdrs });
       const sha = g.ok ? (await g.json()).sha : undefined;
@@ -837,8 +1177,10 @@ function renderAdmin() {
         toast('Publish failed: ' + (err.message || ('HTTP ' + r.status)));
         return;
       }
+      window.LB_PUB = pubDoc;
       window.LB_LOG = merged;
       logSet([]);
+      overSet({});
       rebuildState();
       renderAdmin();
       toast('Published! Everyone sees it on their next visit.');
@@ -878,6 +1220,119 @@ function renderAdmin() {
     logSet(arr);
     rebuildState();
     renderAdmin();
+  });
+
+  /* ---- customize: names & merges ---- */
+  $('#ov-alias-add').addEventListener('click', () => {
+    const a = $('#ov-alias-a').value.trim(), b = $('#ov-alias-b').value.trim();
+    const note = ($('#ov-alias-note') || {}).value.trim();
+    if (!a || !b) { toast('Fill both: the wrong name and the correct player.'); return; }
+    const loc = overGet();
+    overSet({ ...loc,
+      aliases: { ...(loc.aliases || {}), [a]: b },
+      aliasNotes: note ? { ...(loc.aliasNotes || {}), [a]: note } : (loc.aliasNotes || {}) });
+    rebuildState(); renderAdmin();
+    toast(`Name fix saved — "${a}" now counts as ${b}.`);
+  });
+  $('#ov-alias-list').addEventListener('click', (e) => {
+    const del = e.target.closest('[data-alias-del]');
+    if (!del) return;
+    const loc = overGet();
+    const al = { ...(loc.aliases || {}) };
+    const nt = { ...(loc.aliasNotes || {}) };
+    delete al[del.dataset.aliasDel]; delete nt[del.dataset.aliasDel];
+    overSet({ ...loc, aliases: al, aliasNotes: nt });
+    rebuildState(); renderAdmin();
+  });
+
+  /* ---- customize: active / inactive ---- */
+  $('#ov-inact-toggle').addEventListener('click', () => {
+    const n = $('#ov-inact-n').value.trim();
+    if (!n) { toast('Type a player name first.'); return; }
+    const loc = overGet();
+    const cur = overAll().inactive || [];
+    const next = cur.includes(n) ? cur.filter((x) => x !== n) : [...cur, n];
+    overSet({ ...loc, inactive: next });
+    rebuildState(); renderAdmin();
+    toast(next.includes(n) ? `${n} marked inactive.` : `${n} marked active again.`);
+  });
+  $('#ov-inact-list').addEventListener('click', (e) => {
+    const del = e.target.closest('[data-inact-del]');
+    if (!del) return;
+    const loc = overGet();
+    overSet({ ...loc, inactive: (overAll().inactive || []).filter((x) => x !== del.dataset.inactDel) });
+    rebuildState(); renderAdmin();
+  });
+
+  /* ---- customize: start ratings ---- */
+  $('#ov-seed-add').addEventListener('click', () => {
+    const n = $('#ov-seed-n').value.trim();
+    const v = $('#ov-seed-v').value.trim();
+    const g = $('#ov-seed-g').value.trim();
+    const rd = $('#ov-seed-rd').value.trim();
+    if (!n) { toast('Pick a player first.'); return; }
+    if (v === '' && g === '' && rd === '') { toast('Enter an Old 0–100 rating, or a Starting Glicko / RD.'); return; }
+    const loc = overGet();
+    const seeds = { ...(loc.seeds || {}) }, seedGlicko = { ...(loc.seedGlicko || {}) }, seedRd = { ...(loc.seedRd || {}) };
+    if (v !== '' && Number.isFinite(Number(v))) seeds[n] = Number(v); else delete seeds[n];
+    if (g !== '' && Number.isFinite(Number(g))) seedGlicko[n] = Number(g); else delete seedGlicko[n];
+    if (rd !== '' && Number.isFinite(Number(rd))) seedRd[n] = Number(rd); else delete seedRd[n];
+    overSet({ ...loc, seeds, seedGlicko, seedRd });
+    rebuildState(); renderAdmin();
+    toast(`Seed saved for ${n}.`);
+  });
+  $('#ov-seed-list').addEventListener('click', (e) => {
+    const del = e.target.closest('[data-seed-del]');
+    if (!del) return;
+    const key = del.dataset.seedDel;
+    const loc = overGet();
+    const sd = { ...(loc.seeds || {}) }; delete sd[key];
+    const sg = { ...(loc.seedGlicko || {}) }; delete sg[key];
+    const sr = { ...(loc.seedRd || {}) }; delete sr[key];
+    overSet({ ...loc, seeds: sd, seedGlicko: sg, seedRd: sr });
+    rebuildState(); renderAdmin();
+  });
+
+  /* ---- customize: model settings ---- */
+  $('#ov-settings').addEventListener('change', (e) => {
+    const inp = e.target.closest('[data-set-name]');
+    if (!inp) return;
+    const loc = overGet();
+    overSet({ ...loc, settings: { ...(loc.settings || {}), [inp.dataset.setName]: inp.value } });
+    rebuildState(); renderAdmin();
+    toast('Setting applied — everything recalculated.');
+  });
+  $('#ov-set-reset').addEventListener('click', () => {
+    const loc = overGet();
+    overSet({ ...loc, settings: {} });
+    rebuildState(); renderAdmin();
+    toast('Settings back to the master sheet values.');
+  });
+
+  /* ---- customize: match fixes ---- */
+  $('#ov-mq').addEventListener('input', () => {
+    $('#ov-mresults').innerHTML = matchRows($('#ov-mq').value);
+  });
+  $('#ov-mresults').addEventListener('click', (e) => {
+    const save = e.target.closest('[data-msave]');
+    const del = e.target.closest('[data-mdel]');
+    if (save) {
+      const row = save.closest('[data-mkey]');
+      const key = row.dataset.mkey;
+      const g = (f) => row.querySelector(`[data-f="${f}"]`).value;
+      const loc = overGet();
+      overSet({ ...loc, matchEdits: { ...(loc.matchEdits || {}), [key]: { sa: +g('sa'), sb: +g('sb'), date: g('date') } } });
+      rebuildState();
+      $('#ov-mresults').innerHTML = matchRows($('#ov-mq').value);
+      toast('Match fixed — ratings recalculated.');
+    } else if (del) {
+      const key = del.dataset.mdel;
+      const loc = overGet();
+      overSet({ ...loc, matchRemoved: [...new Set([...(loc.matchRemoved || []), key])] });
+      rebuildState();
+      $('#ov-mresults').innerHTML = matchRows($('#ov-mq').value);
+      toast('Match deleted — ratings recalculated.');
+    }
   });
 }
 
@@ -931,10 +1386,59 @@ function observeReveals() {
   $$('.reveal').forEach((el) => io.observe(el));
 }
 
+/* ---------- scroll polish: progress bar, hero drift, back-to-top ---------- */
+(function scrollPolish() {
+  const bar = $('#scroll-progress');
+  const toTop = $('#to-top');
+  const drift = $('#page-home .hero-row');
+  const topbar = document.querySelector('.topbar');
+  const onScroll = () => {
+    const y = window.scrollY;
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    if (bar) bar.style.width = (max > 0 ? (y / max) * 100 : 0) + '%';
+    if (toTop) toTop.classList.toggle('show', y > 640);
+    if (topbar) topbar.classList.toggle('scrolled', y > 10);
+    if (drift && y < 1400) {
+      drift.style.transform = `translateY(${y * 0.14}px)`;
+      drift.style.opacity = String(Math.max(0.3, 1 - y / 950));
+    }
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  if (toTop) toTop.addEventListener('click', () =>
+    window.scrollTo({ top: 0, behavior: 'smooth' }));
+  onScroll();
+})();
+
 /* ---------- boot ---------- */
+computeBaseline();
 rebuildState();
 renderHome();
 route();
+
+/* pull `window.NAME = <json>;` out of a generated file (brace/bracket scan) */
+function extractAssign(txt, name) {
+  const i = txt.indexOf('window.' + name);
+  if (i < 0) return null;
+  let k = txt.indexOf('=', i);
+  while (k < txt.length && '{['.indexOf(txt[k]) < 0) k++;
+  let depth = 0, inStr = false, q = '', esc = false;
+  for (let j = k; j < txt.length; j++) {
+    const ch = txt[j];
+    if (inStr) {
+      if (esc) esc = false;
+      else if (ch === '\\') esc = true;
+      else if (ch === q) inStr = false;
+      continue;
+    }
+    if (ch === '"' || ch === "'") { inStr = true; q = ch; continue; }
+    if (ch === '{' || ch === '[') depth++;
+    else if (ch === '}' || ch === ']') {
+      depth--;
+      if (depth <= 0) return JSON.parse(txt.slice(k, j + 1));
+    }
+  }
+  return null;
+}
 
 /* Re-fetch the published log with a cache-buster so every visitor sees admin
    publishes even if the browser (or the Pages CDN) cached log.js. */
@@ -943,11 +1447,12 @@ route();
     const r = await fetch('log.js?cb=' + Date.now(), { cache: 'no-store' });
     if (!r.ok) return;
     const txt = await r.text();
-    const i = txt.indexOf('window.LB_LOG');
-    if (i < 0) return;
-    const fresh = JSON.parse(txt.slice(txt.indexOf('=', i) + 1, txt.lastIndexOf(']') + 1));
-    if (JSON.stringify(fresh) !== JSON.stringify(window.LB_LOG || [])) {
-      window.LB_LOG = fresh;
+    const fresh = extractAssign(txt, 'LB_PUB') ||
+      (extractAssign(txt, 'LB_LOG') ? { matches: extractAssign(txt, 'LB_LOG') } : null);
+    if (!fresh) return;
+    if (JSON.stringify(fresh) !== JSON.stringify(window.LB_PUB || null)) {
+      window.LB_PUB = fresh;
+      window.LB_LOG = fresh.matches || [];
       rebuildState();
       renderHome();
       route();

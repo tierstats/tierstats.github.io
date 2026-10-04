@@ -3,7 +3,7 @@
 The definitive Tank Trouble 1v1 rankings — Dynamic Glicko-2 ratings, full match
 archive, head-to-head dossiers, provisional roster and analytics.
 
-**Live site:** https://iiqz.github.io/1v1-leaderboard/
+**Live site:** https://tierstats.github.io/
 
 - Owned & run by **Alternator** & **interstellar**
 - Every rating is computed from the recorded match history — no manual rankings
