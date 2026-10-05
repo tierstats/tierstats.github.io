@@ -1,110 +1,110 @@
 /* 1v1 Leaderboard — © Alternator & interstellar. Proprietary. Do not copy. */
-"use strict";(()=>{var W=window.LB_DATA,ms="https://tierstats-publish.tierstats.workers.dev/publish",p=(s,e=document)=>e.querySelector(s),M=(s,e=document)=>[...e.querySelectorAll(s)],u=s=>String(s).replace(/[&<>"']/g,e=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[e]),is=s=>encodeURIComponent(String(s)),ks=s=>decodeURIComponent(s);function ns(s,e,a={}){let n=a.dur||1200,r=a.dec||0,d=performance.now(),g=parseFloat(s.textContent)||0;function o(b){let h=Math.min(1,(b-d)/n),w=1-Math.pow(1-h,3);s.textContent=(g+(e-g)*w).toFixed(r),h<1&&requestAnimationFrame(o)}requestAnimationFrame(o)}var Ls='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 8.2c0-.9 1-1.4 1.7-.9l3.1 2.4c.5.4 1.2.3 1.6-.2l2.2-2.9c.4-.5 1.2-.5 1.6 0l2.2 2.9c.4.5 1.1.6 1.6.2l3.1-2.4c.7-.5 1.7 0 1.7.9l-.7 8.4c-.1.8-.7 1.4-1.5 1.4H5.2c-.8 0-1.4-.6-1.5-1.4L3 8.2Z"/><rect x="5" y="19.2" width="14" height="1.9" rx=".9"/></svg>',Ms='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8.4 2.2 12 8.4l3.6-6.2c.3-.6 1.1-.7 1.6-.3l1.7 1.5c.5.4.6 1.1.3 1.6L15.4 12a7 7 0 1 1-6.8 0L4.8 5a1.3 1.3 0 0 1 .3-1.6l1.7-1.5c.5-.4 1.3-.3 1.6.3Zm2 12.1a3.2 3.2 0 1 0 3.2 3.2 3.2 3.2 0 0 0-3.2-3.2Z"/></svg>';function H(s,e=""){let a=s===1?"rb1":s===2?"rb2":s===3?"rb3":"",n=s<=3?s===1?Ls:Ms:"";return`<div class="rank-badge ${a} ${e}" title="Rank #${s}">${n}<span class="num">${s}</span></div>`}var A={},N=[],T={players:[],byName:{},qualified:[]},q={};function xs(){for(let s in q)delete q[s];Object.entries(W.aliases).forEach(([s,e])=>{q[s.toLowerCase()]=e}),Object.entries(O().aliases||{}).forEach(([s,e])=>{q[String(s).toLowerCase()]=e})}var Z=s=>{let e=String(s).trim();return q[e.toLowerCase()]||e};function hs(s){let e=[];return B().forEach(a=>{let n=(r,d,g)=>({opp:r,for_:d,against:g,res:d>g?"W":d<g?"L":"D",date:a.date});a.a===s?e.push(n(a.b,a.sa,a.sb)):a.b===s&&e.push(n(a.a,a.sb,a.sa))}),e}function Ss(s){let e={};return hs(s).forEach(a=>{let n=e[a.opp]||(e[a.opp]={w:0,l:0,d:0,pf:0,pa:0});n[a.res.toLowerCase()]+=1,n.pf+=a.for_,n.pa+=a.against}),Object.entries(e).map(([a,n])=>({opp:a,...n})).sort((a,n)=>n.w+n.l+n.d-(a.w+a.l+a.d)||n.w-a.w)}function Es(s){let e=A[s]||{};return e.provisional?'<span class="tag prov">provisional</span>':e.inactive?'<span class="tag inact">inactive</span>':'<span class="tag legacy">legacy</span>'}var es={},Y=!1;function Rs(){Y=!0;try{ws().players.forEach(s=>{es[s.name]=s.rating})}finally{Y=!1}}function K(s){let e=s.delta!=null?s.delta:0;if(Math.abs(e)<.05)return"";let a=e>0;return`<span class="delta ${a?"up":"down"}" title="rating change since the last data sync">${a?"\u25B2":"\u25BC"} ${Math.abs(e).toFixed(1)}</span>`}var us="tt1v1_admin_log_v1",Q="tt1v1_admin_ok",z="tt1v1_admin_pw",Ns=ms.replace(/\/publish$/,"/verify");function G(){try{return JSON.parse(localStorage.getItem(us)||"[]")}catch{return[]}}function X(s){try{localStorage.setItem(us,JSON.stringify(s))}catch{}}var gs="tt1v1_admin_over_v1";function R(){try{return JSON.parse(localStorage.getItem(gs)||"{}")||{}}catch{return{}}}function E(s){try{localStorage.setItem(gs,JSON.stringify(s))}catch{}}function O(){let s=window.LB_PUB||{},e=R();return{aliases:{...s.aliases||{},...e.aliases||{}},aliasNotes:{...s.aliasNotes||{},...e.aliasNotes||{}},seeds:{...s.seeds||{},...e.seeds||{}},seedGlicko:{...s.seedGlicko||{},...e.seedGlicko||{}},seedRd:{...s.seedRd||{},...e.seedRd||{}},settings:{...s.settings||{},...e.settings||{}},matchEdits:{...s.matchEdits||{},...e.matchEdits||{}},inactive:e.inactive||s.inactive||[],matchRemoved:[...new Set([...s.matchRemoved||[],...e.matchRemoved||[]])]}}function fs(){return window.LB_PUB&&Array.isArray(window.LB_PUB.matches)?window.LB_PUB.matches:Array.isArray(window.LB_LOG)?window.LB_LOG:[]}function B(){let s=O(),e=s.matchEdits||{},a=new Set(s.matchRemoved||[]),n=(o,b)=>{if(a.has(b))return null;let h=e[b],w=h?{...o,sa:h.sa,sb:h.sb,date:h.date!=null?h.date:o.date}:o;return{...w,a:Z(w.a),b:Z(w.b),sa:+w.sa,sb:+w.sb,key:b}},r=Y?[]:G().map((o,b)=>n({...o,admin:!0,published:!1},"l:"+b)).filter(Boolean),d=Y?[]:fs().map((o,b)=>n({...o,admin:!0,published:!0},"p:"+b)).filter(Boolean),g=W.matches.map((o,b)=>n({...o,admin:!1,published:!1},"a:"+b)).filter(Boolean).reverse();return r.concat(d,g)}var $={seedMid:1500,oldMid:80,ptsPer:30,knownRd:80,unratedR:1500,unratedRd:250,maxRd:250,growth:20,periodDays:30,conservative:.35,minMatches:5,minOpp:3,inactiveDays:365,graceStart:"2026-10-04",graceDays:365},ts=864e5,F=Math.log(10)/400,bs=s=>1/Math.sqrt(1+3*F*F*s*s/(Math.PI*Math.PI)),Os=(s,e,a)=>1/(1+Math.pow(10,-bs(a)*(s-e)/400));function ys(s){let e=O().seeds||{};return e[s]!=null&&e[s]!==""?Number(e[s]):W.seeds[s]}function Bs(s){let e=(O().seedGlicko||{})[s],a=(O().seedRd||{})[s],n=e!=null&&e!==""?Number(e):null,r=a!=null&&a!==""?Number(a):null;if(n!=null||r!=null)return[n??$.unratedR,r??$.unratedRd];let d=ys(s);return d!=null?[$.seedMid+(d-$.oldMid)*$.ptsPer,$.knownRd]:[$.unratedR,$.unratedRd]}function vs(s,e,a){let n=0,r=0;for(let[g,o,b]of a){let h=bs(o),w=Os(s,g,o);n+=h*h*w*(1-w),r+=h*(b-w)}if(n*=F*F,n<=0)return[s,e];let d=1/(e*e)+n;return[s+F/d*r,Math.sqrt(1/d)]}function Ts(s,e){let a=Math.pow(10,e),n=s*a,r=Math.floor(n);return Math.abs(n-r-.5)<1e-6?(r%2===0?r:r+1)/a:Math.round(n)/a}var os=s=>Math.floor(Date.parse(s+"T00:00:00Z")/($.periodDays*ts)),J=os($.graceStart),Ps={"Seed Glicko midpoint":"seedMid","Old rating midpoint":"oldMid","Glicko points per old rating point":"ptsPer","Known-player starting RD":"knownRd","Unrated-player starting rating":"unratedR","Unrated-player starting RD":"unratedRd","Maximum RD":"maxRd","RD growth per rating period":"growth","Rating period length (days)":"periodDays","Conservative RD multiplier":"conservative","Minimum matches for leaderboard":"minMatches","Minimum different opponents":"minOpp","Inactive after days":"inactiveDays","Legacy grace start date":"graceStart","Legacy grace days":"graceDays"};function ls(){let s=O().settings||{};return(W.settings||[]).map(e=>({...e,value:Object.prototype.hasOwnProperty.call(s,e.name)?s[e.name]:e.value}))}function js(){for(let s of ls()){let e=Ps[s.name];if(!e)continue;if(e==="graceStart"){let n=String(s.value==null?"":s.value).slice(0,10);/^\d{4}-\d{2}-\d{2}$/.test(n)&&($.graceStart=n);continue}let a=Number(s.value);Number.isFinite(a)&&($[e]=a)}J=os($.graceStart)}function ws(){js(),xs();let s={},e=t=>{if(!s[t]){let[c,v]=Bs(t);s[t]={name:t,r:c,rd:v,w:0,l:0,d:0,games:0,opps:new Set,lastIdx:null,lastDate:null}}return s[t]},a=(t,c,v,m,y,i)=>{let f=e(t);f.games++,f.opps.add(c),v>m?f.w++:v<m?f.l++:f.d++,f.lastIdx=i,y&&(f.lastDate=y)},n={};for(let t of B()){if(t.date)continue;let c=t.a,v=t.b,m=t.sa>t.sb?1:t.sa<t.sb?0:.5;(n[c]=n[c]||[]).push([v,m]),(n[v]=n[v]||[]).push([c,1-m]),a(c,v,t.sa,t.sb,"",J),a(v,c,t.sb,t.sa,"",J)}let r={};for(let t in n)r[t]=[e(t).r,e(t).rd];for(let t in n){let[c,v]=vs(r[t][0],r[t][1],n[t].map(([m,y])=>[r[m][0],r[m][1],y]));e(t).r=c,e(t).rd=v}let d=new Map;for(let t of B().filter(c=>c.date).slice().reverse()){let c=t.date,v=os(c);d.has(v)||d.set(v,[]),d.get(v).push({a:Z(t.a),b:Z(t.b),sa:+t.sa,sb:+t.sb,date:c})}for(let t of[...d.keys()].sort((c,v)=>c-v)){for(let m in s){let y=s[m],i=t-(y.lastIdx==null?J:y.lastIdx);i>0&&(y.rd=Math.min(Math.sqrt(y.rd*y.rd+$.growth*$.growth*i),$.maxRd))}let c={};for(let m of d.get(t)){let y=m.sa>m.sb?1:m.sa<m.sb?0:.5;(c[m.a]=c[m.a]||[]).push([m.b,y]),(c[m.b]=c[m.b]||[]).push([m.a,1-y]),a(m.a,m.b,m.sa,m.sb,m.date,t),a(m.b,m.a,m.sb,m.sa,m.date,t)}let v={};for(let m in c)v[m]=[e(m).r,e(m).rd];for(let m in c){let[y,i]=vs(v[m][0],v[m][1],c[m].map(([f,j])=>[v[f][0],v[f][1],j]));e(m).r=y,e(m).rd=i}}let g=Object.values(s).map(t=>({name:t.name,glicko:t.r,rd:t.rd,rating:t.r-$.conservative*t.rd,matches:t.games,w:t.w,l:t.l,d:t.d,winPct:t.games?Ts(t.w/t.games*100,1):0,opponents:t.opps.size,avgOpp:0,lastMatch:t.lastDate||"",provisional:!(t.games>=$.minMatches&&t.opps.size>=$.minOpp),inactive:!1})),o={};g.forEach(t=>{o[t.name]=t.glicko}),g.forEach(t=>{let c=0;s[t.name].opps.forEach(v=>{c+=o[v]!=null?o[v]:$.unratedR}),t.avgOpp=s[t.name].opps.size?c/s[t.name].opps.size:0}),g.forEach(t=>{t.delta=t.rating-(es[t.name]!=null?es[t.name]:t.rating)});let b=Date.now(),h=Date.parse($.graceStart+"T00:00:00Z")+$.graceDays*ts,w=new Set([...W.inactiveList||[],...O().inactive||[]]);g.forEach(t=>{t.inactive=w.has(t.name)||(t.lastMatch?b-Date.parse(t.lastMatch+"T00:00:00Z")>$.inactiveDays*ts:b>h)});let P=g.filter(t=>!t.provisional).sort((t,c)=>c.rating-t.rating);P.forEach((t,c)=>{t.rank=c+1}),g.sort((t,c)=>c.rating-t.rating);let l={};return g.forEach(t=>{l[t.name]=t}),{players:g,byName:l,qualified:P}}function L(){T=ws(),A=T.byName,N=T.qualified}var Ds=["page-home","page-player","page-matches","page-roster","page-analytics","page-method","page-admin"];function ds(){let s=location.hash||"#/";Ds.forEach(r=>p("#"+r).classList.remove("active"));let e="#/"+(s.split("/")[1]||"");M(".nav a").forEach(r=>{let d=r.getAttribute("href");r.classList.toggle("active",d===e||s==="#/"&&d==="#/")});let a=p("#nav-glide"),n=document.querySelector(".nav a.active");a&&n?(a.style.width=n.offsetWidth+"px",a.style.transform=`translateX(${n.offsetLeft}px)`,a.style.opacity="1"):a&&(a.style.opacity="0"),s.startsWith("#/player/")?(_s(ks(s.slice(9))),p("#page-player").classList.add("active"),window.scrollTo({top:0,behavior:"instant"in window?"instant":"auto"})):s==="#/matches"?(Is(),p("#page-matches").classList.add("active"),window.scrollTo(0,0)):s==="#/roster"?(qs(),p("#page-roster").classList.add("active"),window.scrollTo(0,0)):s==="#/analytics"?(Gs(),p("#page-analytics").classList.add("active"),window.scrollTo(0,0)):s==="#/method"?(Fs(),p("#page-method").classList.add("active"),window.scrollTo(0,0)):s==="#/admin"?(x(),p("#page-admin").classList.add("active"),window.scrollTo(0,0)):(rs(),p("#page-home").classList.add("active"),requestAnimationFrame(As)),cs()}window.addEventListener("hashchange",ds);function rs(){_="all",S={key:"rank",dir:1},M(".chip[data-filter]").forEach(d=>d.classList.toggle("on",d.dataset.filter==="all")),M(".sortable").forEach(d=>d.classList.remove("sorted","asc"));let s=p('.sortable[data-key="rank"]');s&&s.classList.add("sorted");let e=B().length,a=T.players.length,n=N[0],r=Math.round(N.reduce((d,g)=>d+g.rd,0)/N.length);p("#hero-matches").textContent=e,p("#stat-strip").innerHTML=`
+"use strict";(()=>{var G=window.LB_DATA,oe="https://tierstats-publish.tierstats.workers.dev/publish",l=(e,s=document)=>s.querySelector(e),L=(e,s=document)=>[...s.querySelectorAll(e)],u=e=>String(e).replace(/[&<>"']/g,s=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[s]),le=e=>encodeURIComponent(String(e)),Le=e=>decodeURIComponent(e);function re(e,s,a={}){let c=a.dur||1200,v=a.dec||0,p=performance.now(),g=parseFloat(e.textContent)||0;function d(b){let f=Math.min(1,(b-p)/c),$=1-Math.pow(1-f,3);e.textContent=(g+(s-g)*$).toFixed(v),f<1&&requestAnimationFrame(d)}requestAnimationFrame(d)}var xe='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 8.2c0-.9 1-1.4 1.7-.9l3.1 2.4c.5.4 1.2.3 1.6-.2l2.2-2.9c.4-.5 1.2-.5 1.6 0l2.2 2.9c.4.5 1.1.6 1.6.2l3.1-2.4c.7-.5 1.7 0 1.7.9l-.7 8.4c-.1.8-.7 1.4-1.5 1.4H5.2c-.8 0-1.4-.6-1.5-1.4L3 8.2Z"/><rect x="5" y="19.2" width="14" height="1.9" rx=".9"/></svg>',Me='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8.4 2.2 12 8.4l3.6-6.2c.3-.6 1.1-.7 1.6-.3l1.7 1.5c.5.4.6 1.1.3 1.6L15.4 12a7 7 0 1 1-6.8 0L4.8 5a1.3 1.3 0 0 1 .3-1.6l1.7-1.5c.5-.4 1.3-.3 1.6.3Zm2 12.1a3.2 3.2 0 1 0 3.2 3.2 3.2 3.2 0 0 0-3.2-3.2Z"/></svg>';function Z(e,s=""){let a=e===1?"rb1":e===2?"rb2":e===3?"rb3":"",c=e<=3?e===1?xe:Me:"";return`<div class="rank-badge ${a} ${s}" title="Rank #${e}">${c}<span class="num">${e}</span></div>`}var I={},O=[],D={players:[],byName:{},qualified:[]},z={};function Se(){for(let e in z)delete z[e];Object.entries(G.aliases).forEach(([e,s])=>{z[e.toLowerCase()]=s}),Object.entries(N().aliases||{}).forEach(([e,s])=>{z[String(e).toLowerCase()]=s})}var _=e=>{let s=String(e).trim(),a=new Set;for(;;){let c=z[s.toLowerCase()];if(!c||c===s||a.has(s))return s;a.add(s),s=c}};function ue(e){let s=[];return C().forEach(a=>{let c=(v,p,g)=>({opp:v,for_:p,against:g,res:p>g?"W":p<g?"L":"D",date:a.date});a.a===e?s.push(c(a.b,a.sa,a.sb)):a.b===e&&s.push(c(a.a,a.sb,a.sa))}),s}function qe(e){let s={};return ue(e).forEach(a=>{let c=s[a.opp]||(s[a.opp]={w:0,l:0,d:0,pf:0,pa:0});c[a.res.toLowerCase()]+=1,c.pf+=a.for_,c.pa+=a.against}),Object.entries(s).map(([a,c])=>({opp:a,...c})).sort((a,c)=>c.w+c.l+c.d-(a.w+a.l+a.d)||c.w-a.w)}function Ee(e){let s=I[e]||{};return s.provisional?'<span class="tag prov">provisional</span>':s.inactive?'<span class="tag inact">inactive</span>':'<span class="tag legacy">legacy</span>'}function te(e){let s=e.delta!=null?e.delta:0;if(Math.abs(s)<.05)return"";let a=s>0;return`<span class="delta ${a?"up":"down"}" title="${a?"up":"down"} ${Math.abs(s).toFixed(1)} since the previous sheet update">${a?"\u25B2":"\u25BC"} ${Math.abs(s).toFixed(1)}</span>`}var fe="tt1v1_admin_log_v1",ae="tt1v1_admin_ok",F="tt1v1_admin_pw",Re=oe.replace(/\/publish$/,"/verify");function B(){try{return JSON.parse(localStorage.getItem(fe)||"[]")}catch{return[]}}function W(e){try{localStorage.setItem(fe,JSON.stringify(e))}catch{}}var ge="tt1v1_admin_over_v1";function S(){try{return JSON.parse(localStorage.getItem(ge)||"{}")||{}}catch{return{}}}function M(e){try{localStorage.setItem(ge,JSON.stringify(e))}catch{}}function N(){let e=window.LB_PUB||{},s=S();return{aliases:{...e.aliases||{},...s.aliases||{}},aliasNotes:{...e.aliasNotes||{},...s.aliasNotes||{}},seeds:{...e.seeds||{},...s.seeds||{}},seedGlicko:{...e.seedGlicko||{},...s.seedGlicko||{}},seedRd:{...e.seedRd||{},...s.seedRd||{}},settings:{...e.settings||{},...s.settings||{}},matchEdits:{...e.matchEdits||{},...s.matchEdits||{}},inactive:s.inactive||e.inactive||[],matchRemoved:[...new Set([...e.matchRemoved||[],...s.matchRemoved||[]])],faq:s.faq!=null?s.faq:e.faq!=null?e.faq:null}}function be(){return window.LB_PUB&&Array.isArray(window.LB_PUB.matches)?window.LB_PUB.matches:Array.isArray(window.LB_LOG)?window.LB_LOG:[]}function C(){let e=N(),s=e.matchEdits||{},a=new Set(e.matchRemoved||[]),c=(d,b)=>{if(a.has(b))return null;let f=s[b],$=f?{...d,sa:f.sa,sb:f.sb,date:f.date!=null?f.date:d.date}:d;return{...$,a:_($.a),b:_($.b),sa:+$.sa,sb:+$.sb,key:b}},v=B().map((d,b)=>c({...d,admin:!0,published:!1},"l:"+b)).filter(Boolean),p=be().map((d,b)=>c({...d,admin:!0,published:!0},"p:"+b)).filter(Boolean),g=G.matches.map((d,b)=>c({...d,admin:!1,published:!1},"a:"+b)).filter(Boolean).reverse();return v.concat(p,g)}var k={seedMid:1500,oldMid:80,ptsPer:30,knownRd:80,unratedR:1500,unratedRd:250,maxRd:250,growth:20,periodDays:30,conservative:.5,minMatches:5,minOpp:3,inactiveDays:365,graceStart:"2026-10-04",graceDays:365,minSeed:700},K=864e5,Q=Math.log(10)/400,ye=e=>1/Math.sqrt(1+3*Q*Q*e*e/(Math.PI*Math.PI)),Te=(e,s,a)=>1/(1+Math.pow(10,-ye(a)*(e-s)/400));function we(e){let s=N().seeds||{};return s[e]!=null&&s[e]!==""?Number(s[e]):G.seeds[e]}function Ne(e){let s=(N().seedGlicko||{})[e],a=(N().seedRd||{})[e],c=s!=null&&s!==""?Number(s):null,v=a!=null&&a!==""?Number(a):null;if(c!=null||v!=null)return[c??k.unratedR,v??k.unratedRd];let p=we(e);return p!=null?[Math.max(k.seedMid+(p-k.oldMid)*k.ptsPer,k.minSeed),k.knownRd]:[k.unratedR,k.unratedRd]}function me(e,s,a){let c=0,v=0;for(let[g,d,b]of a){let f=ye(d),$=Te(e,g,d);c+=f*f*$*(1-$),v+=f*(b-$)}if(c*=Q*Q,c<=0)return[e,s];let p=1/(s*s)+c;return[e+Q/p*v,Math.sqrt(1/p)]}function Oe(e,s){let a=Math.pow(10,s),c=e*a,v=Math.floor(c);return Math.abs(c-v-.5)<1e-6?(v%2===0?v:v+1)/a:Math.round(c)/a}var de=e=>Math.floor(Date.parse(e+"T00:00:00Z")/(k.periodDays*K)),J=de(k.graceStart),Ce={"Seed Glicko midpoint":"seedMid","Old rating midpoint":"oldMid","Glicko points per old rating point":"ptsPer","Known-player starting RD":"knownRd","Unrated-player starting rating":"unratedR","Unrated-player starting RD":"unratedRd","Maximum RD":"maxRd","RD growth per rating period":"growth","Rating period length (days)":"periodDays","Conservative RD multiplier":"conservative","Minimum matches for leaderboard":"minMatches","Minimum different opponents":"minOpp","Inactive after days":"inactiveDays","Legacy grace start date":"graceStart","Legacy grace days":"graceDays"};function ce(){let e=N().settings||{};return(G.settings||[]).map(s=>({...s,value:Object.prototype.hasOwnProperty.call(e,s.name)?e[s.name]:s.value}))}function Ae(){for(let e of ce()){let s=Ce[e.name];if(!s)continue;if(s==="graceStart"){let c=String(e.value==null?"":e.value).slice(0,10);/^\d{4}-\d{2}-\d{2}$/.test(c)&&(k.graceStart=c);continue}let a=Number(e.value);Number.isFinite(a)&&(k[s]=a)}J=de(k.graceStart),L(".cons-val").forEach(e=>{e.textContent=String(k.conservative)}),L(".min-matches-val").forEach(e=>{e.textContent=String(k.minMatches)}),L(".min-opp-val").forEach(e=>{e.textContent=String(k.minOpp)})}function je(){Ae(),Se();let e={},s=t=>{if(!e[t]){let[n,r]=Ne(t);e[t]={name:t,r:n,rd:r,w:0,l:0,d:0,games:0,opps:new Set,lastIdx:null,lastDate:null}}return e[t]},a=(t,n,r,m,i,h)=>{let w=s(t);w.games++,w.opps.add(n),r>m?w.w++:r<m?w.l++:w.d++,w.lastIdx=h,i&&(w.lastDate=i)},c={};for(let t of C()){if(t.date)continue;let n=t.a,r=t.b,m=t.sa>t.sb?1:t.sa<t.sb?0:.5;(c[n]=c[n]||[]).push([r,m]),(c[r]=c[r]||[]).push([n,1-m]),a(n,r,t.sa,t.sb,"",J),a(r,n,t.sb,t.sa,"",J)}let v={};for(let t in c)v[t]=[s(t).r,s(t).rd];for(let t in c){let[n,r]=me(v[t][0],v[t][1],c[t].map(([m,i])=>[v[m][0],v[m][1],i]));s(t).r=n,s(t).rd=r}let p=new Map;for(let t of C().filter(n=>n.date).slice().reverse()){let n=t.date,r=de(n);p.has(r)||p.set(r,[]),p.get(r).push({a:_(t.a),b:_(t.b),sa:+t.sa,sb:+t.sb,date:n})}for(let t of[...p.keys()].sort((n,r)=>n-r)){for(let m in e){let i=e[m],h=t-(i.lastIdx==null?J:i.lastIdx);h>0&&(i.rd=Math.min(Math.sqrt(i.rd*i.rd+k.growth*k.growth*h),k.maxRd))}let n={};for(let m of p.get(t)){let i=m.sa>m.sb?1:m.sa<m.sb?0:.5;(n[m.a]=n[m.a]||[]).push([m.b,i]),(n[m.b]=n[m.b]||[]).push([m.a,1-i]),a(m.a,m.b,m.sa,m.sb,m.date,t),a(m.b,m.a,m.sb,m.sa,m.date,t)}let r={};for(let m in n)r[m]=[s(m).r,s(m).rd];for(let m in n){let[i,h]=me(r[m][0],r[m][1],n[m].map(([w,E])=>[r[w][0],r[w][1],E]));s(m).r=i,s(m).rd=h}}let g=Object.values(e).map(t=>({name:t.name,glicko:t.r,rd:t.rd,rating:t.r-k.conservative*t.rd,matches:t.games,w:t.w,l:t.l,d:t.d,winPct:t.games?Oe(t.w/t.games*100,1):0,opponents:t.opps.size,avgOpp:0,lastMatch:t.lastDate||"",provisional:!(t.games>=k.minMatches&&t.opps.size>=k.minOpp),inactive:!1})),d={};g.forEach(t=>{d[t.name]=t.glicko}),g.forEach(t=>{let n=0;e[t.name].opps.forEach(r=>{n+=d[r]!=null?d[r]:k.unratedR}),t.avgOpp=e[t.name].opps.size?n/e[t.name].opps.size:0});let b=Date.now(),f=Math.floor(b/(k.periodDays*K));for(let t in e){let n=e[t],r=f-(n.lastIdx==null?J:n.lastIdx);r>0&&(n.rd=Math.min(Math.sqrt(n.rd*n.rd+k.growth*k.growth*r),k.maxRd))}g.forEach(t=>{t.glicko=e[t.name].r,t.rd=e[t.name].rd,t.rating=t.glicko-k.conservative*t.rd;let n=(G.prevRatings||{})[t.name];t.delta=n!=null?t.rating-n:0});let $=Date.parse(k.graceStart+"T00:00:00Z")+k.graceDays*K,P=new Set([...G.inactiveList||[],...N().inactive||[]]);g.forEach(t=>{t.inactive=P.has(t.name)||(t.lastMatch?b-Date.parse(t.lastMatch+"T00:00:00Z")>k.inactiveDays*K:b>$)});let j=g.filter(t=>!t.provisional&&!t.inactive).sort((t,n)=>n.rating-t.rating);j.forEach((t,n)=>{t.rank=n+1}),g.sort((t,n)=>n.rating-t.rating);let o={};return g.forEach(t=>{o[t.name]=t}),{players:g,byName:o,qualified:j}}function x(){D=je(),I=D.byName,O=D.qualified}var De=["page-home","page-player","page-matches","page-roster","page-analytics","page-method","page-faq","page-admin"];function ve(){let e=location.hash||"#/";De.forEach(v=>l("#"+v).classList.remove("active"));let s="#/"+(e.split("/")[1]||"");L(".nav a").forEach(v=>{let p=v.getAttribute("href");v.classList.toggle("active",p===s||e==="#/"&&p==="#/")});let a=l("#nav-glide"),c=document.querySelector(".nav a.active");a&&c?(a.style.width=c.offsetWidth+"px",a.style.transform=`translateX(${c.offsetLeft}px)`,a.style.opacity="1"):a&&(a.style.opacity="0"),e.startsWith("#/player/")?(Be(Le(e.slice(9))),l("#page-player").classList.add("active"),window.scrollTo({top:0,behavior:"instant"in window?"instant":"auto"})):e==="#/matches"?(_e(),l("#page-matches").classList.add("active"),window.scrollTo(0,0)):e==="#/roster"?(Fe(),l("#page-roster").classList.add("active"),window.scrollTo(0,0)):e==="#/analytics"?(He(),l("#page-analytics").classList.add("active"),window.scrollTo(0,0)):e==="#/method"?(Ge(),l("#page-method").classList.add("active"),window.scrollTo(0,0)):e==="#/faq"?(Ue(),l("#page-faq").classList.add("active"),window.scrollTo(0,0)):e==="#/admin"?(q(),l("#page-admin").classList.add("active"),window.scrollTo(0,0)):(pe(),l("#page-home").classList.add("active"),requestAnimationFrame(Pe)),se()}window.addEventListener("hashchange",ve);function pe(){H="all",T={key:"rank",dir:1},L(".chip[data-filter]").forEach(p=>p.classList.toggle("on",p.dataset.filter==="all")),L(".sortable").forEach(p=>p.classList.remove("sorted","asc"));let e=l('.sortable[data-key="rank"]');e&&e.classList.add("sorted");let s=C().length,a=D.players.length,c=O[0],v=Math.round(O.reduce((p,g)=>p+g.rd,0)/O.length);l("#hero-matches").textContent=s,l("#stat-strip").innerHTML=`
     <div class="stat-card"><div class="k">Ranked players</div>
-      <div class="v"><span class="cu" data-target="${N.length}">0</span><small>/ ${a} total</small></div></div>
+      <div class="v"><span class="cu" data-target="${O.length}">0</span><small>/ ${a} total</small></div></div>
     <div class="stat-card"><div class="k">Matches logged</div>
-      <div class="v"><span class="cu" data-target="${e}">0</span></div></div>
+      <div class="v"><span class="cu" data-target="${s}">0</span></div></div>
     <div class="stat-card"><div class="k">Highest rating</div>
-      <div class="v"><span class="cu" data-target="${n.rating}" data-dec="1">0</span><small>${u(n.name)}</small></div></div>
+      <div class="v"><span class="cu" data-target="${c.rating}" data-dec="1">0</span><small>${u(c.name)}</small></div></div>
     <div class="stat-card"><div class="k">Avg certainty (RD)</div>
-      <div class="v"><span class="cu" data-target="${r}" data-dec="1">0</span><small>lower = surer</small></div></div>`,p("#fl-cards").innerHTML=N.slice(0,5).map((d,g)=>`
-    <div class="fl-card r${g+1}${g===0?" champ":""} reveal" data-goto="${u(d.name)}">
-      <div class="rd">RD ${d.rd.toFixed(0)}</div>
-      ${H(d.rank)}
+      <div class="v"><span class="cu" data-target="${v}" data-dec="1">0</span><small>lower = surer</small></div></div>`,l("#fl-cards").innerHTML=O.slice(0,5).map((p,g)=>`
+    <div class="fl-card r${g+1}${g===0?" champ":""} reveal" data-goto="${u(p.name)}">
+      <div class="rd">RD ${p.rd.toFixed(0)}</div>
+      ${Z(p.rank)}
       ${g===0?'<div class="champ-tag">#1 Tank</div>':""}
-      <div class="nm">${u(d.name)}</div>
-      <div class="rating"><span class="big">${Math.round(d.rating)}</span><span class="unit">Glicko</span>${K(d)}</div>
+      <div class="nm">${u(p.name)}</div>
+      <div class="rating"><span class="big">${Math.round(p.rating)}</span><span class="unit">Glicko</span>${te(p)}</div>
       <div class="meta">
-        <span><span class="w">${d.w}W</span> <span class="l">${d.l}L</span> ${d.d}D</span>
-        <span style="margin-left:auto">${d.winPct}%</span>
+        <span><span class="w">${p.w}W</span> <span class="l">${p.l}L</span> ${p.d}D</span>
+        <span style="margin-left:auto">${p.winPct}%</span>
       </div>
-    </div>`).join(""),p("#fl-rows").innerHTML=N.slice(5,10).map(d=>`
-    <div class="fl-row reveal" data-goto="${u(d.name)}">
-      ${H(d.rank,"sm")}
-      <div class="nm">${u(d.name)}</div>
-      <div class="rating">${Math.round(d.rating)}${K(d)}</div>
-      <div class="rec"><span class="w">${d.w}W</span> \xB7 <span class="l">${d.l}L</span> \xB7 ${d.d}D</div>
-      <div class="pct">${d.winPct}%</div>
+    </div>`).join(""),l("#fl-rows").innerHTML=O.slice(5,10).map(p=>`
+    <div class="fl-row reveal" data-goto="${u(p.name)}">
+      ${Z(p.rank,"sm")}
+      <div class="nm">${u(p.name)}</div>
+      <div class="rating">${Math.round(p.rating)}${te(p)}</div>
+      <div class="rec"><span class="w">${p.w}W</span> \xB7 <span class="l">${p.l}L</span> \xB7 ${p.d}D</div>
+      <div class="pct">${p.winPct}%</div>
       <div class="go">\u203A</div>
-    </div>`).join(""),U(),Cs()}function Cs(){let s=B().slice(0,10);p("#battles-grid").innerHTML=s.map(e=>{let a=e.sa>e.sb,n=e.sb>e.sa;return`
-    <div class="battle-row reveal" data-goto="${u(a?e.a:e.b)}">
-      <div class="who ${a?"win":"lose"}" data-goto="${u(e.a)}">${u(e.a)}</div>
+    </div>`).join(""),Y(),Ie()}function Ie(){let e=C().slice(0,10);l("#battles-grid").innerHTML=e.map(s=>{let a=s.sa>s.sb,c=s.sb>s.sa;return`
+    <div class="battle-row reveal" data-goto="${u(a?s.a:s.b)}">
+      <div class="who ${a?"win":"lose"}" data-goto="${u(s.a)}">${u(s.a)}</div>
       <div class="vs">vs</div>
-      <div class="who r ${n?"win":"lose"}" data-goto="${u(e.b)}">${u(e.b)}</div>
-      <div class="sc mono"><span class="${a?"win":"lose"}">${e.sa}</span> \u2013 <span class="${n?"win":"lose"}">${e.sb}</span></div>
-      <div class="dt">${e.date||(e.admin&&!e.published?"just now":"legacy")}</div>
-    </div>`}).join("")}function U(s="all",e="rank",a=1){let n=p("#lb-body"),d=(s==="all"&&V?N:T.players).slice().map(o=>({...o,rank:o.rank!=null?o.rank:9999}));as&&(d=d.filter(o=>o.name.toLowerCase().includes(as))),s==="provisional"?d=d.filter(o=>(A[o.name]||{}).provisional):s==="inactive"?d=d.filter(o=>(A[o.name]||{}).inactive):s==="veterans"?d=d.filter(o=>o.matches>=15):s==="rising"&&(d=d.filter(o=>o.winPct>=60&&o.matches>=5)),d.sort((o,b)=>{let h=o[e],w=b[e];return(typeof h=="string"?h.localeCompare(w):h-w)*a});let g=new Map;M(".lb-row",n).forEach(o=>g.set(o.dataset.name,o.getBoundingClientRect().top)),n.innerHTML=d.map(o=>`
-    <div class="lb-row ${o.rank<=3?"top"+o.rank:""}" data-name="${u(o.name)}" data-goto="${u(o.name)}">
-      <div class="rank">${o.rank<=N.length?H(o.rank,"sm"):'<div class="rank-badge sm">\u2013</div>'}</div>
-      <div class="name-cell"><div class="pname">${u(o.name)}</div></div>
-      <div class="rating-cell mono">${o.rating.toFixed(1)}${K(o)}</div>
-      <div class="num-cell mono col-hide">${o.rd.toFixed(1)}</div>
-      <div class="num-cell mono col-hide">${o.matches}</div>
-      <div class="num-cell mono col-hide"><span class="w">${o.w}</span></div>
-      <div class="num-cell mono col-hide"><span class="l">${o.l}</span></div>
+      <div class="who r ${c?"win":"lose"}" data-goto="${u(s.b)}">${u(s.b)}</div>
+      <div class="sc mono"><span class="${a?"win":"lose"}">${s.sa}</span> \u2013 <span class="${c?"win":"lose"}">${s.sb}</span></div>
+      <div class="dt">${s.date||(s.admin&&!s.published?"just now":"legacy")}</div>
+    </div>`}).join("")}function Y(e="all",s="rank",a=1){let c=l("#lb-body"),p=(e==="all"&&X?O:D.players).slice().map(d=>({...d,rank:d.rank!=null?d.rank:9999}));ne&&(p=p.filter(d=>d.name.toLowerCase().includes(ne))),e==="provisional"?p=p.filter(d=>(I[d.name]||{}).provisional):e==="inactive"?p=p.filter(d=>(I[d.name]||{}).inactive):e==="veterans"?p=p.filter(d=>d.matches>=15):e==="rising"&&(p=p.filter(d=>d.winPct>=60&&d.matches>=5)),p.sort((d,b)=>{let f=d[s],$=b[s];return(typeof f=="string"?f.localeCompare($):f-$)*a});let g=new Map;L(".lb-row",c).forEach(d=>g.set(d.dataset.name,d.getBoundingClientRect().top)),c.innerHTML=p.map(d=>`
+    <div class="lb-row ${d.rank<=3?"top"+d.rank:""}" data-name="${u(d.name)}" data-goto="${u(d.name)}">
+      <div class="rank">${d.rank<=O.length?Z(d.rank,"sm"):'<div class="rank-badge sm">\u2013</div>'}</div>
+      <div class="name-cell"><div class="pname">${u(d.name)}</div></div>
+      <div class="rating-cell mono">${d.rating.toFixed(1)}${te(d)}</div>
+      <div class="num-cell mono col-hide">${d.rd.toFixed(1)}</div>
+      <div class="num-cell mono col-hide">${d.matches}</div>
+      <div class="num-cell mono col-hide"><span class="w">${d.w}</span></div>
+      <div class="num-cell mono col-hide"><span class="l">${d.l}</span></div>
       <div class="bar-cell">
-        <div class="bar-track"><div class="bar-fill ${o.winPct>=60?"":o.winPct>=40?"mid":"low"}" data-w="${o.winPct}"></div></div>
-        <div class="pct mono">${o.winPct}%</div>
+        <div class="bar-track"><div class="bar-fill ${d.winPct>=60?"":d.winPct>=40?"mid":"low"}" data-w="${d.winPct}"></div></div>
+        <div class="pct mono">${d.winPct}%</div>
       </div>
-      <div class="num-cell mono col-hide">${o.opponents}</div>
-      <div class="num-cell mono col-hide">${o.avgOpp.toFixed(0)}</div>
-      <div class="col-status">${Es(o.name)}</div>
+      <div class="num-cell mono col-hide">${d.opponents}</div>
+      <div class="num-cell mono col-hide">${d.avgOpp.toFixed(0)}</div>
+      <div class="col-status">${Ee(d.name)}</div>
       <div class="row-arrow">\u2192</div>
-    </div>`).join("")||`<div class="empty" style="padding:30px;text-align:center;color:var(--dim)">${s==="inactive"?"Nobody is inactive right now \u2014 a player goes inactive 365 days after their last match (or when flagged in the master sheet).":s==="provisional"?"No provisional players right now.":"No players match this filter."}</div>`,requestAnimationFrame(()=>{M(".lb-row",n).forEach(o=>{let b=g.get(o.dataset.name),h=o.getBoundingClientRect().top;b!==void 0&&Math.abs(b-h)>1&&(o.style.transform=`translateY(${b-h}px)`,o.style.transition="none",requestAnimationFrame(()=>{o.style.transition="transform .5s cubic-bezier(.22,.8,.24,1)",o.style.transform=""}))}),M(".bar-fill",n).forEach(o=>{o.style.width=o.dataset.w+"%"})})}var _="all",S={key:"rank",dir:1},as="",V=!0;function As(){M("#stat-strip .cu").forEach(s=>ns(s,parseFloat(s.dataset.target),{dec:parseInt(s.dataset.dec||0)})),M(".bar-fill").forEach(s=>{s.style.width=s.dataset.w+"%"})}p("#lb-qual").addEventListener("click",()=>{V=!V,p("#lb-qual").classList.toggle("on",V),U(_,S.key,S.dir)});p("#lb-filter").addEventListener("input",s=>{as=s.target.value.trim().toLowerCase(),U(_,S.key,S.dir)});document.addEventListener("click",s=>{let e=s.target.closest(".chip");if(e&&e.dataset.filter){M(".chip[data-filter]").forEach(r=>r.classList.remove("on")),e.classList.add("on"),_=e.dataset.filter,U(_,S.key,S.dir);return}let a=s.target.closest(".sortable");if(a){let r=a.dataset.key;S.dir=S.key===r?-S.dir:1,S.key=r,M(".sortable").forEach(d=>d.classList.remove("sorted","asc")),a.classList.add("sorted"),S.dir===1&&a.classList.add("asc"),U(_,S.key,S.dir);return}let n=s.target.closest("[data-goto]");n&&(s.stopPropagation(),location.hash="#/player/"+is(n.dataset.goto))});function _s(s){let e=A[s],a=p("#page-player");if(!e){a.innerHTML=`<div class="wrap"><div class="panel"><div class="empty">
-      No player called "<b>${u(s)}</b>" found. <a href="#/" style="color:var(--gold)">Back to the leaderboard</a>.
-    </div></div></div>`;return}let n=N.find(h=>h.name===s),r=hs(s),d=r.slice(0,10),g=Ss(s),o=ys(s),b=Math.max(3,Math.min(100,100-e.rd/120*100));a.innerHTML=`
+    </div>`).join("")||`<div class="empty" style="padding:30px;text-align:center;color:var(--dim)">${e==="inactive"?"Nobody is inactive right now \u2014 a player goes inactive 365 days after their last match (or when flagged in the master sheet).":e==="provisional"?"No provisional players right now.":"No players match this filter."}</div>`,requestAnimationFrame(()=>{L(".lb-row",c).forEach(d=>{let b=g.get(d.dataset.name),f=d.getBoundingClientRect().top;b!==void 0&&Math.abs(b-f)>1&&(d.style.transform=`translateY(${b-f}px)`,d.style.transition="none",requestAnimationFrame(()=>{d.style.transition="transform .5s cubic-bezier(.22,.8,.24,1)",d.style.transform=""}))}),L(".bar-fill",c).forEach(d=>{d.style.width=d.dataset.w+"%"})})}var H="all",T={key:"rank",dir:1},ne="",X=!0;function Pe(){L("#stat-strip .cu").forEach(e=>re(e,parseFloat(e.dataset.target),{dec:parseInt(e.dataset.dec||0)})),L(".bar-fill").forEach(e=>{e.style.width=e.dataset.w+"%"})}l("#lb-qual").addEventListener("click",()=>{X=!X,l("#lb-qual").classList.toggle("on",X),Y(H,T.key,T.dir)});l("#lb-filter").addEventListener("input",e=>{ne=e.target.value.trim().toLowerCase(),Y(H,T.key,T.dir)});document.addEventListener("click",e=>{let s=e.target.closest(".chip");if(s&&s.dataset.filter){L(".chip[data-filter]").forEach(v=>v.classList.remove("on")),s.classList.add("on"),H=s.dataset.filter,Y(H,T.key,T.dir);return}let a=e.target.closest(".sortable");if(a){let v=a.dataset.key;T.dir=T.key===v?-T.dir:1,T.key=v,L(".sortable").forEach(p=>p.classList.remove("sorted","asc")),a.classList.add("sorted"),T.dir===1&&a.classList.add("asc"),Y(H,T.key,T.dir);return}let c=e.target.closest("[data-goto]");c&&(e.stopPropagation(),location.hash="#/player/"+le(c.dataset.goto))});function Be(e){let s=I[e],a=l("#page-player");if(!s){a.innerHTML=`<div class="wrap"><div class="panel"><div class="empty">
+      No player called "<b>${u(e)}</b>" found. <a href="#/" style="color:var(--gold)">Back to the leaderboard</a>.
+    </div></div></div>`;return}let c=O.find(f=>f.name===e),v=ue(e),p=v.slice(0,10),g=qe(e),d=we(e),b=Math.max(3,Math.min(100,100-s.rd/120*100));a.innerHTML=`
   <div class="wrap">
     <a class="back-link" href="#/">\u2190 All rankings</a>
     <div class="player-hero anim">
       <div class="player-top">
-        ${n?H(n.rank,"lg"):'<div class="rank-badge lg"><span class="num">\u2013</span></div>'}
+        ${c?Z(c.rank,"lg"):'<div class="rank-badge lg"><span class="num">\u2013</span></div>'}
         <div>
-          <div class="player-name">${u(e.name)}</div>
+          <div class="player-name">${u(s.name)}</div>
           <div class="player-rankline">
-            ${n?`Ranked <b>#${n.rank}</b> of ${N.length} qualified players`:"Unranked \u2014 not enough recent games for the board"}
-            ${o!=null?` \xB7 seeded from an original rating of <b>${o}</b>`:""}
-            ${e.provisional?' \xB7 <span class="tag prov">provisional</span>':""}
-            ${e.inactive?' \xB7 <span class="tag inact">inactive</span>':""}
+            ${c?`Ranked <b>#${c.rank}</b> of ${O.length} qualified players`:"Unranked \u2014 not enough recent games for the board"}
+            ${d!=null?` \xB7 seeded from an original rating of <b>${d}</b>`:""}
+            ${s.provisional?' \xB7 <span class="tag prov">provisional</span>':""}
+            ${s.inactive?' \xB7 <span class="tag inact">inactive</span>':""}
           </div>
         </div>
         <div class="player-rating-block">
           <div class="lbl">Visible rating</div>
           <div class="big mono" id="pv-rating">0</div>
-          ${K(e)}
+          ${te(s)}
           <div class="rd-bar">
             <div class="bar-track"><div class="bar-fill" style="width:${b}%"></div></div>
-            <div class="caption"><span>certainty</span><span class="mono">RD ${e.rd.toFixed(1)}</span></div>
+            <div class="caption"><span>certainty</span><span class="mono">RD ${s.rd.toFixed(1)}</span></div>
           </div>
         </div>
       </div>
       <div class="pstat-grid">
-        <div class="pstat"><div class="k">Glicko</div><div class="v mono">${e.glicko.toFixed(1)}</div></div>
-        <div class="pstat"><div class="k">Matches</div><div class="v mono">${e.matches}</div></div>
-        <div class="pstat"><div class="k">Record</div><div class="v mono" style="font-size:19px"><span style="color:var(--green)">${e.w}W</span> <span style="color:var(--red)">${e.l}L</span> <span style="color:var(--dim)">${e.d}D</span></div></div>
-        <div class="pstat"><div class="k">Win rate</div><div class="v mono">${e.winPct}%</div></div>
-        <div class="pstat"><div class="k">Opponents</div><div class="v mono">${e.opponents}</div></div>
-        <div class="pstat"><div class="k">Avg opp rating</div><div class="v mono">${e.avgOpp.toFixed(1)}</div></div>
+        <div class="pstat"><div class="k">Glicko</div><div class="v mono">${s.glicko.toFixed(1)}</div></div>
+        <div class="pstat"><div class="k">Matches</div><div class="v mono">${s.matches}</div></div>
+        <div class="pstat"><div class="k">Record</div><div class="v mono" style="font-size:19px"><span style="color:var(--green)">${s.w}W</span> <span style="color:var(--red)">${s.l}L</span> <span style="color:var(--dim)">${s.d}D</span></div></div>
+        <div class="pstat"><div class="k">Win rate</div><div class="v mono">${s.winPct}%</div></div>
+        <div class="pstat"><div class="k">Opponents</div><div class="v mono">${s.opponents}</div></div>
+        <div class="pstat"><div class="k">Avg opp rating</div><div class="v mono">${s.avgOpp.toFixed(1)}</div></div>
       </div>
     </div>
 
     <div class="panel reveal">
-      <h3>Recent form <span class="n">\u2014 last ${Math.min(10,r.length)}</span></h3>
+      <h3>Recent form <span class="n">\u2014 last ${Math.min(10,v.length)}</span></h3>
       <div class="form-strip">
-        ${d.map((h,w)=>`<div class="form-pill ${h.res}" style="animation-delay:${w*55}ms"
-           title="vs ${u(h.opp)} ${h.for_}-${h.against}">${h.res}</div>`).join("")||'<span class="empty">No games yet</span>'}
+        ${p.map((f,$)=>`<div class="form-pill ${f.res}" style="animation-delay:${$*55}ms"
+           title="vs ${u(f.opp)} ${f.for_}-${f.against}">${f.res}</div>`).join("")||'<span class="empty">No games yet</span>'}
       </div>
     </div>
 
     <div class="panel reveal">
-      <h3>Match history <span class="n">\u2014 ${r.length} games</span></h3>
+      <h3>Match history <span class="n">\u2014 ${v.length} games</span></h3>
       <div class="match-list">
-        ${r.map(h=>`
+        ${v.map(f=>`
           <div class="match-row">
-            <div class="res-chip ${h.res}">${h.res}</div>
-            <div class="who">${u(e.name)}</div>
-            <div class="score mono">${h.for_} \u2013 ${h.against}</div>
-            <div class="who opp"><a href="#/player/${is(h.opp)}" style="color:var(--blue)">${u(h.opp)}</a></div>
-            <div class="date mono">${h.date||"legacy"}</div>
+            <div class="res-chip ${f.res}">${f.res}</div>
+            <div class="who">${u(s.name)}</div>
+            <div class="score mono">${f.for_} \u2013 ${f.against}</div>
+            <div class="who opp"><a href="#/player/${le(f.opp)}" style="color:var(--blue)">${u(f.opp)}</a></div>
+            <div class="date mono">${f.date||"legacy"}</div>
           </div>`).join("")||'<div class="empty">No games recorded</div>'}
       </div>
     </div>
@@ -112,73 +112,73 @@
     <div class="panel reveal">
       <h3>Head to head <span class="n">\u2014 ${g.length} opponents</span></h3>
       <div class="h2h-grid">
-        ${g.map(h=>`
-          <div class="h2h-card" data-goto="${u(h.opp)}">
-            <div class="opp">${u(h.opp)}</div>
-            <div class="rec mono"><span class="w">${h.w}W</span> \xB7 <span class="l">${h.l}L</span> \xB7 <span>${h.d}D</span> \xB7 ${h.pf}-${h.pa} pts</div>
+        ${g.map(f=>`
+          <div class="h2h-card" data-goto="${u(f.opp)}">
+            <div class="opp">${u(f.opp)}</div>
+            <div class="rec mono"><span class="w">${f.w}W</span> \xB7 <span class="l">${f.l}L</span> \xB7 <span>${f.d}D</span> \xB7 ${f.pf}-${f.pa} pts</div>
           </div>`).join("")||'<div class="empty">No games recorded</div>'}
       </div>
     </div>
-  </div>`,ns(p("#pv-rating"),e.rating,{dec:1,dur:900}),cs()}function Is(){let s=p("#gm-body"),e=B();p("#gm-count").textContent=`\u2014 ${e.length} games`,s.innerHTML=e.map(a=>{let n=a.sa>a.sb,r=a.sb>a.sa;return`
+  </div>`,re(l("#pv-rating"),s.rating,{dec:1,dur:900}),se()}function _e(){let e=l("#gm-body"),s=C();l("#gm-count").textContent=`\u2014 ${s.length} games`,e.innerHTML=s.map(a=>{let c=a.sa>a.sb,v=a.sb>a.sa;return`
     <div class="gm-row">
-      <div class="side ${n?"winner":"loser"}">
-        <div class="dot ${n?"w":"l"}"></div>
+      <div class="side ${c?"winner":"loser"}">
+        <div class="dot ${c?"w":"l"}"></div>
         <div class="nm" data-goto="${u(a.a)}">${u(a.a)}</div>
       </div>
-      <div class="sc mono" style="color:${n?"var(--green)":"var(--red)"}">${a.sa}</div>
+      <div class="sc mono" style="color:${c?"var(--green)":"var(--red)"}">${a.sa}</div>
       <div class="dash mono">\u2013</div>
-      <div class="sc mono" style="color:${r?"var(--green)":"var(--red)"}">${a.sb}</div>
-      <div class="side right ${r?"winner":"loser"}">
-        <div class="dot ${r?"w":"l"}"></div>
+      <div class="sc mono" style="color:${v?"var(--green)":"var(--red)"}">${a.sb}</div>
+      <div class="side right ${v?"winner":"loser"}">
+        <div class="dot ${v?"w":"l"}"></div>
         <div class="nm" data-goto="${u(a.b)}">${u(a.b)}</div>
       </div>
       <div class="dt mono">${a.admin&&!a.published?'<span class="tag fresh">new</span>':a.date||"legacy"}</div>
-    </div>`}).join("")}function qs(){let s=T.players.filter(e=>e.provisional).sort((e,a)=>a.rating-e.rating);p("#roster-grid").innerHTML=s.map(e=>{let a=Math.min(100,Math.round(Math.min(1,e.matches/5)*50+Math.min(1,e.opponents/3)*50));return`
-    <div class="roster-card reveal" data-goto="${u(e.name)}">
+    </div>`}).join("")}function Fe(){let e=D.players.filter(s=>s.provisional).sort((s,a)=>a.rating-s.rating);l("#roster-grid").innerHTML=e.map(s=>{let a=Math.min(100,Math.round(Math.min(1,s.matches/5)*50+Math.min(1,s.opponents/3)*50));return`
+    <div class="roster-card reveal" data-goto="${u(s.name)}">
       <div class="top">
-        <div class="nm">${u(e.name)}</div>
+        <div class="nm">${u(s.name)}</div>
         <svg class="shield" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v5c0 4.6-2.9 8.4-7 10-4.1-1.6-7-5.4-7-10V6l7-3Z"/></svg>
       </div>
-      <div class="rating"><span class="big">${Math.round(e.rating)}</span><span class="unit">Glicko</span></div>
-      <div class="req-row"><span>Matches</span><span class="${e.matches>=5?"ok":""}">${e.matches} / 5 ${e.matches>=5?"\u2713":""}</span></div>
-      <div class="req-row"><span>Opponents</span><span class="${e.opponents>=3?"ok":""}">${e.opponents} / 3 ${e.opponents>=3?"\u2713":""}</span></div>
+      <div class="rating"><span class="big">${Math.round(s.rating)}</span><span class="unit">Glicko</span></div>
+      <div class="req-row"><span>Matches</span><span class="${s.matches>=5?"ok":""}">${s.matches} / 5 ${s.matches>=5?"\u2713":""}</span></div>
+      <div class="req-row"><span>Opponents</span><span class="${s.opponents>=3?"ok":""}">${s.opponents} / 3 ${s.opponents>=3?"\u2713":""}</span></div>
       <div class="prog-track"><div class="prog-fill" data-w="${a}"></div></div>
       <div class="prog-label">${a}% to qualified</div>
-    </div>`}).join(""),requestAnimationFrame(()=>M("#roster-grid .prog-fill").forEach(e=>{e.style.width=e.dataset.w+"%"}))}function Gs(){let s=T.players,e=s.filter(i=>i.matches>=5).sort((i,f)=>f.winPct-i.winPct).slice(0,10),a=s.slice().sort((i,f)=>f.matches-i.matches).slice(0,10),n=[];B().forEach(i=>{let f=A[i.a],j=A[i.b];if(!f||!j)return;let D=f.rating-j.rating;if(i.sa===i.sb)return;let C=i.sa>i.sb?i.a:i.b,$s=Math.abs(D);(D<0&&C===i.a||D>0&&C===i.b)&&n.push({winner:C,loser:C===i.a?i.b:i.a,gap:$s,score:C===i.a?`${i.sa}-${i.sb}`:`${i.sb}-${i.sa}`})}),n.sort((i,f)=>f.gap-i.gap);let r={};B().forEach(i=>{let f=[i.a,i.b].sort().join(" vs ");r[f]=(r[f]||0)+1});let d=Object.entries(r).sort((i,f)=>f[1]-i[1]).slice(0,10),g=s.map(i=>i.rating),o=Math.min(...g),b=Math.max(...g),h=12,w=(b-o)/h||1,P=Array.from({length:h},()=>0);g.forEach(i=>{P[Math.min(h-1,Math.max(0,Math.floor((i-o)/w)))]++});let l=Math.max(...P,1),t=P.map((i,f)=>`
-    <div class="hcol" title="${i} player${i===1?"":"s"} near ${Math.round(o+f*w)}">
-      <div class="hbar" data-h="${Math.round(i/l*100)}"></div>
-      <div class="hlbl">${Math.round(o+f*w)}</div>
-    </div>`).join(""),c=Math.max(...a.map(i=>i.matches),1),v=a.slice(0,8).map(i=>`
+    </div>`}).join(""),requestAnimationFrame(()=>L("#roster-grid .prog-fill").forEach(s=>{s.style.width=s.dataset.w+"%"}))}function He(){let e=D.players,s=e.filter(i=>i.matches>=5).sort((i,h)=>h.winPct-i.winPct).slice(0,10),a=e.slice().sort((i,h)=>h.matches-i.matches).slice(0,10),c=[];C().forEach(i=>{let h=I[i.a],w=I[i.b];if(!h||!w)return;let E=h.rating-w.rating;if(i.sa===i.sb)return;let A=i.sa>i.sb?i.a:i.b,R=Math.abs(E);(E<0&&A===i.a||E>0&&A===i.b)&&c.push({winner:A,loser:A===i.a?i.b:i.a,gap:R,score:A===i.a?`${i.sa}-${i.sb}`:`${i.sb}-${i.sa}`})}),c.sort((i,h)=>h.gap-i.gap);let v={};C().forEach(i=>{let h=[i.a,i.b].sort().join(" vs ");v[h]=(v[h]||0)+1});let p=Object.entries(v).sort((i,h)=>h[1]-i[1]).slice(0,10),g=e.map(i=>i.rating),d=Math.min(...g),b=Math.max(...g),f=12,$=(b-d)/f||1,P=Array.from({length:f},()=>0);g.forEach(i=>{P[Math.min(f-1,Math.max(0,Math.floor((i-d)/$)))]++});let j=Math.max(...P,1),o=P.map((i,h)=>`
+    <div class="hcol" title="${i} player${i===1?"":"s"} near ${Math.round(d+h*$)}">
+      <div class="hbar" data-h="${Math.round(i/j*100)}"></div>
+      <div class="hlbl">${Math.round(d+h*$)}</div>
+    </div>`).join(""),t=Math.max(...a.map(i=>i.matches),1),n=a.slice(0,8).map(i=>`
     <div class="mrow reveal" data-goto="${u(i.name)}">
       <div class="nm">${u(i.name)}</div>
-      <div class="mtrack"><div class="abar" data-w="${Math.round(i.matches/c*100)}"></div></div>
+      <div class="mtrack"><div class="abar" data-w="${Math.round(i.matches/t*100)}"></div></div>
       <div class="val mono">${i.matches}</div>
-    </div>`).join(""),m=(i,f,j)=>i.map((D,C)=>`
-    <div class="an-row reveal" data-goto="${u(D.name)}">
-      <div class="idx mono">${C+1}</div>
-      <div class="nm">${u(D.name)}</div>
-      <div class="val mono">${f(D)}</div>
-      <div class="unit mono">${j(D)}</div>
-    </div>`).join("");p("#an-grid").innerHTML=`
+    </div>`).join(""),r=(i,h,w)=>i.map((E,A)=>`
+    <div class="an-row reveal" data-goto="${u(E.name)}">
+      <div class="idx mono">${A+1}</div>
+      <div class="nm">${u(E.name)}</div>
+      <div class="val mono">${h(E)}</div>
+      <div class="unit mono">${w(E)}</div>
+    </div>`).join("");l("#an-grid").innerHTML=`
     <div class="an-panel">
       <div class="head"><h3>Top win rate</h3>
         <svg class="ico" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 17l6-6 4 4 8-8" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 7h6v6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
-      ${m(e,i=>i.winPct+"%",i=>i.matches+" matches")}
+      ${r(s,i=>i.winPct+"%",i=>i.matches+" matches")}
     </div>
     <div class="an-panel">
       <div class="head"><h3>Most active</h3>
         <svg class="ico" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" stroke-linejoin="round"/></svg>
       </div>
-      ${m(a,i=>i.matches,i=>"matches")}
+      ${r(a,i=>i.matches,i=>"matches")}
     </div>
     <div class="an-panel">
       <div class="head"><h3>Biggest upsets</h3>
         <svg class="ico" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3c1.5 3.5-1 5.5-1 7.5a3 3 0 0 0 6 0c0-1-.3-2-1-3 3 2.5 4 5 4 7.5a7 7 0 1 1-14 0c0-5 4-7.5 6-12Z" stroke-linejoin="round"/></svg>
       </div>
-      ${n.length?n.slice(0,8).map((i,f)=>`
+      ${c.length?c.slice(0,8).map((i,h)=>`
         <div class="an-row reveal" data-goto="${u(i.winner)}">
-          <div class="idx mono">${f+1}</div>
+          <div class="idx mono">${h+1}</div>
           <div class="nm">${u(i.winner)} <span style="color:var(--dimmer);font-weight:500">def.</span> ${u(i.loser)}</div>
           <div class="val mono">${i.score}</div>
           <div class="unit mono">+${Math.round(i.gap)} pts</div>
@@ -188,11 +188,11 @@
       <div class="head"><h3>Most contested rivalries</h3>
         <svg class="ico" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 5h4v4H5zM15 5h4v4h-4zM5 15h4v4H5zM15 15h4v4h-4zM9 7h6M7 9v6M17 9v6M9 17h6" stroke-linecap="round"/></svg>
       </div>
-      ${d.map(([i,f],j)=>`
+      ${p.map(([i,h],w)=>`
         <div class="an-row reveal">
-          <div class="idx mono">${j+1}</div>
+          <div class="idx mono">${w+1}</div>
           <div class="nm">${i.split(" vs ").map(u).join(' <span style="color:var(--dimmer);font-weight:500">vs</span> ')}</div>
-          <div class="val mono">${f}</div>
+          <div class="val mono">${h}</div>
           <div class="unit mono">meetings</div>
         </div>`).join("")}
     </div>
@@ -200,16 +200,23 @@
       <div class="head"><h3>Rating distribution</h3>
         <svg class="ico" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 20V10M10 20V4M16 20v-8M2 20h20" stroke-linecap="round"/></svg>
       </div>
-      <div class="hist">${t}</div>
+      <div class="hist">${o}</div>
     </div>
     <div class="an-panel">
       <div class="head"><h3>Matches played</h3>
         <svg class="ico" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 4v5M12 15v5" stroke-linecap="round"/></svg>
       </div>
-      ${v}
-    </div>`;let y=()=>{M("#an-grid .hbar").forEach(i=>{i.style.height=i.dataset.h+"%"}),M("#an-grid .abar").forEach(i=>{i.style.width=i.dataset.w+"%"})};requestAnimationFrame(y),setTimeout(y,140),cs()}function Fs(){p("#settings-body").innerHTML=ls().map(s=>`
-    <tr><td><b>${u(s.name)}</b><div style="color:var(--dimmer);font-size:12.5px">${u(s.desc)}</div></td>
-        <td class="val">${u(String(s.value))}</td></tr>`).join("")}function x(){let s=p("#admin-wrap");if(!(sessionStorage.getItem(Q)==="1")){s.innerHTML=`
+      ${n}
+    </div>`;let m=()=>{L("#an-grid .hbar").forEach(i=>{i.style.height=i.dataset.h+"%"}),L("#an-grid .abar").forEach(i=>{i.style.width=i.dataset.w+"%"})};requestAnimationFrame(m),setTimeout(m,140),se()}function Ge(){l("#settings-body").innerHTML=ce().map(e=>`
+    <tr><td><b>${u(e.name)}</b><div style="color:var(--dimmer);font-size:12.5px">${u(e.desc)}</div></td>
+        <td class="val">${u(String(e.value))}</td></tr>`).join("")}var We=[{q:"How are the ratings calculated?",a:"Dynamic Glicko \u2014 the same model behind competitive chess and table-tennis rankings. Every recorded duel moves the numbers: beating a stronger opponent gains more, losing to a weaker one costs more. The full maths lives on the Method page."},{q:"Why did my rating drop even though I didn't play?",a:"That's the inactivity automation. Each 30-day rating period without a match grows your RD (uncertainty), and the visible rating subtracts half of it \u2014 so an idle rating slowly sinks on its own, exactly like the master sheet. Play one match and the drift stops."},{q:"What is RD, and why does it matter?",a:"RD (ratings deviation) is how certain the system is about your rating. New or idle players have a high RD; regular players have a low one. The board ranks the visible rating = Glicko \u2212 0.5 \xD7 RD, so uncertain ratings are held back until they've earned trust."},{q:"How do I get ranked on the leaderboard?",a:"Log at least 5 matches against at least 3 different opponents. Until then you're provisional \u2014 your rating is real and takes part in every calculation, but you aren't ranked yet."},{q:"What do the green and red arrows next to ratings mean?",a:"They show how your visible rating moved since the previous spreadsheet update: green \u25B2 means you climbed, red \u25BC means you dropped."},{q:"What does the \u201Cinactive\u201D tag mean?",a:"A qualified player is marked inactive \u2014 and hidden from the board \u2014 after 365 days without a dated match (legacy players without recorded dates get a 365-day grace window first). Your rating isn't deleted: come back, play a match, and you're active again."},{q:"Do my old 0\u2013100 ladder ratings still count?",a:"Yes. Historical scores are converted into Glicko starting points (old 80 \u2248 1500), so the ladder carries over. This site reproduces the master sheet's seeding exactly, including its low-end floor."},{q:"Two names on the board look like the same person \u2014 is that a bug?",a:"Possibly an alias. When we confirm two names are the same player, a name fix merges them everywhere \u2014 records, ratings and head-to-heads \u2014 without rewriting old matches. Report suspicious duplicates through the feedback button."},{q:"How do I get my duels recorded?",a:"Matches are logged by the team after official 1v1 duels. If a match is missing or has the wrong score, send feedback with the details and we'll fix it \u2014 corrections recalculate every rating instantly."},{q:"The numbers here differ from the Google Sheet \u2014 what do I do?",a:"They shouldn't: every figure on this site is recomputed from the raw results and validated against the official sheet down to the decimal. If you spot a gap, screenshot it and send feedback \u2014 that's a bug report we want."},{q:"Who runs this site?",a:"Alternator & interstellar. The leaderboard is data-driven \u2014 no manual rankings, no politics. Just duels."}];function ee(){let e=N().faq;return Array.isArray(e)&&e.length?e:We}function Ue(){l("#faq-list").innerHTML=ee().map((e,s)=>`
+    <div class="faq-item reveal" data-faq="${s}">
+      <button class="faq-q" aria-expanded="false">
+        <span>${u(String(e.q||""))}</span>
+        <svg class="faq-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m6 9 6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="faq-a"><div class="faq-a-in">${u(String(e.a||""))}</div></div>
+    </div>`).join(""),se()}document.addEventListener("click",e=>{let s=e.target.closest(".faq-q");if(!s)return;let a=s.closest(".faq-item"),c=a.classList.contains("open");L(".faq-item.open").forEach(v=>{v.classList.remove("open"),v.querySelector(".faq-q").setAttribute("aria-expanded","false")}),c||(a.classList.add("open"),s.setAttribute("aria-expanded","true"))});function q(){let e=l("#admin-wrap");if(!(sessionStorage.getItem(ae)==="1")){e.innerHTML=`
     <div class="admin-gate">
       <div class="admin-card">
         <div class="lock">
@@ -221,31 +228,31 @@
         <input id="admin-pw" type="password" autocomplete="off">
         <button class="btn btn-primary" id="admin-auth">-) Authenticate</button>
       </div>
-    </div>`;let l=async()=>{let t=p("#admin-pw").value;try{let c=await fetch(Ns,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password:t})});if(c.ok){sessionStorage.setItem(Q,"1"),sessionStorage.setItem(z,t),x(),k("Welcome back, commander.");return}if(c.status===429){k("Too many attempts \u2014 wait a few minutes.");return}}catch{}p("#admin-pw").style.borderColor="var(--red)",k("Wrong password.")};p("#admin-auth").addEventListener("click",l),p("#admin-pw").addEventListener("keydown",t=>{t.key==="Enter"&&l()});return}let a=G(),n=fs().length,r=O(),d='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 7h14M10 11v6M14 11v6M8 7l1-3h6l1 3M7 7l1 13h8l1-13" stroke-linecap="round" stroke-linejoin="round"/></svg>',g=Object.entries(r.aliases).map(([l,t])=>`
+    </div>`;let o=async()=>{let t=l("#admin-pw").value;try{let n=await fetch(Re,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password:t})});if(n.ok){sessionStorage.setItem(ae,"1"),sessionStorage.setItem(F,t),q(),y("Welcome back, commander.");return}if(n.status===429){y("Too many attempts \u2014 wait a few minutes.");return}}catch{}l("#admin-pw").style.borderColor="var(--red)",y("Wrong password.")};l("#admin-auth").addEventListener("click",o),l("#admin-pw").addEventListener("keydown",t=>{t.key==="Enter"&&o()});return}let a=B(),c=be().length,v=N(),p='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 7h14M10 11v6M14 11v6M8 7l1-3h6l1 3M7 7l1 13h8l1-13" stroke-linecap="round" stroke-linejoin="round"/></svg>',g=Object.entries(v.aliases).map(([o,t])=>`
     <div class="log-item">
-      <div class="txt"><b>${u(l)}</b> \u2192 <b>${u(t)}</b>${r.aliasNotes&&r.aliasNotes[l]?` <span style="color:var(--dimmer)">\u2014 ${u(r.aliasNotes[l])}</span>`:""}</div>
-      <button class="icon-btn" data-alias-del="${u(l)}" title="Remove name fix">${d}</button>
-    </div>`).join("")||'<div class="empty">No name fixes yet.</div>',o=r.inactive.map(l=>`
+      <div class="txt"><b>${u(o)}</b> \u2192 <b>${u(t)}</b>${v.aliasNotes&&v.aliasNotes[o]?` <span style="color:var(--dimmer)">\u2014 ${u(v.aliasNotes[o])}</span>`:""}</div>
+      <button class="icon-btn" data-alias-del="${u(o)}" title="Remove name fix">${p}</button>
+    </div>`).join("")||'<div class="empty">No name fixes yet.</div>',d=v.inactive.map(o=>`
     <div class="log-item">
-      <div class="txt"><b>${u(l)}</b> <span style="color:var(--dimmer)">\u2014 inactive</span></div>
-      <button class="icon-btn" data-inact-del="${u(l)}" title="Mark active again">${d}</button>
-    </div>`).join("")||'<div class="empty">Nobody marked inactive.</div>',b=Object.keys({...r.seeds||{},...r.seedGlicko||{},...r.seedRd||{}}).map(l=>`
+      <div class="txt"><b>${u(o)}</b> <span style="color:var(--dimmer)">\u2014 inactive</span></div>
+      <button class="icon-btn" data-inact-del="${u(o)}" title="Mark active again">${p}</button>
+    </div>`).join("")||'<div class="empty">Nobody marked inactive.</div>',b=Object.keys({...v.seeds||{},...v.seedGlicko||{},...v.seedRd||{}}).map(o=>`
     <div class="log-item">
-      <div class="txt"><b>${u(l)}</b> \xB7 <span style="color:var(--dimmer)">old</span> <b class="mono">${u(String((r.seeds||{})[l]!=null?(r.seeds||{})[l]:"\u2014"))}</b>${(r.seedGlicko||{})[l]!=null?` \xB7 <span style="color:var(--dimmer)">glicko</span> <b class="mono">${u(String(r.seedGlicko[l]))}</b>`:""}${(r.seedRd||{})[l]!=null?` \xB7 <span style="color:var(--dimmer)">rd</span> <b class="mono">${u(String(r.seedRd[l]))}</b>`:""}</div>
-      <button class="icon-btn" data-seed-del="${u(l)}" title="Remove seed">${d}</button>
-    </div>`).join("")||'<div class="empty">No seed overrides \u2014 players start from the sheet values.</div>',h=ls().map(l=>`
+      <div class="txt"><b>${u(o)}</b> \xB7 <span style="color:var(--dimmer)">old</span> <b class="mono">${u(String((v.seeds||{})[o]!=null?(v.seeds||{})[o]:"\u2014"))}</b>${(v.seedGlicko||{})[o]!=null?` \xB7 <span style="color:var(--dimmer)">glicko</span> <b class="mono">${u(String(v.seedGlicko[o]))}</b>`:""}${(v.seedRd||{})[o]!=null?` \xB7 <span style="color:var(--dimmer)">rd</span> <b class="mono">${u(String(v.seedRd[o]))}</b>`:""}</div>
+      <button class="icon-btn" data-seed-del="${u(o)}" title="Remove seed">${p}</button>
+    </div>`).join("")||'<div class="empty">No seed overrides \u2014 players start from the sheet values.</div>',f=ce().map(o=>`
     <div class="set-row">
-      <div class="lbl"><b>${u(l.name)}</b><div class="d">${u(String(l.desc||""))}</div></div>
-      <input class="set-val mono" data-set-name="${u(l.name)}" value="${u(String(l.value))}">
-    </div>`).join(""),w=l=>{let t=(l||"").trim().toLowerCase();return B().filter(v=>!t||v.a.toLowerCase().includes(t)||v.b.toLowerCase().includes(t)).slice(0,20).map(v=>`
-      <div class="log-item fix-row" data-mkey="${v.key}">
-        <div class="txt"><b>${u(v.a)}</b> <span style="color:var(--dimmer)">vs</span> <b>${u(v.b)}</b>${v.date?"":' <span class="tag legacy">legacy</span>'}</div>
-        <input class="mono" data-f="sa" type="number" min="0" value="${v.sa}" title="Score 1">
-        <input class="mono" data-f="sb" type="number" min="0" value="${v.sb}" title="Score 2">
-        <input data-f="date" type="date" value="${v.date||""}" title="Match date">
-        <button class="icon-btn" data-msave="${v.key}" title="Save fix"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 12l6 6L20 6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <button class="icon-btn" data-mdel="${v.key}" title="Delete match">${d}</button>
-      </div>`).join("")||'<div class="empty">No matches found.</div>'};s.innerHTML=`
+      <div class="lbl"><b>${u(o.name)}</b><div class="d">${u(String(o.desc||""))}</div></div>
+      <input class="set-val mono" data-set-name="${u(o.name)}" value="${u(String(o.value))}">
+    </div>`).join(""),$=o=>{let t=(o||"").trim().toLowerCase();return C().filter(r=>!t||r.a.toLowerCase().includes(t)||r.b.toLowerCase().includes(t)).slice(0,20).map(r=>`
+      <div class="log-item fix-row" data-mkey="${r.key}">
+        <div class="txt"><b>${u(r.a)}</b> <span style="color:var(--dimmer)">vs</span> <b>${u(r.b)}</b>${r.date?"":' <span class="tag legacy">legacy</span>'}</div>
+        <input class="mono" data-f="sa" type="number" min="0" value="${r.sa}" title="Score 1">
+        <input class="mono" data-f="sb" type="number" min="0" value="${r.sb}" title="Score 2">
+        <input data-f="date" type="date" value="${r.date||""}" title="Match date">
+        <button class="icon-btn" data-msave="${r.key}" title="Save fix"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 12l6 6L20 6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button class="icon-btn" data-mdel="${r.key}" title="Delete match">${p}</button>
+      </div>`).join("")||'<div class="empty">No matches found.</div>'};e.innerHTML=`
   <div class="admin-bar anim">
     <div class="title"><span>\u25CF</span> Admin console</div>
     <div class="spacer"></div>
@@ -293,12 +300,12 @@
     </div>
 
     <div class="panel" style="margin:0">
-      <h3>Pending <span class="n">log</span> \u2014 ${a.length} local \xB7 ${n} published</h3>
+      <h3>Pending <span class="n">log</span> \u2014 ${a.length} local \xB7 ${c} published</h3>
       <div class="log-list" id="adm-list">
-        ${a.length?a.map((l,t)=>`
+        ${a.length?a.map((o,t)=>`
           <div class="log-item">
-            <div class="txt"><b>${u(l.a)}</b> ${l.sa}\u2013${l.sb} <b>${u(l.b)}</b></div>
-            <div class="txt" style="color:var(--dimmer)">${u(l.date||"")}</div>
+            <div class="txt"><b>${u(o.a)}</b> ${o.sa}\u2013${o.sb} <b>${u(o.b)}</b></div>
+            <div class="txt" style="color:var(--dimmer)">${u(o.date||"")}</div>
             <button class="icon-btn" data-del="${t}" title="Remove">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 7h14M10 11v6M14 11v6M8 7l1-3h6l1 3M7 7l1 13h8l1-13" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
@@ -348,7 +355,7 @@
           <button class="btn btn-primary" id="ov-inact-toggle">Toggle inactive</button>
         </div>
       </div>
-      <div class="log-list" id="ov-inact-list" style="margin-top:12px">${o}</div>
+      <div class="log-list" id="ov-inact-list" style="margin-top:12px">${d}</div>
     </div>
 
     <div class="panel" style="margin:0">
@@ -379,7 +386,7 @@
 
     <div class="panel" style="margin:0">
       <h3>Model <span class="n">settings</span></h3>
-      <div id="ov-settings">${h}</div>
+      <div id="ov-settings">${f}</div>
       <button class="btn btn-ghost" id="ov-set-reset" style="margin-top:12px">Reset to sheet values</button>
     </div>
 
@@ -396,11 +403,98 @@
       </div>
       <div class="log-list" id="ov-mresults"><div class="empty">Search to edit scores, dates, or delete a match.</div></div>
     </div>
+
+    <div class="panel" style="margin:0;grid-column:1/-1">
+      <h3>Add / remove <span class="n">players</span></h3>
+      <div class="form-note" style="margin:0 0 10px">A player exists through their results \u2014 so adding a player means logging their <b>first 1v1 result</b> (required). Removing a player deletes every match they played.</div>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>New player</label>
+          <input id="pl-name" placeholder="e.g. NewFighter" autocomplete="off">
+        </div>
+        <div class="form-field">
+          <label>First opponent</label>
+          <input id="pl-opp" list="player-list" placeholder="e.g. Kobi" autocomplete="off">
+        </div>
+        <div class="form-field">
+          <label>Score 1</label>
+          <input id="pl-sa" type="number" min="0" placeholder="15">
+        </div>
+        <div class="form-field">
+          <label>Score 2</label>
+          <input id="pl-sb" type="number" min="0" placeholder="10">
+        </div>
+        <div class="form-field">
+          <label>Match date</label>
+          <input id="pl-date" type="date">
+        </div>
+        <div class="form-field">
+          <label>Old 0\u2013100 rating <span style="color:var(--dimmer)">(opt)</span></label>
+          <input id="pl-seed" type="number" step="0.5" placeholder="auto">
+        </div>
+        <div class="form-field full">
+          <button class="btn btn-primary" id="pl-add" style="margin-top:6px">+) Add player with first result</button>
+        </div>
+      </div>
+      <div class="form-grid" style="margin-top:18px;border-top:1px solid var(--line);padding-top:16px">
+        <div class="form-field">
+          <label>Remove player (and all their matches)</label>
+          <input id="pl-del" list="player-list" placeholder="e.g. Warren" autocomplete="off">
+        </div>
+        <div class="form-field">
+          <label>&nbsp;</label>
+          <button class="btn btn-danger" id="pl-del-btn">Remove player</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin:0;grid-column:1/-1">
+      <h3>Manage <span class="n">Q &amp; A</span> <span style="color:var(--dimmer);font-size:12px;font-weight:500">\u2014 shown on the FAQ page</span></h3>
+      <div class="log-list" id="faq-admin-list" style="margin-bottom:12px"></div>
+      <div class="form-grid">
+        <div class="form-field full">
+          <label>New question</label>
+          <input id="faq-new-q" placeholder="e.g. Can I reset my rating?" autocomplete="off">
+        </div>
+        <div class="form-field full">
+          <label>Answer</label>
+          <input id="faq-new-a" placeholder="The answer players should see" autocomplete="off">
+        </div>
+        <div class="form-field full">
+          <button class="btn btn-primary" id="faq-add" style="margin-top:6px">+) Add question</button>
+          <button class="btn btn-ghost" id="faq-reset" style="margin-top:6px">Reset to built-in Q&amp;A</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin:0;grid-column:1/-1">
+      <h3>Feedback <span class="n">inbox</span> <span style="color:var(--dimmer);font-size:12px;font-weight:500">\u2014 messages sent from the site</span></h3>
+      <div class="log-list" id="fb-inbox"><div class="empty">Loading messages\u2026</div></div>
+    </div>
   </div>
 
-  <datalist id="player-list">${T.players.map(l=>`<option value="${u(l.name)}">`).join("")}</datalist>`,p("#admin-lock").addEventListener("click",()=>{sessionStorage.removeItem(Q),sessionStorage.removeItem(z),x()}),p("#admin-publish").addEventListener("click",P);async function P(){let l=sessionStorage.getItem(z)||(window.prompt("Admin password:")||"").trim();if(!l){k("Publish cancelled.");return}let t=O(),c={},v=[];for(let[i,f]of Object.entries(t.matchEdits||{}))i.startsWith("a:")&&(c[i]=f);for(let i of t.matchRemoved||[])i.startsWith("a:")&&v.push(i);let m=B().filter(i=>i.admin).map(i=>({a:i.a,b:i.b,sa:i.sa,sb:i.sb,date:i.date||""})),y={matches:m,aliases:t.aliases||{},aliasNotes:t.aliasNotes||{},inactive:t.inactive||[],seeds:t.seeds||{},seedGlicko:t.seedGlicko||{},seedRd:t.seedRd||{},settings:t.settings||{},matchEdits:c,matchRemoved:v};try{let i=await fetch(ms,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password:l,doc:y,message:`Publish match log (${m.length} matches)`})}),f=await i.json().catch(()=>({}));if(!i.ok||!f.ok){i.status===403&&sessionStorage.removeItem(z),k("Publish failed: "+(f.error||"HTTP "+i.status));return}window.LB_PUB=y,window.LB_LOG=m,X([]),E({}),L(),x(),k("Published! Everyone sees it on their next visit.")}catch{k("Publish failed: network error.")}}p("#admin-export").addEventListener("click",()=>{let l=new Blob([JSON.stringify(G(),null,2)],{type:"application/json"}),t=document.createElement("a");t.href=URL.createObjectURL(l),t.download="match-log.json",t.click(),URL.revokeObjectURL(t.href),k("Log exported.")}),p("#adm-add").addEventListener("click",()=>{let l=p("#adm-a").value.trim(),t=p("#adm-b").value.trim(),c=parseInt(p("#adm-sa").value,10),v=parseInt(p("#adm-sb").value,10);if(!l||!t||l.toLowerCase()===t.toLowerCase()||!Number.isFinite(c)||!Number.isFinite(v)){k("Fill in both players and scores.");return}let m=G();m.unshift({a:l,b:t,sa:c,sb:v,date:p("#adm-date")?p("#adm-date").value||new Date().toISOString().slice(0,10):new Date().toISOString().slice(0,10)}),X(m),L(),x(),k(`${l} ${c}\u2013${v} ${t} added \u2014 site recalculated live.`)}),p("#adm-list").addEventListener("click",l=>{let t=l.target.closest("[data-del]");if(!t)return;let c=G();c.splice(parseInt(t.dataset.del,10),1),X(c),L(),x()}),p("#ov-alias-add").addEventListener("click",()=>{let l=p("#ov-alias-a").value.trim(),t=p("#ov-alias-b").value.trim(),c=(p("#ov-alias-note")||{}).value.trim();if(!l||!t){k("Fill both: the wrong name and the correct player.");return}let v=R();E({...v,aliases:{...v.aliases||{},[l]:t},aliasNotes:c?{...v.aliasNotes||{},[l]:c}:v.aliasNotes||{}}),L(),x(),k(`Name fix saved \u2014 "${l}" now counts as ${t}.`)}),p("#ov-alias-list").addEventListener("click",l=>{let t=l.target.closest("[data-alias-del]");if(!t)return;let c=R(),v={...c.aliases||{}},m={...c.aliasNotes||{}};delete v[t.dataset.aliasDel],delete m[t.dataset.aliasDel],E({...c,aliases:v,aliasNotes:m}),L(),x()}),p("#ov-inact-toggle").addEventListener("click",()=>{let l=p("#ov-inact-n").value.trim();if(!l){k("Type a player name first.");return}let t=R(),c=O().inactive||[],v=c.includes(l)?c.filter(m=>m!==l):[...c,l];E({...t,inactive:v}),L(),x(),k(v.includes(l)?`${l} marked inactive.`:`${l} marked active again.`)}),p("#ov-inact-list").addEventListener("click",l=>{let t=l.target.closest("[data-inact-del]");if(!t)return;let c=R();E({...c,inactive:(O().inactive||[]).filter(v=>v!==t.dataset.inactDel)}),L(),x()}),p("#ov-seed-add").addEventListener("click",()=>{let l=p("#ov-seed-n").value.trim(),t=p("#ov-seed-v").value.trim(),c=p("#ov-seed-g").value.trim(),v=p("#ov-seed-rd").value.trim();if(!l){k("Pick a player first.");return}if(t===""&&c===""&&v===""){k("Enter an Old 0\u2013100 rating, or a Starting Glicko / RD.");return}let m=R(),y={...m.seeds||{}},i={...m.seedGlicko||{}},f={...m.seedRd||{}};t!==""&&Number.isFinite(Number(t))?y[l]=Number(t):delete y[l],c!==""&&Number.isFinite(Number(c))?i[l]=Number(c):delete i[l],v!==""&&Number.isFinite(Number(v))?f[l]=Number(v):delete f[l],E({...m,seeds:y,seedGlicko:i,seedRd:f}),L(),x(),k(`Seed saved for ${l}.`)}),p("#ov-seed-list").addEventListener("click",l=>{let t=l.target.closest("[data-seed-del]");if(!t)return;let c=t.dataset.seedDel,v=R(),m={...v.seeds||{}};delete m[c];let y={...v.seedGlicko||{}};delete y[c];let i={...v.seedRd||{}};delete i[c],E({...v,seeds:m,seedGlicko:y,seedRd:i}),L(),x()}),p("#ov-settings").addEventListener("change",l=>{let t=l.target.closest("[data-set-name]");if(!t)return;let c=R();E({...c,settings:{...c.settings||{},[t.dataset.setName]:t.value}}),L(),x(),k("Setting applied \u2014 everything recalculated.")}),p("#ov-set-reset").addEventListener("click",()=>{let l=R();E({...l,settings:{}}),L(),x(),k("Settings back to the master sheet values.")}),p("#ov-mq").addEventListener("input",()=>{p("#ov-mresults").innerHTML=w(p("#ov-mq").value)}),p("#ov-mresults").addEventListener("click",l=>{let t=l.target.closest("[data-msave]"),c=l.target.closest("[data-mdel]");if(t){let v=t.closest("[data-mkey]"),m=v.dataset.mkey,y=f=>v.querySelector(`[data-f="${f}"]`).value,i=R();E({...i,matchEdits:{...i.matchEdits||{},[m]:{sa:+y("sa"),sb:+y("sb"),date:y("date")}}}),L(),p("#ov-mresults").innerHTML=w(p("#ov-mq").value),k("Match fixed \u2014 ratings recalculated.")}else if(c){let v=c.dataset.mdel,m=R();E({...m,matchRemoved:[...new Set([...m.matchRemoved||[],v])]}),L(),p("#ov-mresults").innerHTML=w(p("#ov-mq").value),k("Match deleted \u2014 ratings recalculated.")}})}p("#search").addEventListener("input",s=>{let e=s.target.value.trim().toLowerCase(),a=p("#search-drop");if(!e){a.classList.remove("show");return}let n=T.players.filter(r=>r.name.toLowerCase().includes(e)).slice(0,8);if(!n.length){a.classList.remove("show");return}a.innerHTML=n.map(r=>`
-    <a class="drop-row" href="#/player/${is(r.name)}">
-      ${r.rank?H(r.rank,"sm"):'<div class="rank-badge sm">\u2013</div>'}
-      <span>${u(r.name)}</span>
-      <span class="mono" style="margin-left:auto;color:var(--dim)">${r.rating.toFixed(1)}</span>
-    </a>`).join(""),a.classList.add("show")});document.addEventListener("click",s=>{s.target.closest(".search-box")||p("#search-drop").classList.remove("show"),s.target.closest(".drop-row")&&(p("#search-drop").classList.remove("show"),p("#search").value="")});var ps;function k(s){let e=p("#toast");e.textContent=s,e.classList.add("show"),clearTimeout(ps),ps=setTimeout(()=>e.classList.remove("show"),2600)}var I;function cs(){I&&I.disconnect(),I=new IntersectionObserver(s=>{s.forEach(e=>{e.isIntersecting&&(e.target.classList.add("in"),M(".cu",e.target).forEach(a=>ns(a,parseFloat(a.dataset.target),{dec:parseInt(a.dataset.dec||0)})),I.unobserve(e.target))})},{threshold:.12}),M(".reveal").forEach(s=>I.observe(s))}(function(){let e=p("#scroll-progress"),a=p("#to-top"),n=p("#page-home .hero-row"),r=document.querySelector(".topbar"),d=()=>{let g=window.scrollY,o=document.documentElement.scrollHeight-window.innerHeight;e&&(e.style.width=(o>0?g/o*100:0)+"%"),a&&a.classList.toggle("show",g>640),r&&r.classList.toggle("scrolled",g>10),n&&g<1400&&(n.style.transform=`translateY(${g*.14}px)`,n.style.opacity=String(Math.max(.3,1-g/950)))};window.addEventListener("scroll",d,{passive:!0}),a&&a.addEventListener("click",()=>window.scrollTo({top:0,behavior:"smooth"})),d()})();Rs();L();rs();ds();function ss(s,e){let a=s.indexOf("window."+e);if(a<0)return null;let n=s.indexOf("=",a);for(;n<s.length&&"{[".indexOf(s[n])<0;)n++;let r=0,d=!1,g="",o=!1;for(let b=n;b<s.length;b++){let h=s[b];if(d){o?o=!1:h==="\\"?o=!0:h===g&&(d=!1);continue}if(h==='"'||h==="'"){d=!0,g=h;continue}if(h==="{"||h==="[")r++;else if((h==="}"||h==="]")&&(r--,r<=0))return JSON.parse(s.slice(n,b+1))}return null}(async()=>{try{let s=await fetch("log.js?cb="+Date.now(),{cache:"no-store"});if(!s.ok)return;let e=await s.text(),a=ss(e,"LB_PUB")||(ss(e,"LB_LOG")?{matches:ss(e,"LB_LOG")}:null);if(!a)return;JSON.stringify(a)!==JSON.stringify(window.LB_PUB||null)&&(window.LB_PUB=a,window.LB_LOG=a.matches||[],L(),rs(),ds())}catch{}})();})();
+  <datalist id="player-list">${D.players.map(o=>`<option value="${u(o.name)}">`).join("")}</datalist>`,l("#admin-lock").addEventListener("click",()=>{sessionStorage.removeItem(ae),sessionStorage.removeItem(F),q()}),l("#admin-publish").addEventListener("click",P);async function P(){let o=sessionStorage.getItem(F)||(window.prompt("Admin password:")||"").trim();if(!o){y("Publish cancelled.");return}let t=N(),n={},r=[];for(let[h,w]of Object.entries(t.matchEdits||{}))h.startsWith("a:")&&(n[h]=w);for(let h of t.matchRemoved||[])h.startsWith("a:")&&r.push(h);let m=C().filter(h=>h.admin).map(h=>({a:h.a,b:h.b,sa:h.sa,sb:h.sb,date:h.date||""})),i={matches:m,aliases:t.aliases||{},aliasNotes:t.aliasNotes||{},inactive:t.inactive||[],seeds:t.seeds||{},seedGlicko:t.seedGlicko||{},seedRd:t.seedRd||{},settings:t.settings||{},matchEdits:n,matchRemoved:r,faq:t.faq!=null?t.faq:[]};try{let h=await fetch(oe,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password:o,doc:i,message:`Publish match log (${m.length} matches)`})}),w=await h.json().catch(()=>({}));if(!h.ok||!w.ok){h.status===403&&sessionStorage.removeItem(F),y("Publish failed: "+(w.error||"HTTP "+h.status));return}window.LB_PUB=i,window.LB_LOG=m,W([]),M({}),x(),q(),y("Published! Everyone sees it on their next visit.")}catch{y("Publish failed: network error.")}}l("#admin-export").addEventListener("click",()=>{let o=new Blob([JSON.stringify(B(),null,2)],{type:"application/json"}),t=document.createElement("a");t.href=URL.createObjectURL(o),t.download="match-log.json",t.click(),URL.revokeObjectURL(t.href),y("Log exported.")}),l("#adm-add").addEventListener("click",()=>{let o=l("#adm-a").value.trim(),t=l("#adm-b").value.trim(),n=parseInt(l("#adm-sa").value,10),r=parseInt(l("#adm-sb").value,10);if(!o||!t||o.toLowerCase()===t.toLowerCase()||!Number.isFinite(n)||!Number.isFinite(r)){y("Fill in both players and scores.");return}let m=B();m.unshift({a:o,b:t,sa:n,sb:r,date:l("#adm-date")?l("#adm-date").value||new Date().toISOString().slice(0,10):new Date().toISOString().slice(0,10)}),W(m),x(),q(),y(`${o} ${n}\u2013${r} ${t} added \u2014 site recalculated live.`)}),l("#adm-list").addEventListener("click",o=>{let t=o.target.closest("[data-del]");if(!t)return;let n=B();n.splice(parseInt(t.dataset.del,10),1),W(n),x(),q()}),l("#ov-alias-add").addEventListener("click",()=>{let o=l("#ov-alias-a").value.trim(),t=l("#ov-alias-b").value.trim(),n=(l("#ov-alias-note")||{}).value.trim();if(!o||!t){y("Fill both: the wrong name and the correct player.");return}let r=S();M({...r,aliases:{...r.aliases||{},[o]:t},aliasNotes:n?{...r.aliasNotes||{},[o]:n}:r.aliasNotes||{}}),x(),q(),y(`Name fix saved \u2014 "${o}" now counts as ${t}.`)}),l("#ov-alias-list").addEventListener("click",o=>{let t=o.target.closest("[data-alias-del]");if(!t)return;let n=S(),r={...n.aliases||{}},m={...n.aliasNotes||{}};delete r[t.dataset.aliasDel],delete m[t.dataset.aliasDel],M({...n,aliases:r,aliasNotes:m}),x(),q()}),l("#ov-inact-toggle").addEventListener("click",()=>{let o=l("#ov-inact-n").value.trim();if(!o){y("Type a player name first.");return}let t=S(),n=N().inactive||[],r=n.includes(o)?n.filter(m=>m!==o):[...n,o];M({...t,inactive:r}),x(),q(),y(r.includes(o)?`${o} marked inactive.`:`${o} marked active again.`)}),l("#ov-inact-list").addEventListener("click",o=>{let t=o.target.closest("[data-inact-del]");if(!t)return;let n=S();M({...n,inactive:(N().inactive||[]).filter(r=>r!==t.dataset.inactDel)}),x(),q()}),l("#ov-seed-add").addEventListener("click",()=>{let o=l("#ov-seed-n").value.trim(),t=l("#ov-seed-v").value.trim(),n=l("#ov-seed-g").value.trim(),r=l("#ov-seed-rd").value.trim();if(!o){y("Pick a player first.");return}if(t===""&&n===""&&r===""){y("Enter an Old 0\u2013100 rating, or a Starting Glicko / RD.");return}let m=S(),i={...m.seeds||{}},h={...m.seedGlicko||{}},w={...m.seedRd||{}};t!==""&&Number.isFinite(Number(t))?i[o]=Number(t):delete i[o],n!==""&&Number.isFinite(Number(n))?h[o]=Number(n):delete h[o],r!==""&&Number.isFinite(Number(r))?w[o]=Number(r):delete w[o],M({...m,seeds:i,seedGlicko:h,seedRd:w}),x(),q(),y(`Seed saved for ${o}.`)}),l("#ov-seed-list").addEventListener("click",o=>{let t=o.target.closest("[data-seed-del]");if(!t)return;let n=t.dataset.seedDel,r=S(),m={...r.seeds||{}};delete m[n];let i={...r.seedGlicko||{}};delete i[n];let h={...r.seedRd||{}};delete h[n],M({...r,seeds:m,seedGlicko:i,seedRd:h}),x(),q()}),l("#ov-settings").addEventListener("change",o=>{let t=o.target.closest("[data-set-name]");if(!t)return;let n=S();M({...n,settings:{...n.settings||{},[t.dataset.setName]:t.value}}),x(),q(),y("Setting applied \u2014 everything recalculated.")}),l("#ov-set-reset").addEventListener("click",()=>{let o=S();M({...o,settings:{}}),x(),q(),y("Settings back to the master sheet values.")}),l("#ov-mq").addEventListener("input",()=>{l("#ov-mresults").innerHTML=$(l("#ov-mq").value)}),l("#ov-mresults").addEventListener("click",o=>{let t=o.target.closest("[data-msave]"),n=o.target.closest("[data-mdel]");if(t){let r=t.closest("[data-mkey]"),m=r.dataset.mkey,i=w=>r.querySelector(`[data-f="${w}"]`).value,h=S();M({...h,matchEdits:{...h.matchEdits||{},[m]:{sa:+i("sa"),sb:+i("sb"),date:i("date")}}}),x(),l("#ov-mresults").innerHTML=$(l("#ov-mq").value),y("Match fixed \u2014 ratings recalculated.")}else if(n){let r=n.dataset.mdel,m=S();M({...m,matchRemoved:[...new Set([...m.matchRemoved||[],r])]}),x(),l("#ov-mresults").innerHTML=$(l("#ov-mq").value),y("Match deleted \u2014 ratings recalculated.")}}),l("#pl-add").addEventListener("click",()=>{let o=l("#pl-name").value.trim(),t=l("#pl-opp").value.trim(),n=parseInt(l("#pl-sa").value,10),r=parseInt(l("#pl-sb").value,10);if(!o||!t||o.toLowerCase()===t.toLowerCase()||!Number.isFinite(n)||!Number.isFinite(r)){y("A player needs a name, an opponent and both scores \u2014 at least 1 result.");return}if(I[_(o)]){y(`${o} already exists \u2014 log a match for them instead.`);return}let m=B();m.unshift({a:o,b:t,sa:n,sb:r,date:(l("#pl-date")||{}).value||new Date().toISOString().slice(0,10)}),W(m);let i=(l("#pl-seed")||{}).value.trim();if(i!==""&&Number.isFinite(Number(i))){let h=S();M({...h,seeds:{...h.seeds||{},[_(o)]:Number(i)}})}x(),q(),y(`${o} added with their first result \u2014 ${n}\u2013${r} vs ${t}.`)}),l("#pl-del-btn").addEventListener("click",()=>{let o=l("#pl-del").value.trim(),t=_(o),n=C().filter(R=>R.a===t||R.b===t);if(!n.length){y(`No player called "${o}" with matches found.`);return}if(!window.confirm(`Remove ${t} and ${n.length} match${n.length===1?"":"es"}? This recalculates every rating.`))return;let r=S(),m=[...r.matchRemoved||[]],i=[];n.forEach(R=>{R.key.startsWith("l:")?i.push(parseInt(R.key.slice(2),10)):m.push(R.key)});let h=B();i.sort((R,ke)=>ke-R).forEach(R=>h.splice(R,1)),W(h);let w={...r.seeds||{}},E={...r.seedGlicko||{}},A={...r.seedRd||{}};delete w[t],delete E[t],delete A[t],M({...r,matchRemoved:[...new Set(m)],seeds:w,seedGlicko:E,seedRd:A,inactive:(N().inactive||[]).filter(R=>R!==t)}),x(),q(),y(`${t} removed with ${n.length} match${n.length===1?"":"es"}. Publish to make it public.`)});let j=()=>{let o=ee();l("#faq-admin-list").innerHTML=o.map((t,n)=>`
+      <div class="log-item fix-row" data-faq-idx="${n}">
+        <div class="txt" style="flex:1">
+          <input class="set-val" data-fq="q" value="${u(String(t.q||""))}" style="width:100%;margin-bottom:4px">
+          <input class="set-val" data-fq="a" value="${u(String(t.a||""))}" style="width:100%">
+        </div>
+        <button class="icon-btn" data-faq-save="${n}" title="Save"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 12l6 6L20 6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button class="icon-btn" data-faq-del="${n}" title="Delete question">${p}</button>
+      </div>`).join("")||'<div class="empty">No questions yet \u2014 add one below.</div>'};j(),l("#faq-admin-list").addEventListener("click",o=>{let t=o.target.closest("[data-faq-save]"),n=o.target.closest("[data-faq-del]"),r=ee().map(i=>({...i}));if(t){let i=t.closest("[data-faq-idx]");r[parseInt(t.dataset.faqSave,10)]={q:i.querySelector('[data-fq="q"]').value.trim(),a:i.querySelector('[data-fq="a"]').value.trim()}}else if(n)r.splice(parseInt(n.dataset.faqDel,10),1);else return;let m=S();M({...m,faq:r}),j(),y("Q&A updated \u2014 publish to make it public.")}),l("#faq-add").addEventListener("click",()=>{let o=l("#faq-new-q").value.trim(),t=l("#faq-new-a").value.trim();if(!o||!t){y("Fill in both the question and the answer.");return}let n=S();M({...n,faq:[...ee().map(r=>({...r})),{q:o,a:t}]}),j(),y("Question added.")}),l("#faq-reset").addEventListener("click",()=>{let o=S();M({...o,faq:null}),j(),y("Q&A back to the built-in list.")}),(async function(){let t=l("#fb-inbox"),n=sessionStorage.getItem(F);if(!n){t.innerHTML='<div class="empty">Unlock the admin panel to see messages.</div>';return}try{let r=await fetch(V+"/list",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password:n})}),m=await r.json().catch(()=>({}));if(!r.ok||!m.ok){t.innerHTML=`<div class="empty">Could not load messages (${u(m.error||"HTTP "+r.status)}).</div>`;return}let i=m.items||[];t.innerHTML=i.map(h=>`
+        <div class="log-item fix-row" data-fb-id="${u(h.id)}" style="flex-wrap:wrap">
+          <div class="txt" style="flex:1;min-width:220px">
+            <b>${u(h.name||"Anonymous")}</b>${h.contact?` <span style="color:var(--dimmer)">\xB7 ${u(h.contact)}</span>`:""}
+            <span class="tag ${h.status==="replied"?"live":"fresh"}" style="margin-left:6px">${u(h.status)}</span>
+            <div style="color:var(--dim);font-size:13px;margin-top:4px">${u(h.message)}</div>
+            ${h.reply?`<div style="color:var(--gold);font-size:12.5px;margin-top:4px">\u21A9 ${u(h.reply)}</div>`:""}
+          </div>
+          <input class="set-val" data-fb-reply placeholder="Write a reply\u2026" style="flex:1;min-width:180px" value="${u(h.reply||"")}">
+          <button class="icon-btn" data-fb-send title="Send reply"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 12l6 6L20 6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button class="icon-btn" data-fb-del title="Delete message">${p}</button>
+        </div>`).join("")||'<div class="empty">No messages yet.</div>'}catch{t.innerHTML='<div class="empty">Network error loading messages.</div>'}})(),l("#fb-inbox").addEventListener("click",async o=>{let t=o.target.closest("[data-fb-send]"),n=o.target.closest("[data-fb-del]");if(!t&&!n)return;let r=o.target.closest("[data-fb-id]"),m=r.dataset.fbId,i=sessionStorage.getItem(F);try{if(t){let h=r.querySelector("[data-fb-reply]").value;if(!(await fetch(V+"/reply",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password:i,id:m,reply:h})}).then(E=>E.json())).ok){y("Reply failed.");return}y("Reply saved \u2014 the sender can see it with their ticket code.")}else{if(!(await fetch(V+"/delete",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password:i,id:m})}).then(w=>w.json())).ok){y("Delete failed.");return}r.remove(),y("Message deleted.")}}catch{y("Network error.")}})}l("#search").addEventListener("input",e=>{let s=e.target.value.trim().toLowerCase(),a=l("#search-drop");if(!s){a.classList.remove("show");return}let c=D.players.filter(v=>v.name.toLowerCase().includes(s)).slice(0,8);if(!c.length){a.classList.remove("show");return}a.innerHTML=c.map(v=>`
+    <a class="drop-row" href="#/player/${le(v.name)}">
+      ${v.rank?Z(v.rank,"sm"):'<div class="rank-badge sm">\u2013</div>'}
+      <span>${u(v.name)}</span>
+      <span class="mono" style="margin-left:auto;color:var(--dim)">${v.rating.toFixed(1)}</span>
+    </a>`).join(""),a.classList.add("show")});document.addEventListener("click",e=>{e.target.closest(".search-box")||l("#search-drop").classList.remove("show"),e.target.closest(".drop-row")&&(l("#search-drop").classList.remove("show"),l("#search").value="")});var V=oe.replace(/\/publish$/,"/feedback"),$e="tt1v1_fb_tickets";function ze(){try{return JSON.parse(localStorage.getItem($e)||"[]")}catch{return[]}}function Je(e){let s=ze();s.push({id:e,ts:Date.now()});try{localStorage.setItem($e,JSON.stringify(s.slice(-20)))}catch{}}function Qe(){let e=l("#fb-overlay"),s=()=>{e.classList.add("show"),e.setAttribute("aria-hidden","false"),setTimeout(()=>l("#fb-msg").focus(),180)},a=()=>{e.classList.remove("show"),e.setAttribute("aria-hidden","true")};l("#fab-feedback").addEventListener("click",s),l("#fb-close").addEventListener("click",a),l("#fb-done").addEventListener("click",a),e.addEventListener("click",d=>{d.target===e&&a()}),document.addEventListener("keydown",d=>{d.key==="Escape"&&e.classList.contains("show")&&a()});let c=l("#faq-feedback-btn");c&&c.addEventListener("click",s);let v=l("#fb-msg"),p=l("#fb-count-n");v.addEventListener("input",()=>{p.textContent=String(v.value.length);try{localStorage.setItem("tt1v1_fb_draft",v.value)}catch{}});try{let d=localStorage.getItem("tt1v1_fb_draft");d&&(v.value=d,p.textContent=String(d.length))}catch{}let g=l("#fb-send");g.addEventListener("click",async()=>{let d=v.value.trim();if(d.length<5){v.focus(),v.classList.add("fb-nudge"),setTimeout(()=>v.classList.remove("fb-nudge"),500),y("Write a message first \u2014 a few words is plenty.");return}g.classList.add("busy"),g.disabled=!0;try{let b=await fetch(V,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:l("#fb-name").value.trim(),contact:l("#fb-contact").value.trim(),message:d})}),f=await b.json().catch(()=>({}));if(!b.ok||!f.ok){y("Could not send: "+(f.error||"HTTP "+b.status)+" \u2014 try again later.");return}Je(f.id);try{localStorage.removeItem("tt1v1_fb_draft")}catch{}l("#fb-ticket-code").textContent=f.id,l("#fb-view-form").hidden=!0,l("#fb-view-done").hidden=!1}catch{y("Network error \u2014 your message was not sent.")}finally{g.classList.remove("busy"),g.disabled=!1}}),l("#fb-check").addEventListener("click",async()=>{let d=l("#fb-ticket-in").value.trim(),b=l("#fb-reply-out");if(d){b.classList.add("show"),b.textContent="Checking\u2026";try{let f=await fetch(V+"/status?id="+encodeURIComponent(d)),$=await f.json().catch(()=>({}));if(!f.ok||!$.ok){b.textContent="No message found with that ticket code.";return}b.innerHTML=$.reply?`<b>Reply from the team:</b> ${u($.reply)}`:`Status: <b>${u($.status)}</b> \u2014 your message is being reviewed, check back soon.`}catch{b.textContent="Network error \u2014 try again later."}}})}var he;function y(e){let s=l("#toast");s.textContent=e,s.classList.add("show"),clearTimeout(he),he=setTimeout(()=>s.classList.remove("show"),2600)}var U;function se(){U&&U.disconnect(),U=new IntersectionObserver(e=>{e.forEach(s=>{s.isIntersecting&&(s.target.classList.add("in"),L(".cu",s.target).forEach(a=>re(a,parseFloat(a.dataset.target),{dec:parseInt(a.dataset.dec||0)})),U.unobserve(s.target))})},{threshold:.12}),L(".reveal").forEach(e=>U.observe(e))}(function(){let s=l("#scroll-progress"),a=l("#to-top"),c=l("#page-home .hero-row"),v=document.querySelector(".topbar"),p=()=>{let g=window.scrollY,d=document.documentElement.scrollHeight-window.innerHeight;s&&(s.style.width=(d>0?g/d*100:0)+"%"),a&&a.classList.toggle("show",g>640),v&&v.classList.toggle("scrolled",g>10),c&&g<1400&&(c.style.transform=`translateY(${g*.14}px)`,c.style.opacity=String(Math.max(.3,1-g/950)))};window.addEventListener("scroll",p,{passive:!0}),a&&a.addEventListener("click",()=>window.scrollTo({top:0,behavior:"smooth"})),p()})();x();pe();ve();Qe();function ie(e,s){let a=e.indexOf("window."+s);if(a<0)return null;let c=e.indexOf("=",a);for(;c<e.length&&"{[".indexOf(e[c])<0;)c++;let v=0,p=!1,g="",d=!1;for(let b=c;b<e.length;b++){let f=e[b];if(p){d?d=!1:f==="\\"?d=!0:f===g&&(p=!1);continue}if(f==='"'||f==="'"){p=!0,g=f;continue}if(f==="{"||f==="[")v++;else if((f==="}"||f==="]")&&(v--,v<=0))return JSON.parse(e.slice(c,b+1))}return null}(async()=>{try{let e=await fetch("log.js?cb="+Date.now(),{cache:"no-store"});if(!e.ok)return;let s=await e.text(),a=ie(s,"LB_PUB")||(ie(s,"LB_LOG")?{matches:ie(s,"LB_LOG")}:null);if(!a)return;JSON.stringify(a)!==JSON.stringify(window.LB_PUB||null)&&(window.LB_PUB=a,window.LB_LOG=a.matches||[],x(),pe(),ve())}catch{}})();})();

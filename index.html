@@ -27,6 +27,7 @@
       <a href="#/roster">Roster</a>
       <a href="#/analytics">Analytics</a>
       <a href="#/method">Method</a>
+      <a href="#/faq">FAQ</a>
     </nav>
     <div class="spacer"></div>
     <div class="search-box">
@@ -198,25 +199,90 @@
               drop more. Results are processed in 30-day rating periods.</div></li>
             <li><span class="num">3</span><div><b>Your rating knows what it doesn't know.</b>
               Each player carries an <b>RD</b> (ratings deviation) — a certainty score.
-              The leaderboard shows <b>visible rating = Glicko − 0.35 × RD</b>, so uncertain
+              The leaderboard shows <b>visible rating = Glicko − <span class="cons-val">0.5</span> × RD</b>, so uncertain
               ratings are held back until they've earned trust.</div></li>
           </ul>
-          <div class="formula-box">visible = glicko − 0.35 × RD &nbsp;&nbsp;·&nbsp;&nbsp; RD shrinks with results, grows with inactivity</div>
+          <div class="formula-box">visible = glicko − <span class="cons-val">0.5</span> × RD &nbsp;&nbsp;·&nbsp;&nbsp; RD shrinks with results, grows with inactivity</div>
+        </div>
+
+        <div class="panel">
+          <h3>Step 1 · <span class="n">Starting ratings (seeds)</span></h3>
+          <p style="color:var(--dim);font-size:15px">
+            Players from the old 0–100 ladder keep their history: the old score is converted
+            into a starting Glicko with the midpoint mapping below. A player with no old
+            rating starts unrated with maximum uncertainty. Very low old scores never start
+            below the floor the master sheet uses.</p>
+          <div class="formula-box">seed glicko = max( 700 , 1500 + (old − 80) × 30 ) &nbsp;·&nbsp; seed RD = 80<br>unrated start = 1500 / RD 250</div>
+          <p style="color:var(--dimmer);font-size:13px;margin-top:10px">
+            The floor matters: an old score of 8 maps to −660 by the raw formula, but the
+            master sheet seeds that player at 700 — and this site reproduces it exactly.</p>
+        </div>
+
+        <div class="panel">
+          <h3>Step 2 · <span class="n">The Glicko update</span></h3>
+          <p style="color:var(--dim);font-size:15px">
+            Glicko is Elo's smarter cousin: every opponent is weighted by how certain <i>their</i>
+            rating is, and each batch of results shrinks your own RD. With
+            <b style="color:var(--ink)">q = ln(10)/400</b> and:</p>
+          <div class="formula-box">g(RD) = 1 / √(1 + 3·q²·RD²/π²)<br>E(r, r<sub>o</sub>) = 1 / (1 + 10^(−g(RD<sub>o</sub>)·(r − r<sub>o</sub>)/400))<br>D² = 1 / (q²·Σ g²·E·(1−E)) &nbsp;&nbsp;→&nbsp;&nbsp; r′ = r + (q/(1/RD² + q²·Σg²E(1−E)))·Σ g·(s − E)<br>RD′ = √(1 / (1/RD² + q²·Σg²E(1−E)))</div>
+          <p style="color:var(--dimmer);font-size:13px;margin-top:10px">
+            s is the match score (1 win, 0 loss, ½ draw). All games inside one rating period
+            are processed simultaneously from the same snapshot — exactly like the official sheet.</p>
+        </div>
+
+        <div class="panel">
+          <h3>Step 3 · <span class="n">Rating periods &amp; legacy matches</span></h3>
+          <p style="color:var(--dim);font-size:15px">
+            Dated matches are grouped into chronological <b style="color:var(--ink)">30-day rating periods</b>.
+            Old archive matches whose dates were never recorded — <i>legacy</i> matches — are
+            processed together as one simultaneous period at the legacy grace start, so
+            unknown dates can't be gamed.</p>
+          <div class="formula-box">period = ⌊date / 30 days⌋ &nbsp;·&nbsp; legacy = one simultaneous batch</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="panel">
+          <h3>The inactivity automation</h3>
+          <p style="color:var(--dim);font-size:15px">
+            Ratings decay automatically when you stop playing — the same behaviour as the
+            master sheet's auto-recalculation:</p>
+          <ul class="explain-list" style="margin-top:8px">
+            <li><span class="num">↓</span><div><b>RD grows every 30 days of silence.</b>
+              Each full rating period without a match adds inactivity growth inside the
+              square root — <span class="mono">RD′ = √(RD² + 20²·k)</span> for k silent periods, capped at 250.
+              Because visible rating subtracts <span class="cons-val">0.5</span> × RD, an inactive player's
+              visible rating sinks on its own.</div></li>
+            <li><span class="num">⏳</span><div><b>Hidden after 365 days.</b>
+              A qualified player who hasn't logged a dated match in 365 days is hidden from
+              the leaderboard (still searchable, still in the maths) until they return.</div></li>
+            <li><span class="num">🕰</span><div><b>Legacy grace.</b>
+              Date-unknown veterans stay visible for 365 days from the grace start
+              (2026-10-04) before the inactivity rule applies to them.</div></li>
+          </ul>
         </div>
 
         <div class="panel">
           <h3>Who appears on the board?</h3>
           <p style="color:var(--dim);font-size:15px">
-            A player is ranked once they have at least <b style="color:var(--ink)">5 matches</b>
-            against at least <b style="color:var(--ink)">3 different opponents</b>.
-            Players whose latest match is over <b style="color:var(--ink)">365 days</b> old are
-            marked inactive — their rating is frozen until they return.
-            Provisional players are still climbing to (or falling from) their true level.
-          </p>
+            A player is ranked once they have at least <b style="color:var(--ink)"><span class="min-matches-val">5</span> matches</b>
+            against at least <b style="color:var(--ink)"><span class="min-opp-val">3</span> different opponents</b>.
+            Everyone else is <b style="color:var(--ink)">provisional</b>: their rating is real and
+            takes part in every calculation — they just aren't ranked until it's earned.
+            Inactive players are hidden the same way, on their own filter.</p>
         </div>
-      </div>
 
-      <div>
+        <div class="panel">
+          <h3>Every stat, explained</h3>
+          <ul class="explain-list">
+            <li><span class="num">G</span><div><b>Glicko</b> — the raw model output (the true estimated skill).</div></li>
+            <li><span class="num">RD</span><div><b>Ratings deviation</b> — the uncertainty. Shrinks with results (never above 250, never below… well, very confident), grows with silence. RD ~50 = well known; RD 200+ = brand new.</div></li>
+            <li><span class="num">V</span><div><b>Visible rating</b> — what the board ranks by: Glicko − <span class="cons-val">0.5</span> × RD. Uncertainty is held back until trust is earned.</div></li>
+            <li><span class="num">%</span><div><b>Win %</b> — wins / matches, rounded at the display precision.</div></li>
+            <li><span class="num">Ø</span><div><b>Avg opp</b> — the average final Glicko of your <i>distinct</i> opponents. High here means you've been fighting the top of the board.</div></li>
+          </ul>
+        </div>
+
         <div class="panel">
           <h3>Live settings</h3>
           <table class="settings-table">
@@ -224,12 +290,13 @@
             <tbody id="settings-body"></tbody>
           </table>
         </div>
+
         <div class="panel">
-          <h3>About this site</h3>
+          <h3>Verified against the master sheet</h3>
           <p style="color:var(--dim);font-size:14.5px">
-            Built from the community's match archive — every rating, record and head-to-head
-            on this site is computed directly from the recorded results. No manual rankings,
-            no politics. Just duels.
+            Every value on this site is recomputed from raw match results and validated to
+            match the official Google Sheet exactly — all 96 players, every rating, RD,
+            record and average-opponent figure. No manual rankings, no politics. Just duels.
           </p>
         </div>
       </div>
@@ -237,10 +304,77 @@
   </div>
 </main>
 
+<!-- ======================= FAQ ======================= -->
+<main id="page-faq" class="page">
+  <div class="wrap">
+    <section class="hero anim" style="padding-top:10px">
+      <div class="kicker">Questions, answered</div>
+      <h1 style="font-size:clamp(36px,5vw,58px)">The <span class="gold">Q &amp; A</span></h1>
+      <p class="sub">Everything players ask about ratings, rankings and the circuit —
+      answered plainly. Tap any question to open it.</p>
+    </section>
+    <div class="faq-list anim" id="faq-list"></div>
+    <section class="panel anim" style="margin-top:26px;text-align:center;padding:34px">
+      <h3 style="justify-content:center">Still stuck on something?</h3>
+      <p style="color:var(--dim);font-size:15px;max-width:520px;margin:8px auto 18px">
+        Send us a message — the team reads every one and you can check back for a reply.</p>
+      <button class="btn btn-primary" id="faq-feedback-btn" style="width:auto;margin:0">✎ Send feedback</button>
+    </section>
+  </div>
+</main>
+
 <!-- ======================= ADMIN ======================= -->
 <main id="page-admin" class="page">
   <div class="wrap" id="admin-wrap"></div>
 </main>
+
+<!-- ======================= FEEDBACK ======================= -->
+<button class="fab" id="fab-feedback" aria-label="Send feedback" title="Feedback">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M21 12a8 8 0 0 1-8 8H5l-2 2V12a8 8 0 0 1 8-8h2a8 8 0 0 1 8 8Z" stroke-linejoin="round"/><path d="M8.5 11h7M8.5 14.5h4" stroke-linecap="round"/></svg>
+  <span>Feedback</span>
+</button>
+
+<div class="fb-overlay" id="fb-overlay" aria-hidden="true">
+  <div class="fb-modal" role="dialog" aria-modal="true">
+    <button class="fb-close" id="fb-close" aria-label="Close">✕</button>
+    <div class="fb-view" id="fb-view-form">
+      <div class="fb-kicker">Talk to the team</div>
+      <h3 class="fb-title">Send us your <span class="gold">feedback</span></h3>
+      <p class="fb-sub">Bug report, idea, question or a shout-out — every message is read by a human.</p>
+      <div class="fb-field">
+        <label for="fb-name">Name <span class="opt">optional</span></label>
+        <input id="fb-name" maxlength="60" placeholder="What should we call you?" autocomplete="off">
+      </div>
+      <div class="fb-field">
+        <label for="fb-contact">Email or Discord <span class="opt">optional — only if you want a reply</span></label>
+        <input id="fb-contact" maxlength="120" placeholder="you@example.com" autocomplete="off">
+      </div>
+      <div class="fb-field">
+        <label for="fb-msg">Your message</label>
+        <textarea id="fb-msg" maxlength="2000" rows="5" placeholder="Type your message…"></textarea>
+        <div class="fb-count"><span id="fb-count-n">0</span> / 2000</div>
+      </div>
+      <button class="btn btn-primary fb-send" id="fb-send">
+        <span class="lbl">Send message</span>
+        <span class="spin" aria-hidden="true"></span>
+      </button>
+      <div class="fb-check-row">or check a reply: <input id="fb-ticket-in" maxlength="32" placeholder="ticket code" autocomplete="off"><button class="btn btn-ghost" id="fb-check">Check</button></div>
+      <div class="fb-reply-out" id="fb-reply-out"></div>
+    </div>
+    <div class="fb-view" id="fb-view-done" hidden>
+      <div class="fb-checkmark">
+        <svg viewBox="0 0 72 72" width="72" height="72">
+          <circle class="fb-cm-circle" cx="36" cy="36" r="32"/>
+          <path class="fb-cm-tick" d="M22 37.5 31.5 47 50 27"/>
+        </svg>
+      </div>
+      <h3 class="fb-title">This helps a lot — thank you!</h3>
+      <p class="fb-sub">Your message is being reviewed. Keep your ticket code to check back for a reply.</p>
+      <div class="fb-ticket">Ticket <b id="fb-ticket-code">—</b></div>
+      <button class="btn btn-primary" id="fb-done" style="width:auto;margin:14px auto 0">Done</button>
+    </div>
+  </div>
+</div>
 
 <!-- ======================= FOOTER ======================= -->
 <footer class="footer">
@@ -275,8 +409,8 @@
 <button class="to-top" id="to-top" aria-label="Back to top">
   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 19V5M5 12l7-7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
 </button>
-<script src="data.js"></script>
-<script src="log.js"></script>
-<script src="app.js"></script>
+<script src="data.js?v=20261005"></script>
+<script src="log.js?v=20261005"></script>
+<script src="app.js?v=20261005"></script>
 </body>
 </html>

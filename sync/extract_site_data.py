@@ -4,16 +4,29 @@ for the 1v1 Leaderboard website.
 
 Usage: python extract_site_data.py [src.xlsx] [out.js]
 """
-import json, re, sys
+import json, os, re, sys
 import openpyxl
 
 SRC = sys.argv[1] if len(sys.argv) > 1 else 'C:/Users/iqzcl/Downloads/TankTrouble_Dynamic_Glicko.xlsx'
 OUT = sys.argv[2] if len(sys.argv) > 2 else 'C:/Users/iqzcl/Downloads/Ricochet AI/1v1-leaderboard/data.js'
+# Optional previous state for rating-change arrows: a previous .xlsx export or
+# a previous data.js. Falls back to the existing OUT file's curRatings.
+PREV = sys.argv[3] if len(sys.argv) > 3 else None
 
 # Manual corrections on top of the sheet's Aliases tab (alias -> canonical).
 # SneakyOnyxDragon is Eddie — one of his matches was logged under that name.
+# 'Lokriss' is the spelling used in every raw match + the Seeds tab, but the
+# sheet's Aliases tab only lists the Lokirisss/Lokirsss/Lokrisss variants and
+# canonicalises to 'Lokirss' (the name its All Players tab shows).
 ALIAS_FIXES = {
     'SneakyOnyxDragon': '_Eddie_',
+    'Lokriss': 'Lokirss',
+    'Lokrissss': 'Lokirss',
+    # the sheet's Aliases tab contradicts itself (TankDestroyah52<->YourDestruction
+    # in both directions); its Leaderboard tab displays 'YourDestruction', so
+    # that is the canonical name everywhere.
+    'YourDestruction': 'YourDestruction',
+    'TankDestroyah52': 'YourDestruction',
 }
 
 wb = openpyxl.load_workbook(SRC, data_only=True)
@@ -89,6 +102,19 @@ for v in rows(al, 4, [1, 2]):
 aliases.update(ALIAS_FIXES)
 aliases_lc = {a.lower(): c for a, c in aliases.items()}
 
+# flatten alias chains (A -> B -> C becomes A -> C) so single-lookup canon()
+# in the app resolves straight to the final name
+
+def _resolve(n):
+    seen = set()
+    while n in aliases_lc and aliases_lc[n] != n and n not in seen:
+        seen.add(n)
+        n = aliases_lc[n]
+    return n
+
+aliases = {a: _resolve(c) for a, c in aliases.items()}
+aliases_lc = {a.lower(): c for a, c in aliases.items()}
+
 # ---- Seeds (original 0-100 ratings used to seed Glicko)
 sd = wb['Seeds']
 seeds = {}
@@ -114,6 +140,12 @@ def canon(n):
 for m in matches:
     m['a'] = canon(m['a'])
     m['b'] = canon(m['b'])
+
+# seed rows can use alias spellings too (Seeds tab says 'Lokriss')
+seeds_c = {}
+for nm, sv in seeds.items():
+    seeds_c[canon(nm)] = sv
+seeds = seeds_c
 
 # merge alias-named player rows into their canonical row
 merged = {}
@@ -145,6 +177,46 @@ for m in matches:
                  res='W' if sfor > sag else ('L' if sfor < sag else 'D'),
                  date=m['date']))
 
+# ---- current + previous visible ratings (green/red change arrows on the board)
+curRatings = {nm: row['rating'] for nm, row in everyone.items()}
+
+def prev_from_xlsx(path):
+    wp = openpyxl.load_workbook(path, data_only=True)
+    out = {}
+    for v in rows(wp['All Players'], 6, range(1, 3)):
+        nm, rating = v[:2]
+        if nm and rating is not None:
+            out[canon(clean(nm))] = round(float(rating), 1)
+    return out
+
+def prev_from_js(path):
+    txt = open(path, encoding='utf-8').read()
+    i = txt.find('curRatings')
+    if i < 0:
+        return {}
+    k = txt.index('{', i)
+    depth = 0
+    for j in range(k, len(txt)):
+        if txt[j] == '{':
+            depth += 1
+        elif txt[j] == '}':
+            depth -= 1
+            if depth == 0:
+                return {str(a): float(b) for a, b in json.loads(txt[k:j + 1]).items()}
+    return {}
+
+prevRatings = {}
+try:
+    if PREV and PREV.endswith('.xlsx'):
+        prevRatings = prev_from_xlsx(PREV)
+    elif PREV:
+        prevRatings = prev_from_js(PREV)
+    elif os.path.exists(OUT):
+        prevRatings = prev_from_js(OUT)
+except Exception as e:  # never block the build on arrow history
+    print('prev ratings unavailable:', e)
+    prevRatings = {}
+
 data = dict(
     generated='2026-10-04',
     qualified=qualified,
@@ -155,6 +227,8 @@ data = dict(
     settings=settings,
     inactiveList=inactiveList,
     histories=histories,
+    curRatings=curRatings,
+    prevRatings=prevRatings,
 )
 
 with open(OUT, 'w', encoding='utf-8') as f:
