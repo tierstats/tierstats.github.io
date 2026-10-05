@@ -1,14 +1,17 @@
 name: site
 
+# Pages build + deploy only. Data sync is owned by the tierstats-publish Worker
+# (5-minute Cloudflare cron + the sheet's Apps Script trigger) — this workflow
+# must NOT regenerate data.js, or two writers fight over the file forever
+# (Python writes 1550.0, JS writes 1550 → endless "changed" commits).
+
 on:
   push:
     branches: [main]
-  schedule:
-    - cron: '*/30 * * * *'
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
   pages: write
   id-token: write
 
@@ -21,28 +24,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install deps
-        run: pip install openpyxl
-
-      - name: Sync data from the master sheet
-        if: github.event_name != 'push'
-        run: |
-          curl -sL -o /tmp/sheet.xlsx "https://docs.google.com/spreadsheets/d/191CIUyAC1zhxH3SogOXpZpRRbdKjg_ejNiBi6UkiCig/export?format=xlsx"
-          python sync/extract_site_data.py /tmp/sheet.xlsx data.js
-          if ! git diff --quiet data.js; then
-            git config user.name "tierstats"
-            git config user.email "tierstats@users.noreply.github.com"
-            git add data.js
-            git commit -m "Auto-sync data from master sheet"
-            git push
-          else
-            echo "sheet unchanged — nothing to commit"
-          fi
 
       - uses: actions/upload-pages-artifact@v3
         with:
