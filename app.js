@@ -118,6 +118,10 @@ function deltaTag(p) {
 const ADMIN_STORE = 'tt1v1_admin_log_v1';
 const ADMIN_UNLOCK = 'tt1v1_admin_ok';
 const ADMIN_PW_KEY = 'tt1v1_admin_pw';
+/* No password (or hash) lives in this file — unlock verifies against the
+   publish service, which rate-limits attempts. "View Source" reveals nothing
+   an attacker could crack offline. */
+const VERIFY_URL = PUBLISH_URL.replace(/\/publish$/, '/verify');
 
 function logGet() {
   try { return JSON.parse(localStorage.getItem(ADMIN_STORE) || '[]'); }
@@ -920,17 +924,24 @@ function renderAdmin() {
         <button class="btn btn-primary" id="admin-auth">-) Authenticate</button>
       </div>
     </div>`;
-    const tryAuth = () => {
+    const tryAuth = async () => {
       const v = $('#admin-pw').value;
-      if (v === 'REDACTED') {
-        sessionStorage.setItem(ADMIN_UNLOCK, '1');
-        sessionStorage.setItem(ADMIN_PW_KEY, v);
-        renderAdmin();
-        toast('Welcome back, commander.');
-      } else {
-        $('#admin-pw').style.borderColor = 'var(--red)';
-        toast('Wrong password.');
-      }
+      try {
+        const r = await fetch(VERIFY_URL, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: v }),
+        });
+        if (r.ok) {
+          sessionStorage.setItem(ADMIN_UNLOCK, '1');
+          sessionStorage.setItem(ADMIN_PW_KEY, v);
+          renderAdmin();
+          toast('Welcome back, commander.');
+          return;
+        }
+        if (r.status === 429) { toast('Too many attempts — wait a few minutes.'); return; }
+      } catch { /* fall through to reject */ }
+      $('#admin-pw').style.borderColor = 'var(--red)';
+      toast('Wrong password.');
     };
     $('#admin-auth').addEventListener('click', tryAuth);
     $('#admin-pw').addEventListener('keydown', (e) => { if (e.key === 'Enter') tryAuth(); });
@@ -1160,11 +1171,11 @@ function renderAdmin() {
       matchEdits: keepEdits,
       matchRemoved: keepRemoved,
     };
-    const content = '/* Published site data — committed by the admin console ("Publish to everyone").\n   matches = shared match log (newest first). aliases = name fixes / merges.\n   inactive = manually inactive players. seeds = start rating overrides.\n   settings = model overrides. matchEdits/matchRemoved = archive fixes.\n   The Glicko engine recalculates every rating from these at page load. */\nwindow.LB_PUB = ' + JSON.stringify(pubDoc, null, 2) + ';\nwindow.LB_LOG = window.LB_PUB.matches;\n';
+    /* the service serializes this itself (JSON only) — no way to smuggle code */
     try {
       const r = await fetch(PUBLISH_URL, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: pw, content, message: `Publish match log (${merged.length} matches)` }),
+        body: JSON.stringify({ password: pw, doc: pubDoc, message: `Publish match log (${merged.length} matches)` }),
       });
       const out = await r.json().catch(() => ({}));
       if (!r.ok || !out.ok) {
