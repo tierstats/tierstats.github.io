@@ -7,14 +7,17 @@
 window.LB_PUB = {
   "matches": [],
   "aliases": {
-    "Alternator": "Alternator5",
     "Alternator5": "Alternator"
   },
   "aliasNotes": {},
+  "aliasRemoved": [
+    "Alternator"
+  ],
   "inactive": [],
   "seeds": {},
   "seedGlicko": {},
   "seedRd": {},
+  "seedRemoved": [],
   "settings": {},
   "matchEdits": {},
   "matchRemoved": [],
