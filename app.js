@@ -1,917 +1,215 @@
-/* ============================================================
-   1v1 LEADERBOARD — app.js
-   Hash-routed SPA: #/ (rankings), #/player/<name>, #/matches,
-   #/roster, #/analytics, #/method, #/admin.
-   FLIP sorting, count-up stats, scroll reveal, search, admin log.
-   ============================================================ */
-'use strict';
-
-const D = window.LB_DATA;
-/* "Publish to everyone" posts the log to the tierstats publish service, which
-   commits log.js to the site repo (token lives server-side, never in a browser) */
-const PUBLISH_URL = 'https://tierstats-publish.tierstats.workers.dev/publish';
-const $ = (s, el = document) => el.querySelector(s);
-const $$ = (s, el = document) => [...el.querySelectorAll(s)];
-
-/* ---------- helpers ---------- */
-const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
-  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-
-const slug = (name) => encodeURIComponent(String(name));
-const unslug = (s) => decodeURIComponent(s);
-
-function countUp(el, target, opts = {}) {
-  const dur = opts.dur || 1200;
-  const dec = opts.dec || 0;
-  const t0 = performance.now();
-  const start = parseFloat(el.textContent) || 0;
-  function frame(t) {
-    const p = Math.min(1, (t - t0) / dur);
-    const e = 1 - Math.pow(1 - p, 3);
-    el.textContent = (start + (target - start) * e).toFixed(dec);
-    if (p < 1) requestAnimationFrame(frame);
-  }
-  requestAnimationFrame(frame);
-}
-
-/* ---------- crown & medal badges (rank 1-3 get metal, rest plain) ---------- */
-const CROWN_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 8.2c0-.9 1-1.4 1.7-.9l3.1 2.4c.5.4 1.2.3 1.6-.2l2.2-2.9c.4-.5 1.2-.5 1.6 0l2.2 2.9c.4.5 1.1.6 1.6.2l3.1-2.4c.7-.5 1.7 0 1.7.9l-.7 8.4c-.1.8-.7 1.4-1.5 1.4H5.2c-.8 0-1.4-.6-1.5-1.4L3 8.2Z"/><rect x="5" y="19.2" width="14" height="1.9" rx=".9"/></svg>';
-const MEDAL_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8.4 2.2 12 8.4l3.6-6.2c.3-.6 1.1-.7 1.6-.3l1.7 1.5c.5.4.6 1.1.3 1.6L15.4 12a7 7 0 1 1-6.8 0L4.8 5a1.3 1.3 0 0 1 .3-1.6l1.7-1.5c.5-.4 1.3-.3 1.6.3Zm2 12.1a3.2 3.2 0 1 0 3.2 3.2 3.2 3.2 0 0 0-3.2-3.2Z"/></svg>';
-
-function rankBadge(rank, size = '') {
-  const cls = rank === 1 ? 'rb1' : rank === 2 ? 'rb2' : rank === 3 ? 'rb3' : '';
-  const icon = rank <= 3 ? (rank === 1 ? CROWN_SVG : MEDAL_SVG) : '';
-  return `<div class="rank-badge ${cls} ${size}" title="Rank #${rank}">${icon}<span class="num">${rank}</span></div>`;
-}
-
-/* ---------- derived data (rebuilt live by the Glicko engine) ---------- */
-let playerByName = {};
-let topOf = [];
-let STATE = { players: [], byName: {}, qualified: [] };
-
-/* alias map for admin-logged names (lowercased lookup) — sheet aliases +
-   admin name fixes (merged at every rebuild) */
-const aliasLc = {};
-function rebuildAliases() {
-  for (const k in aliasLc) delete aliasLc[k];
-  Object.entries(D.aliases).forEach(([a, c]) => { aliasLc[a.toLowerCase()] = c; });
-  Object.entries(overAll().aliases || {}).forEach(([a, c]) => { aliasLc[String(a).toLowerCase()] = c; });
-}
-const canon = (n) => {
-  const t = String(n).trim();
-  return aliasLc[t.toLowerCase()] || t;
-};
-
-function histOf(name) {
-  /* newest first — mirrors allMatches() so admin fixes/edits are reflected */
-  const out = [];
-  allMatches().forEach((m) => {
-    const mk = (opp, gf, ga) => ({ opp, for_: gf, against: ga,
-      res: gf > ga ? 'W' : gf < ga ? 'L' : 'D', date: m.date });
-    if (m.a === name) out.push(mk(m.b, m.sa, m.sb));
-    else if (m.b === name) out.push(mk(m.a, m.sb, m.sa));
-  });
-  return out;
-}
-
-function h2hOf(name) {
-  const map = {};
-  histOf(name).forEach((m) => {
-    const e = map[m.opp] || (map[m.opp] = { w: 0, l: 0, d: 0, pf: 0, pa: 0 });
-    e[m.res.toLowerCase()] += 1;
-    e.pf += m.for_; e.pa += m.against;
-  });
-  return Object.entries(map)
-    .map(([opp, rec]) => ({ opp, ...rec }))
-    .sort((a, b) => (b.w + b.l + b.d) - (a.w + a.l + a.d) || b.w - a.w);
-}
-
-function statusTag(name) {
-  const meta = playerByName[name] || {};
-  if (meta.provisional) return '<span class="tag prov">provisional</span>';
-  if (meta.inactive) return '<span class="tag inact">inactive</span>';
-  return '<span class="tag legacy">legacy</span>';
-}
-
-/* rating change vs the master-sheet archive: recomputed once at boot with the
-   site-logged matches hidden, so deltas show exactly what the admin log has
-   moved (corrections/name-fixes count as truth, not as change) */
-const BASELINE = {};
-let BASELINE_MODE = false;
-function computeBaseline() {
-  BASELINE_MODE = true;
-  try {
-    recalcAll().players.forEach((p) => { BASELINE[p.name] = p.rating; });
-  } finally {
-    BASELINE_MODE = false;
-  }
-}
-
-function deltaTag(p) {
-  const d = p.delta != null ? p.delta : 0;
-  if (Math.abs(d) < 0.05) return '';
-  const up = d > 0;
-  return `<span class="delta ${up ? 'up' : 'down'}" title="rating change since the last data sync">${up ? '▲' : '▼'} ${Math.abs(d).toFixed(1)}</span>`;
-}
-
-/* ---------- admin log (localStorage overlay) ---------- */
-const ADMIN_STORE = 'tt1v1_admin_log_v1';
-const ADMIN_UNLOCK = 'tt1v1_admin_ok';
-const ADMIN_PW_KEY = 'tt1v1_admin_pw';
-/* No password (or hash) lives in this file — unlock verifies against the
-   publish service, which rate-limits attempts. "View Source" reveals nothing
-   an attacker could crack offline. */
-const VERIFY_URL = PUBLISH_URL.replace(/\/publish$/, '/verify');
-
-function logGet() {
-  try { return JSON.parse(localStorage.getItem(ADMIN_STORE) || '[]'); }
-  catch (e) { return []; }
-}
-function logSet(arr) {
-  try { localStorage.setItem(ADMIN_STORE, JSON.stringify(arr)); } catch (e) { /* private mode */ }
-}
-
-/* everyone-visible published log (log.js in the repo) + this browser's
-   pending entries — newest first on both sides */
-/* published override document (log.js) + this browser's pending overrides.
-   Covers everything the master sheet does: name fixes, inactive flags,
-   seeds, model settings, match score/date fixes and deletions. */
-const OVER_STORE = 'tt1v1_admin_over_v1';
-function overGet() {
-  try { return JSON.parse(localStorage.getItem(OVER_STORE) || '{}') || {}; }
-  catch (e) { return {}; }
-}
-function overSet(doc) {
-  try { localStorage.setItem(OVER_STORE, JSON.stringify(doc)); } catch (e) { /* private mode */ }
-}
-function overAll() {
-  const pub = window.LB_PUB || {};
-  const loc = overGet();
-  return {
-    aliases: { ...(pub.aliases || {}), ...(loc.aliases || {}) },
-    aliasNotes: { ...(pub.aliasNotes || {}), ...(loc.aliasNotes || {}) },
-    seeds: { ...(pub.seeds || {}), ...(loc.seeds || {}) },
-    seedGlicko: { ...(pub.seedGlicko || {}), ...(loc.seedGlicko || {}) },
-    seedRd: { ...(pub.seedRd || {}), ...(loc.seedRd || {}) },
-    settings: { ...(pub.settings || {}), ...(loc.settings || {}) },
-    matchEdits: { ...(pub.matchEdits || {}), ...(loc.matchEdits || {}) },
-    inactive: loc.inactive || pub.inactive || [],
-    matchRemoved: [...new Set([...(pub.matchRemoved || []), ...(loc.matchRemoved || [])])],
-  };
-}
-function overLocal(patch) {
-  const loc = overGet();
-  overSet({ ...loc, ...patch });
-}
-function pubMatches() {
-  return (window.LB_PUB && Array.isArray(window.LB_PUB.matches)) ? window.LB_PUB.matches
-       : (Array.isArray(window.LB_LOG) ? window.LB_LOG : []);
-}
-
-function logAll() {
-  if (BASELINE_MODE) return [];
-  const pub = pubMatches().map((e) => ({ ...e, published: true }));
-  return logGet().map((e) => ({ ...e, published: false })).concat(pub);
-}
-
-/* every match: local pending + published on top, archive below — with the
-   admin's score/date fixes and deletions applied (keys l:i / p:i / a:i) */
-function allMatches() {
-  const O = overAll();
-  const edits = O.matchEdits || {};
-  const removed = new Set(O.matchRemoved || []);
-  const apply = (m, key) => {
-    if (removed.has(key)) return null;
-    const e = edits[key];
-    const src = e ? { ...m, sa: e.sa, sb: e.sb, date: e.date != null ? e.date : m.date } : m;
-    return { ...src, a: canon(src.a), b: canon(src.b), sa: +src.sa, sb: +src.sb, key };
-  };
-  const local = BASELINE_MODE ? [] : logGet().map((e, i) => apply({ ...e, admin: true, published: false }, 'l:' + i)).filter(Boolean);
-  const pub = BASELINE_MODE ? [] : pubMatches().map((e, i) => apply({ ...e, admin: true, published: true }, 'p:' + i)).filter(Boolean);
-  const arch = D.matches.map((m, i) => apply({ ...m, admin: false, published: false }, 'a:' + i))
-                 .filter(Boolean).reverse();
-  return local.concat(pub, arch);
-}
-
-/* ============================================================
-   GLICKO ENGINE — ported from the official Dynamic Glicko Google
-   Sheet and validated against it: replaying the 306 archived
-   matches reproduces all 97 published ratings/RDs exactly.
-   Model: undated legacy matches = one simultaneous rating period;
-   dated matches = chronological 30-day periods; RD grows as
-   sqrt(rd² + 20²·k) over k inactive periods (cap 250);
-   visible = Glicko − 0.35 × RD; entry = 5 matches / 3 opponents.
-   ============================================================ */
-const ENGINE = {
-  seedMid: 1500, oldMid: 80, ptsPer: 30, knownRd: 80,
-  unratedR: 1500, unratedRd: 250, maxRd: 250,
-  growth: 20, periodDays: 30, conservative: 0.35,
-  minMatches: 5, minOpp: 3, inactiveDays: 365,
-  graceStart: '2026-10-04', graceDays: 365,
-};
-const DAY = 86400000;
-const QQ = Math.log(10) / 400;
-const gOf = (rd) => 1 / Math.sqrt(1 + 3 * QQ * QQ * rd * rd / (Math.PI * Math.PI));
-const eOf = (r, ro, rdo) => 1 / (1 + Math.pow(10, -gOf(rdo) * (r - ro) / 400));
-
-function seedOf(name) {
-  const s = overAll().seeds || {};
-  return (s[name] != null && s[name] !== '') ? Number(s[name]) : D.seeds[name];
-}
-
-function seedState(name) {
-  /* explicit Glicko/RD override wins; else derive from the Old 0-100 seed */
-  const sg = (overAll().seedGlicko || {})[name];
-  const sr = (overAll().seedRd || {})[name];
-  const g = (sg != null && sg !== '') ? Number(sg) : null;
-  const r = (sr != null && sr !== '') ? Number(sr) : null;
-  if (g != null || r != null) {
-    return [g != null ? g : ENGINE.unratedR, r != null ? r : ENGINE.unratedRd];
-  }
-  const old = seedOf(name);
-  if (old != null) return [ENGINE.seedMid + (old - ENGINE.oldMid) * ENGINE.ptsPer, ENGINE.knownRd];
-  return [ENGINE.unratedR, ENGINE.unratedRd];
-}
-
-function glickoBatch(r, rd, games) {
-  let d2i = 0, delta = 0;
-  for (const [ro, rdo, sc] of games) {
-    const gg = gOf(rdo), ee = eOf(r, ro, rdo);
-    d2i += gg * gg * ee * (1 - ee);
-    delta += gg * (sc - ee);
-  }
-  d2i *= QQ * QQ;
-  if (d2i <= 0) return [r, rd];
-  const base = 1 / (rd * rd) + d2i;
-  return [r + (QQ / base) * delta, Math.sqrt(1 / base)];
-}
-
-/* banker's rounding at display precision — matches the official sheet export */
-function roundHalfEven(x, dp) {
-  const f = Math.pow(10, dp);
-  const y = x * f, fl = Math.floor(y);
-  if (Math.abs(y - fl - 0.5) < 1e-6) return (fl % 2 === 0 ? fl : fl + 1) / f;
-  return Math.round(y) / f;
-}
-
-const periodIdx = (dateStr) => Math.floor(Date.parse(dateStr + 'T00:00:00Z') / (ENGINE.periodDays * DAY));
-let GRACE_IDX = periodIdx(ENGINE.graceStart);
-
-/* sheet Settings tab -> engine knobs; admin overrides win over the sheet */
-const SETTING_MAP = {
-  'Seed Glicko midpoint': 'seedMid',
-  'Old rating midpoint': 'oldMid',
-  'Glicko points per old rating point': 'ptsPer',
-  'Known-player starting RD': 'knownRd',
-  'Unrated-player starting rating': 'unratedR',
-  'Unrated-player starting RD': 'unratedRd',
-  'Maximum RD': 'maxRd',
-  'RD growth per rating period': 'growth',
-  'Rating period length (days)': 'periodDays',
-  'Conservative RD multiplier': 'conservative',
-  'Minimum matches for leaderboard': 'minMatches',
-  'Minimum different opponents': 'minOpp',
-  'Inactive after days': 'inactiveDays',
-  'Legacy grace start date': 'graceStart',
-  'Legacy grace days': 'graceDays',
-};
-function effectiveSettings() {
-  const over = overAll().settings || {};
-  return (D.settings || []).map((s) => ({
-    ...s,
-    value: Object.prototype.hasOwnProperty.call(over, s.name) ? over[s.name] : s.value,
-  }));
-}
-function applyEngineSettings() {
-  for (const s of effectiveSettings()) {
-    const key = SETTING_MAP[s.name];
-    if (!key) continue;
-    if (key === 'graceStart') {
-      const v = String(s.value == null ? '' : s.value).slice(0, 10);
-      if (/^\d{4}-\d{2}-\d{2}$/.test(v)) ENGINE.graceStart = v;
-      continue;
-    }
-    const v = Number(s.value);
-    if (Number.isFinite(v)) ENGINE[key] = v;
-  }
-  GRACE_IDX = periodIdx(ENGINE.graceStart);
-}
-
-function recalcAll() {
-  applyEngineSettings();
-  rebuildAliases();
-  const st = {};
-  const get = (n) => {
-    if (!st[n]) {
-      const [r, rd] = seedState(n);
-      st[n] = { name: n, r, rd, w: 0, l: 0, d: 0, games: 0, opps: new Set(), lastIdx: null, lastDate: null };
-    }
-    return st[n];
-  };
-  const record = (n, opp, gf, ga, date, idx) => {
-    const p = get(n);
-    p.games++; p.opps.add(opp);
-    if (gf > ga) p.w++; else if (gf < ga) p.l++; else p.d++;
-    p.lastIdx = idx; if (date) p.lastDate = date;
-  };
-
-  /* period 0 — all undated legacy matches, processed simultaneously */
-  const legacy = {};
-  for (const m of allMatches()) {
-    if (m.date) continue;
-    const a = m.a, b = m.b;
-    const s = m.sa > m.sb ? 1 : m.sa < m.sb ? 0 : 0.5;
-    (legacy[a] = legacy[a] || []).push([b, s]);
-    (legacy[b] = legacy[b] || []).push([a, 1 - s]);
-    record(a, b, m.sa, m.sb, '', GRACE_IDX);
-    record(b, a, m.sb, m.sa, '', GRACE_IDX);
-  }
-  const snap = {};
-  for (const n in legacy) snap[n] = [get(n).r, get(n).rd];
-  for (const n in legacy) {
-    const [nr, nrd] = glickoBatch(snap[n][0], snap[n][1],
-      legacy[n].map(([o, sc]) => [snap[o][0], snap[o][1], sc]));
-    get(n).r = nr; get(n).rd = nrd;
-  }
-
-  /* dated matches — chronological 30-day rating periods */
-  const periods = new Map();
-  for (const e of allMatches().filter((m) => m.date).slice().reverse()) {
-    const date = e.date;
-    const idx = periodIdx(date);
-    if (!periods.has(idx)) periods.set(idx, []);
-    periods.get(idx).push({ a: canon(e.a), b: canon(e.b), sa: +e.sa, sb: +e.sb, date });
-  }
-  for (const idx of [...periods.keys()].sort((x, y) => x - y)) {
-    for (const n in st) {
-      const p = st[n];
-      const k = idx - (p.lastIdx == null ? GRACE_IDX : p.lastIdx);
-      if (k > 0) p.rd = Math.min(Math.sqrt(p.rd * p.rd + ENGINE.growth * ENGINE.growth * k), ENGINE.maxRd);
-    }
-    const played = {};
-    for (const e of periods.get(idx)) {
-      const s = e.sa > e.sb ? 1 : e.sa < e.sb ? 0 : 0.5;
-      (played[e.a] = played[e.a] || []).push([e.b, s]);
-      (played[e.b] = played[e.b] || []).push([e.a, 1 - s]);
-      record(e.a, e.b, e.sa, e.sb, e.date, idx);
-      record(e.b, e.a, e.sb, e.sa, e.date, idx);
-    }
-    const snap2 = {};
-    for (const n in played) snap2[n] = [get(n).r, get(n).rd];
-    for (const n in played) {
-      const [nr, nrd] = glickoBatch(snap2[n][0], snap2[n][1],
-        played[n].map(([o, sc]) => [snap2[o][0], snap2[o][1], sc]));
-      get(n).r = nr; get(n).rd = nrd;
-    }
-  }
-
-  /* finalize: records, visible ratings, avgOpp, ranks */
-  const players = Object.values(st).map((p) => ({
-    name: p.name, glicko: p.r, rd: p.rd, rating: p.r - ENGINE.conservative * p.rd,
-    matches: p.games, w: p.w, l: p.l, d: p.d,
-    winPct: p.games ? roundHalfEven((p.w / p.games) * 100, 1) : 0,
-    opponents: p.opps.size, avgOpp: 0,
-    lastMatch: p.lastDate || '',
-    provisional: !(p.games >= ENGINE.minMatches && p.opps.size >= ENGINE.minOpp),
-    inactive: false,
-  }));
-  const gOf2 = {};
-  players.forEach((p) => { gOf2[p.name] = p.glicko; });
-  players.forEach((p) => {
-    let sum = 0;
-    st[p.name].opps.forEach((o) => { sum += gOf2[o] != null ? gOf2[o] : ENGINE.unratedR; });
-    p.avgOpp = st[p.name].opps.size ? sum / st[p.name].opps.size : 0;
-  });
-  players.forEach((p) => {
-    p.delta = p.rating - (BASELINE[p.name] != null ? BASELINE[p.name] : p.rating);
-  });
-  const now = Date.now();
-  const graceEnd = Date.parse(ENGINE.graceStart + 'T00:00:00Z') + ENGINE.graceDays * DAY;
-  const inactList = new Set([...(D.inactiveList || []), ...(overAll().inactive || [])]);
-  players.forEach((p) => {
-    p.inactive = inactList.has(p.name) || (p.lastMatch
-      ? (now - Date.parse(p.lastMatch + 'T00:00:00Z')) > ENGINE.inactiveDays * DAY
-      : now > graceEnd);
-  });
-  const qualified = players.filter((p) => !p.provisional).sort((a, b) => b.rating - a.rating);
-  qualified.forEach((p, i) => { p.rank = i + 1; });
-  players.sort((a, b) => b.rating - a.rating);
-  const byName = {};
-  players.forEach((p) => { byName[p.name] = p; });
-  return { players, byName, qualified };
-}
-
-function rebuildState() {
-  STATE = recalcAll();
-  playerByName = STATE.byName;
-  topOf = STATE.qualified;
-}
-
-/* ---------- router ---------- */
-const pages = ['page-home', 'page-player', 'page-matches', 'page-roster',
-               'page-analytics', 'page-method', 'page-admin'];
-
-function route() {
-  const h = location.hash || '#/';
-  pages.forEach((id) => $('#' + id).classList.remove('active'));
-  const base = '#/' + (h.split('/')[1] || '');
-  $$('.nav a').forEach((a) => {
-    const href = a.getAttribute('href');
-    a.classList.toggle('active', href === base || (h === '#/' && href === '#/'));
-  });
-  const glide = $('#nav-glide');
-  const act = document.querySelector('.nav a.active');
-  if (glide && act) {
-    glide.style.width = act.offsetWidth + 'px';
-    glide.style.transform = `translateX(${act.offsetLeft}px)`;
-    glide.style.opacity = '1';
-  } else if (glide) {
-    glide.style.opacity = '0';
-  }
-
-  if (h.startsWith('#/player/')) {
-    renderPlayer(unslug(h.slice('#/player/'.length)));
-    $('#page-player').classList.add('active');
-    window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
-  } else if (h === '#/matches') {
-    renderMatches();
-    $('#page-matches').classList.add('active');
-    window.scrollTo(0, 0);
-  } else if (h === '#/roster') {
-    renderRoster();
-    $('#page-roster').classList.add('active');
-    window.scrollTo(0, 0);
-  } else if (h === '#/analytics') {
-    renderAnalytics();
-    $('#page-analytics').classList.add('active');
-    window.scrollTo(0, 0);
-  } else if (h === '#/method') {
-    renderMethod();
-    $('#page-method').classList.add('active');
-    window.scrollTo(0, 0);
-  } else if (h === '#/admin') {
-    renderAdmin();
-    $('#page-admin').classList.add('active');
-    window.scrollTo(0, 0);
-  } else {
-    renderHome();
-    $('#page-home').classList.add('active');
-    requestAnimationFrame(runHomeAnims);
-  }
-  observeReveals();
-}
-window.addEventListener('hashchange', route);
-
-/* ---------- home ---------- */
-function renderHome() {
-  currentFilter = 'all';
-  currentSort = { key: 'rank', dir: 1 };
-  $$('.chip[data-filter]').forEach((c) => c.classList.toggle('on', c.dataset.filter === 'all'));
-  $$('.sortable').forEach((s) => s.classList.remove('sorted', 'asc'));
-  const sh = $('.sortable[data-key="rank"]');
-  if (sh) sh.classList.add('sorted');
-  const totalMatches = allMatches().length;
-  const totalPlayers = STATE.players.length;
-  const best = topOf[0];
-  const avgRd = Math.round(topOf.reduce((s, p) => s + p.rd, 0) / topOf.length);
-  $('#hero-matches').textContent = totalMatches;
-  $('#stat-strip').innerHTML = `
+/* 1v1 Leaderboard — © Alternator & interstellar. Proprietary. Do not copy. */
+"use strict";(()=>{var W=window.LB_DATA,ms="https://tierstats-publish.tierstats.workers.dev/publish",p=(s,e=document)=>e.querySelector(s),M=(s,e=document)=>[...e.querySelectorAll(s)],u=s=>String(s).replace(/[&<>"']/g,e=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[e]),is=s=>encodeURIComponent(String(s)),ks=s=>decodeURIComponent(s);function ns(s,e,a={}){let n=a.dur||1200,r=a.dec||0,d=performance.now(),g=parseFloat(s.textContent)||0;function o(b){let h=Math.min(1,(b-d)/n),w=1-Math.pow(1-h,3);s.textContent=(g+(e-g)*w).toFixed(r),h<1&&requestAnimationFrame(o)}requestAnimationFrame(o)}var Ls='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 8.2c0-.9 1-1.4 1.7-.9l3.1 2.4c.5.4 1.2.3 1.6-.2l2.2-2.9c.4-.5 1.2-.5 1.6 0l2.2 2.9c.4.5 1.1.6 1.6.2l3.1-2.4c.7-.5 1.7 0 1.7.9l-.7 8.4c-.1.8-.7 1.4-1.5 1.4H5.2c-.8 0-1.4-.6-1.5-1.4L3 8.2Z"/><rect x="5" y="19.2" width="14" height="1.9" rx=".9"/></svg>',Ms='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8.4 2.2 12 8.4l3.6-6.2c.3-.6 1.1-.7 1.6-.3l1.7 1.5c.5.4.6 1.1.3 1.6L15.4 12a7 7 0 1 1-6.8 0L4.8 5a1.3 1.3 0 0 1 .3-1.6l1.7-1.5c.5-.4 1.3-.3 1.6.3Zm2 12.1a3.2 3.2 0 1 0 3.2 3.2 3.2 3.2 0 0 0-3.2-3.2Z"/></svg>';function H(s,e=""){let a=s===1?"rb1":s===2?"rb2":s===3?"rb3":"",n=s<=3?s===1?Ls:Ms:"";return`<div class="rank-badge ${a} ${e}" title="Rank #${s}">${n}<span class="num">${s}</span></div>`}var A={},N=[],T={players:[],byName:{},qualified:[]},q={};function xs(){for(let s in q)delete q[s];Object.entries(W.aliases).forEach(([s,e])=>{q[s.toLowerCase()]=e}),Object.entries(O().aliases||{}).forEach(([s,e])=>{q[String(s).toLowerCase()]=e})}var Z=s=>{let e=String(s).trim();return q[e.toLowerCase()]||e};function hs(s){let e=[];return B().forEach(a=>{let n=(r,d,g)=>({opp:r,for_:d,against:g,res:d>g?"W":d<g?"L":"D",date:a.date});a.a===s?e.push(n(a.b,a.sa,a.sb)):a.b===s&&e.push(n(a.a,a.sb,a.sa))}),e}function Ss(s){let e={};return hs(s).forEach(a=>{let n=e[a.opp]||(e[a.opp]={w:0,l:0,d:0,pf:0,pa:0});n[a.res.toLowerCase()]+=1,n.pf+=a.for_,n.pa+=a.against}),Object.entries(e).map(([a,n])=>({opp:a,...n})).sort((a,n)=>n.w+n.l+n.d-(a.w+a.l+a.d)||n.w-a.w)}function Es(s){let e=A[s]||{};return e.provisional?'<span class="tag prov">provisional</span>':e.inactive?'<span class="tag inact">inactive</span>':'<span class="tag legacy">legacy</span>'}var es={},Y=!1;function Rs(){Y=!0;try{ws().players.forEach(s=>{es[s.name]=s.rating})}finally{Y=!1}}function K(s){let e=s.delta!=null?s.delta:0;if(Math.abs(e)<.05)return"";let a=e>0;return`<span class="delta ${a?"up":"down"}" title="rating change since the last data sync">${a?"\u25B2":"\u25BC"} ${Math.abs(e).toFixed(1)}</span>`}var us="tt1v1_admin_log_v1",Q="tt1v1_admin_ok",z="tt1v1_admin_pw",Ns=ms.replace(/\/publish$/,"/verify");function G(){try{return JSON.parse(localStorage.getItem(us)||"[]")}catch{return[]}}function X(s){try{localStorage.setItem(us,JSON.stringify(s))}catch{}}var gs="tt1v1_admin_over_v1";function R(){try{return JSON.parse(localStorage.getItem(gs)||"{}")||{}}catch{return{}}}function E(s){try{localStorage.setItem(gs,JSON.stringify(s))}catch{}}function O(){let s=window.LB_PUB||{},e=R();return{aliases:{...s.aliases||{},...e.aliases||{}},aliasNotes:{...s.aliasNotes||{},...e.aliasNotes||{}},seeds:{...s.seeds||{},...e.seeds||{}},seedGlicko:{...s.seedGlicko||{},...e.seedGlicko||{}},seedRd:{...s.seedRd||{},...e.seedRd||{}},settings:{...s.settings||{},...e.settings||{}},matchEdits:{...s.matchEdits||{},...e.matchEdits||{}},inactive:e.inactive||s.inactive||[],matchRemoved:[...new Set([...s.matchRemoved||[],...e.matchRemoved||[]])]}}function fs(){return window.LB_PUB&&Array.isArray(window.LB_PUB.matches)?window.LB_PUB.matches:Array.isArray(window.LB_LOG)?window.LB_LOG:[]}function B(){let s=O(),e=s.matchEdits||{},a=new Set(s.matchRemoved||[]),n=(o,b)=>{if(a.has(b))return null;let h=e[b],w=h?{...o,sa:h.sa,sb:h.sb,date:h.date!=null?h.date:o.date}:o;return{...w,a:Z(w.a),b:Z(w.b),sa:+w.sa,sb:+w.sb,key:b}},r=Y?[]:G().map((o,b)=>n({...o,admin:!0,published:!1},"l:"+b)).filter(Boolean),d=Y?[]:fs().map((o,b)=>n({...o,admin:!0,published:!0},"p:"+b)).filter(Boolean),g=W.matches.map((o,b)=>n({...o,admin:!1,published:!1},"a:"+b)).filter(Boolean).reverse();return r.concat(d,g)}var $={seedMid:1500,oldMid:80,ptsPer:30,knownRd:80,unratedR:1500,unratedRd:250,maxRd:250,growth:20,periodDays:30,conservative:.35,minMatches:5,minOpp:3,inactiveDays:365,graceStart:"2026-10-04",graceDays:365},ts=864e5,F=Math.log(10)/400,bs=s=>1/Math.sqrt(1+3*F*F*s*s/(Math.PI*Math.PI)),Os=(s,e,a)=>1/(1+Math.pow(10,-bs(a)*(s-e)/400));function ys(s){let e=O().seeds||{};return e[s]!=null&&e[s]!==""?Number(e[s]):W.seeds[s]}function Bs(s){let e=(O().seedGlicko||{})[s],a=(O().seedRd||{})[s],n=e!=null&&e!==""?Number(e):null,r=a!=null&&a!==""?Number(a):null;if(n!=null||r!=null)return[n??$.unratedR,r??$.unratedRd];let d=ys(s);return d!=null?[$.seedMid+(d-$.oldMid)*$.ptsPer,$.knownRd]:[$.unratedR,$.unratedRd]}function vs(s,e,a){let n=0,r=0;for(let[g,o,b]of a){let h=bs(o),w=Os(s,g,o);n+=h*h*w*(1-w),r+=h*(b-w)}if(n*=F*F,n<=0)return[s,e];let d=1/(e*e)+n;return[s+F/d*r,Math.sqrt(1/d)]}function Ts(s,e){let a=Math.pow(10,e),n=s*a,r=Math.floor(n);return Math.abs(n-r-.5)<1e-6?(r%2===0?r:r+1)/a:Math.round(n)/a}var os=s=>Math.floor(Date.parse(s+"T00:00:00Z")/($.periodDays*ts)),J=os($.graceStart),Ps={"Seed Glicko midpoint":"seedMid","Old rating midpoint":"oldMid","Glicko points per old rating point":"ptsPer","Known-player starting RD":"knownRd","Unrated-player starting rating":"unratedR","Unrated-player starting RD":"unratedRd","Maximum RD":"maxRd","RD growth per rating period":"growth","Rating period length (days)":"periodDays","Conservative RD multiplier":"conservative","Minimum matches for leaderboard":"minMatches","Minimum different opponents":"minOpp","Inactive after days":"inactiveDays","Legacy grace start date":"graceStart","Legacy grace days":"graceDays"};function ls(){let s=O().settings||{};return(W.settings||[]).map(e=>({...e,value:Object.prototype.hasOwnProperty.call(s,e.name)?s[e.name]:e.value}))}function js(){for(let s of ls()){let e=Ps[s.name];if(!e)continue;if(e==="graceStart"){let n=String(s.value==null?"":s.value).slice(0,10);/^\d{4}-\d{2}-\d{2}$/.test(n)&&($.graceStart=n);continue}let a=Number(s.value);Number.isFinite(a)&&($[e]=a)}J=os($.graceStart)}function ws(){js(),xs();let s={},e=t=>{if(!s[t]){let[c,v]=Bs(t);s[t]={name:t,r:c,rd:v,w:0,l:0,d:0,games:0,opps:new Set,lastIdx:null,lastDate:null}}return s[t]},a=(t,c,v,m,y,i)=>{let f=e(t);f.games++,f.opps.add(c),v>m?f.w++:v<m?f.l++:f.d++,f.lastIdx=i,y&&(f.lastDate=y)},n={};for(let t of B()){if(t.date)continue;let c=t.a,v=t.b,m=t.sa>t.sb?1:t.sa<t.sb?0:.5;(n[c]=n[c]||[]).push([v,m]),(n[v]=n[v]||[]).push([c,1-m]),a(c,v,t.sa,t.sb,"",J),a(v,c,t.sb,t.sa,"",J)}let r={};for(let t in n)r[t]=[e(t).r,e(t).rd];for(let t in n){let[c,v]=vs(r[t][0],r[t][1],n[t].map(([m,y])=>[r[m][0],r[m][1],y]));e(t).r=c,e(t).rd=v}let d=new Map;for(let t of B().filter(c=>c.date).slice().reverse()){let c=t.date,v=os(c);d.has(v)||d.set(v,[]),d.get(v).push({a:Z(t.a),b:Z(t.b),sa:+t.sa,sb:+t.sb,date:c})}for(let t of[...d.keys()].sort((c,v)=>c-v)){for(let m in s){let y=s[m],i=t-(y.lastIdx==null?J:y.lastIdx);i>0&&(y.rd=Math.min(Math.sqrt(y.rd*y.rd+$.growth*$.growth*i),$.maxRd))}let c={};for(let m of d.get(t)){let y=m.sa>m.sb?1:m.sa<m.sb?0:.5;(c[m.a]=c[m.a]||[]).push([m.b,y]),(c[m.b]=c[m.b]||[]).push([m.a,1-y]),a(m.a,m.b,m.sa,m.sb,m.date,t),a(m.b,m.a,m.sb,m.sa,m.date,t)}let v={};for(let m in c)v[m]=[e(m).r,e(m).rd];for(let m in c){let[y,i]=vs(v[m][0],v[m][1],c[m].map(([f,j])=>[v[f][0],v[f][1],j]));e(m).r=y,e(m).rd=i}}let g=Object.values(s).map(t=>({name:t.name,glicko:t.r,rd:t.rd,rating:t.r-$.conservative*t.rd,matches:t.games,w:t.w,l:t.l,d:t.d,winPct:t.games?Ts(t.w/t.games*100,1):0,opponents:t.opps.size,avgOpp:0,lastMatch:t.lastDate||"",provisional:!(t.games>=$.minMatches&&t.opps.size>=$.minOpp),inactive:!1})),o={};g.forEach(t=>{o[t.name]=t.glicko}),g.forEach(t=>{let c=0;s[t.name].opps.forEach(v=>{c+=o[v]!=null?o[v]:$.unratedR}),t.avgOpp=s[t.name].opps.size?c/s[t.name].opps.size:0}),g.forEach(t=>{t.delta=t.rating-(es[t.name]!=null?es[t.name]:t.rating)});let b=Date.now(),h=Date.parse($.graceStart+"T00:00:00Z")+$.graceDays*ts,w=new Set([...W.inactiveList||[],...O().inactive||[]]);g.forEach(t=>{t.inactive=w.has(t.name)||(t.lastMatch?b-Date.parse(t.lastMatch+"T00:00:00Z")>$.inactiveDays*ts:b>h)});let P=g.filter(t=>!t.provisional).sort((t,c)=>c.rating-t.rating);P.forEach((t,c)=>{t.rank=c+1}),g.sort((t,c)=>c.rating-t.rating);let l={};return g.forEach(t=>{l[t.name]=t}),{players:g,byName:l,qualified:P}}function L(){T=ws(),A=T.byName,N=T.qualified}var Ds=["page-home","page-player","page-matches","page-roster","page-analytics","page-method","page-admin"];function ds(){let s=location.hash||"#/";Ds.forEach(r=>p("#"+r).classList.remove("active"));let e="#/"+(s.split("/")[1]||"");M(".nav a").forEach(r=>{let d=r.getAttribute("href");r.classList.toggle("active",d===e||s==="#/"&&d==="#/")});let a=p("#nav-glide"),n=document.querySelector(".nav a.active");a&&n?(a.style.width=n.offsetWidth+"px",a.style.transform=`translateX(${n.offsetLeft}px)`,a.style.opacity="1"):a&&(a.style.opacity="0"),s.startsWith("#/player/")?(_s(ks(s.slice(9))),p("#page-player").classList.add("active"),window.scrollTo({top:0,behavior:"instant"in window?"instant":"auto"})):s==="#/matches"?(Is(),p("#page-matches").classList.add("active"),window.scrollTo(0,0)):s==="#/roster"?(qs(),p("#page-roster").classList.add("active"),window.scrollTo(0,0)):s==="#/analytics"?(Gs(),p("#page-analytics").classList.add("active"),window.scrollTo(0,0)):s==="#/method"?(Fs(),p("#page-method").classList.add("active"),window.scrollTo(0,0)):s==="#/admin"?(x(),p("#page-admin").classList.add("active"),window.scrollTo(0,0)):(rs(),p("#page-home").classList.add("active"),requestAnimationFrame(As)),cs()}window.addEventListener("hashchange",ds);function rs(){_="all",S={key:"rank",dir:1},M(".chip[data-filter]").forEach(d=>d.classList.toggle("on",d.dataset.filter==="all")),M(".sortable").forEach(d=>d.classList.remove("sorted","asc"));let s=p('.sortable[data-key="rank"]');s&&s.classList.add("sorted");let e=B().length,a=T.players.length,n=N[0],r=Math.round(N.reduce((d,g)=>d+g.rd,0)/N.length);p("#hero-matches").textContent=e,p("#stat-strip").innerHTML=`
     <div class="stat-card"><div class="k">Ranked players</div>
-      <div class="v"><span class="cu" data-target="${topOf.length}">0</span><small>/ ${totalPlayers} total</small></div></div>
+      <div class="v"><span class="cu" data-target="${N.length}">0</span><small>/ ${a} total</small></div></div>
     <div class="stat-card"><div class="k">Matches logged</div>
-      <div class="v"><span class="cu" data-target="${totalMatches}">0</span></div></div>
+      <div class="v"><span class="cu" data-target="${e}">0</span></div></div>
     <div class="stat-card"><div class="k">Highest rating</div>
-      <div class="v"><span class="cu" data-target="${best.rating}" data-dec="1">0</span><small>${esc(best.name)}</small></div></div>
+      <div class="v"><span class="cu" data-target="${n.rating}" data-dec="1">0</span><small>${u(n.name)}</small></div></div>
     <div class="stat-card"><div class="k">Avg certainty (RD)</div>
-      <div class="v"><span class="cu" data-target="${avgRd}" data-dec="1">0</span><small>lower = surer</small></div></div>`;
-
-  /* front line — top 5 cards */
-  $('#fl-cards').innerHTML = topOf.slice(0, 5).map((p, i) => `
-    <div class="fl-card r${i + 1}${i === 0 ? ' champ' : ''} reveal" data-goto="${esc(p.name)}">
-      <div class="rd">RD ${p.rd.toFixed(0)}</div>
-      ${rankBadge(p.rank)}
-      ${i === 0 ? '<div class="champ-tag">#1 Tank</div>' : ''}
-      <div class="nm">${esc(p.name)}</div>
-      <div class="rating"><span class="big">${Math.round(p.rating)}</span><span class="unit">Glicko</span>${deltaTag(p)}</div>
+      <div class="v"><span class="cu" data-target="${r}" data-dec="1">0</span><small>lower = surer</small></div></div>`,p("#fl-cards").innerHTML=N.slice(0,5).map((d,g)=>`
+    <div class="fl-card r${g+1}${g===0?" champ":""} reveal" data-goto="${u(d.name)}">
+      <div class="rd">RD ${d.rd.toFixed(0)}</div>
+      ${H(d.rank)}
+      ${g===0?'<div class="champ-tag">#1 Tank</div>':""}
+      <div class="nm">${u(d.name)}</div>
+      <div class="rating"><span class="big">${Math.round(d.rating)}</span><span class="unit">Glicko</span>${K(d)}</div>
       <div class="meta">
-        <span><span class="w">${p.w}W</span> <span class="l">${p.l}L</span> ${p.d}D</span>
-        <span style="margin-left:auto">${p.winPct}%</span>
+        <span><span class="w">${d.w}W</span> <span class="l">${d.l}L</span> ${d.d}D</span>
+        <span style="margin-left:auto">${d.winPct}%</span>
       </div>
-    </div>`).join('');
-
-  /* ranks 6-10 compact rows */
-  $('#fl-rows').innerHTML = topOf.slice(5, 10).map((p) => `
-    <div class="fl-row reveal" data-goto="${esc(p.name)}">
-      ${rankBadge(p.rank, 'sm')}
-      <div class="nm">${esc(p.name)}</div>
-      <div class="rating">${Math.round(p.rating)}${deltaTag(p)}</div>
-      <div class="rec"><span class="w">${p.w}W</span> · <span class="l">${p.l}L</span> · ${p.d}D</div>
-      <div class="pct">${p.winPct}%</div>
-      <div class="go">›</div>
-    </div>`).join('');
-
-  renderLeaderboard();
-  renderBattles();
-}
-
-function renderBattles() {
-  const rows = allMatches().slice(0, 10);
-  $('#battles-grid').innerHTML = rows.map((m) => {
-    const aWin = m.sa > m.sb, bWin = m.sb > m.sa;
-    return `
-    <div class="battle-row reveal" data-goto="${esc(aWin ? m.a : m.b)}">
-      <div class="who ${aWin ? 'win' : 'lose'}" data-goto="${esc(m.a)}">${esc(m.a)}</div>
+    </div>`).join(""),p("#fl-rows").innerHTML=N.slice(5,10).map(d=>`
+    <div class="fl-row reveal" data-goto="${u(d.name)}">
+      ${H(d.rank,"sm")}
+      <div class="nm">${u(d.name)}</div>
+      <div class="rating">${Math.round(d.rating)}${K(d)}</div>
+      <div class="rec"><span class="w">${d.w}W</span> \xB7 <span class="l">${d.l}L</span> \xB7 ${d.d}D</div>
+      <div class="pct">${d.winPct}%</div>
+      <div class="go">\u203A</div>
+    </div>`).join(""),U(),Cs()}function Cs(){let s=B().slice(0,10);p("#battles-grid").innerHTML=s.map(e=>{let a=e.sa>e.sb,n=e.sb>e.sa;return`
+    <div class="battle-row reveal" data-goto="${u(a?e.a:e.b)}">
+      <div class="who ${a?"win":"lose"}" data-goto="${u(e.a)}">${u(e.a)}</div>
       <div class="vs">vs</div>
-      <div class="who r ${bWin ? 'win' : 'lose'}" data-goto="${esc(m.b)}">${esc(m.b)}</div>
-      <div class="sc mono"><span class="${aWin ? 'win' : 'lose'}">${m.sa}</span> – <span class="${bWin ? 'win' : 'lose'}">${m.sb}</span></div>
-      <div class="dt">${m.date || (m.admin && !m.published ? 'just now' : 'legacy')}</div>
-    </div>`;
-  }).join('');
-}
-
-function renderLeaderboard(filter = 'all', sortKey = 'rank', sortDir = 1) {
-  const box = $('#lb-body');
-  /* filter chips describe their own population — only the "all" view is
-     scoped by the Qualified-only toggle (otherwise Provisional/Inactive
-     would both filter an already-qualified list and look identical) */
-  const scope = (filter === 'all' && qualOnly) ? topOf : STATE.players;
-  let rows = scope.slice()
-    .map((p) => ({ ...p, rank: p.rank != null ? p.rank : 9999 }));
-  if (nameFilter) rows = rows.filter((p) => p.name.toLowerCase().includes(nameFilter));
-  if (filter === 'provisional') rows = rows.filter((p) => (playerByName[p.name] || {}).provisional);
-  else if (filter === 'inactive') rows = rows.filter((p) => (playerByName[p.name] || {}).inactive);
-  else if (filter === 'veterans') rows = rows.filter((p) => p.matches >= 15);
-  else if (filter === 'rising') rows = rows.filter((p) => p.winPct >= 60 && p.matches >= 5);
-
-  rows.sort((a, b) => {
-    const va = a[sortKey], vb = b[sortKey];
-    return (typeof va === 'string' ? va.localeCompare(vb) : va - vb) * sortDir;
-  });
-
-  // FLIP: capture old positions
-  const first = new Map();
-  $$('.lb-row', box).forEach((el) => first.set(el.dataset.name, el.getBoundingClientRect().top));
-
-  box.innerHTML = rows.map((p) => `
-    <div class="lb-row ${p.rank <= 3 ? 'top' + p.rank : ''}" data-name="${esc(p.name)}" data-goto="${esc(p.name)}">
-      <div class="rank">${p.rank <= topOf.length ? rankBadge(p.rank, 'sm') : '<div class="rank-badge sm">–</div>'}</div>
-      <div class="name-cell"><div class="pname">${esc(p.name)}</div></div>
-      <div class="rating-cell mono">${p.rating.toFixed(1)}${deltaTag(p)}</div>
-      <div class="num-cell mono col-hide">${p.rd.toFixed(1)}</div>
-      <div class="num-cell mono col-hide">${p.matches}</div>
-      <div class="num-cell mono col-hide"><span class="w">${p.w}</span></div>
-      <div class="num-cell mono col-hide"><span class="l">${p.l}</span></div>
+      <div class="who r ${n?"win":"lose"}" data-goto="${u(e.b)}">${u(e.b)}</div>
+      <div class="sc mono"><span class="${a?"win":"lose"}">${e.sa}</span> \u2013 <span class="${n?"win":"lose"}">${e.sb}</span></div>
+      <div class="dt">${e.date||(e.admin&&!e.published?"just now":"legacy")}</div>
+    </div>`}).join("")}function U(s="all",e="rank",a=1){let n=p("#lb-body"),d=(s==="all"&&V?N:T.players).slice().map(o=>({...o,rank:o.rank!=null?o.rank:9999}));as&&(d=d.filter(o=>o.name.toLowerCase().includes(as))),s==="provisional"?d=d.filter(o=>(A[o.name]||{}).provisional):s==="inactive"?d=d.filter(o=>(A[o.name]||{}).inactive):s==="veterans"?d=d.filter(o=>o.matches>=15):s==="rising"&&(d=d.filter(o=>o.winPct>=60&&o.matches>=5)),d.sort((o,b)=>{let h=o[e],w=b[e];return(typeof h=="string"?h.localeCompare(w):h-w)*a});let g=new Map;M(".lb-row",n).forEach(o=>g.set(o.dataset.name,o.getBoundingClientRect().top)),n.innerHTML=d.map(o=>`
+    <div class="lb-row ${o.rank<=3?"top"+o.rank:""}" data-name="${u(o.name)}" data-goto="${u(o.name)}">
+      <div class="rank">${o.rank<=N.length?H(o.rank,"sm"):'<div class="rank-badge sm">\u2013</div>'}</div>
+      <div class="name-cell"><div class="pname">${u(o.name)}</div></div>
+      <div class="rating-cell mono">${o.rating.toFixed(1)}${K(o)}</div>
+      <div class="num-cell mono col-hide">${o.rd.toFixed(1)}</div>
+      <div class="num-cell mono col-hide">${o.matches}</div>
+      <div class="num-cell mono col-hide"><span class="w">${o.w}</span></div>
+      <div class="num-cell mono col-hide"><span class="l">${o.l}</span></div>
       <div class="bar-cell">
-        <div class="bar-track"><div class="bar-fill ${p.winPct >= 60 ? '' : (p.winPct >= 40 ? 'mid' : 'low')}" data-w="${p.winPct}"></div></div>
-        <div class="pct mono">${p.winPct}%</div>
+        <div class="bar-track"><div class="bar-fill ${o.winPct>=60?"":o.winPct>=40?"mid":"low"}" data-w="${o.winPct}"></div></div>
+        <div class="pct mono">${o.winPct}%</div>
       </div>
-      <div class="num-cell mono col-hide">${p.opponents}</div>
-      <div class="num-cell mono col-hide">${p.avgOpp.toFixed(0)}</div>
-      <div class="col-status">${statusTag(p.name)}</div>
-      <div class="row-arrow">→</div>
-    </div>`).join('') || `<div class="empty" style="padding:30px;text-align:center;color:var(--dim)">${
-        filter === 'inactive'
-          ? 'Nobody is inactive right now — a player goes inactive 365 days after their last match (or when flagged in the master sheet).'
-          : filter === 'provisional'
-            ? 'No provisional players right now.'
-            : 'No players match this filter.'}</div>`;
-
-  // FLIP: play
-  requestAnimationFrame(() => {
-    $$('.lb-row', box).forEach((el) => {
-      const prev = first.get(el.dataset.name);
-      const now = el.getBoundingClientRect().top;
-      if (prev !== undefined && Math.abs(prev - now) > 1) {
-        el.style.transform = `translateY(${prev - now}px)`;
-        el.style.transition = 'none';
-        requestAnimationFrame(() => {
-          el.style.transition = 'transform .5s cubic-bezier(.22,.8,.24,1)';
-          el.style.transform = '';
-        });
-      }
-    });
-    $$('.bar-fill', box).forEach((b) => { b.style.width = b.dataset.w + '%'; });
-  });
-}
-
-let currentFilter = 'all';
-let currentSort = { key: 'rank', dir: 1 };
-let nameFilter = '';
-let qualOnly = true;
-
-function runHomeAnims() {
-  $$('#stat-strip .cu').forEach((el) =>
-    countUp(el, parseFloat(el.dataset.target), { dec: parseInt(el.dataset.dec || 0) }));
-  $$('.bar-fill').forEach((b) => { b.style.width = b.dataset.w + '%'; });
-}
-
-/* leaderboard controls */
-$('#lb-qual').addEventListener('click', () => {
-  qualOnly = !qualOnly;
-  $('#lb-qual').classList.toggle('on', qualOnly);
-  renderLeaderboard(currentFilter, currentSort.key, currentSort.dir);
-});
-$('#lb-filter').addEventListener('input', (e) => {
-  nameFilter = e.target.value.trim().toLowerCase();
-  renderLeaderboard(currentFilter, currentSort.key, currentSort.dir);
-});
-
-document.addEventListener('click', (e) => {
-  const chip = e.target.closest('.chip');
-  if (chip && chip.dataset.filter) {
-    $$('.chip[data-filter]').forEach((c) => c.classList.remove('on'));
-    chip.classList.add('on');
-    currentFilter = chip.dataset.filter;
-    renderLeaderboard(currentFilter, currentSort.key, currentSort.dir);
-    return;
-  }
-  const so = e.target.closest('.sortable');
-  if (so) {
-    const key = so.dataset.key;
-    currentSort.dir = currentSort.key === key ? -currentSort.dir : 1;
-    currentSort.key = key;
-    $$('.sortable').forEach((s) => s.classList.remove('sorted', 'asc'));
-    so.classList.add('sorted');
-    if (currentSort.dir === 1) so.classList.add('asc');
-    renderLeaderboard(currentFilter, currentSort.key, currentSort.dir);
-    return;
-  }
-  const go = e.target.closest('[data-goto]');
-  if (go) {
-    e.stopPropagation();
-    location.hash = '#/player/' + slug(go.dataset.goto);
-  }
-});
-
-/* ---------- player page ---------- */
-function renderPlayer(name) {
-  const p = playerByName[name];
-  const el = $('#page-player');
-  if (!p) {
-    el.innerHTML = `<div class="wrap"><div class="panel"><div class="empty">
-      No player called "<b>${esc(name)}</b>" found. <a href="#/" style="color:var(--gold)">Back to the leaderboard</a>.
-    </div></div></div>`;
-    return;
-  }
-  const q = topOf.find((x) => x.name === name);
-  const hist = histOf(name);
-  const recent = hist.slice(0, 10);
-  const h2h = h2hOf(name);
-  const seed = seedOf(name);
-  const rdPct = Math.max(3, Math.min(100, 100 - (p.rd / 120) * 100));
-
-  el.innerHTML = `
+      <div class="num-cell mono col-hide">${o.opponents}</div>
+      <div class="num-cell mono col-hide">${o.avgOpp.toFixed(0)}</div>
+      <div class="col-status">${Es(o.name)}</div>
+      <div class="row-arrow">\u2192</div>
+    </div>`).join("")||`<div class="empty" style="padding:30px;text-align:center;color:var(--dim)">${s==="inactive"?"Nobody is inactive right now \u2014 a player goes inactive 365 days after their last match (or when flagged in the master sheet).":s==="provisional"?"No provisional players right now.":"No players match this filter."}</div>`,requestAnimationFrame(()=>{M(".lb-row",n).forEach(o=>{let b=g.get(o.dataset.name),h=o.getBoundingClientRect().top;b!==void 0&&Math.abs(b-h)>1&&(o.style.transform=`translateY(${b-h}px)`,o.style.transition="none",requestAnimationFrame(()=>{o.style.transition="transform .5s cubic-bezier(.22,.8,.24,1)",o.style.transform=""}))}),M(".bar-fill",n).forEach(o=>{o.style.width=o.dataset.w+"%"})})}var _="all",S={key:"rank",dir:1},as="",V=!0;function As(){M("#stat-strip .cu").forEach(s=>ns(s,parseFloat(s.dataset.target),{dec:parseInt(s.dataset.dec||0)})),M(".bar-fill").forEach(s=>{s.style.width=s.dataset.w+"%"})}p("#lb-qual").addEventListener("click",()=>{V=!V,p("#lb-qual").classList.toggle("on",V),U(_,S.key,S.dir)});p("#lb-filter").addEventListener("input",s=>{as=s.target.value.trim().toLowerCase(),U(_,S.key,S.dir)});document.addEventListener("click",s=>{let e=s.target.closest(".chip");if(e&&e.dataset.filter){M(".chip[data-filter]").forEach(r=>r.classList.remove("on")),e.classList.add("on"),_=e.dataset.filter,U(_,S.key,S.dir);return}let a=s.target.closest(".sortable");if(a){let r=a.dataset.key;S.dir=S.key===r?-S.dir:1,S.key=r,M(".sortable").forEach(d=>d.classList.remove("sorted","asc")),a.classList.add("sorted"),S.dir===1&&a.classList.add("asc"),U(_,S.key,S.dir);return}let n=s.target.closest("[data-goto]");n&&(s.stopPropagation(),location.hash="#/player/"+is(n.dataset.goto))});function _s(s){let e=A[s],a=p("#page-player");if(!e){a.innerHTML=`<div class="wrap"><div class="panel"><div class="empty">
+      No player called "<b>${u(s)}</b>" found. <a href="#/" style="color:var(--gold)">Back to the leaderboard</a>.
+    </div></div></div>`;return}let n=N.find(h=>h.name===s),r=hs(s),d=r.slice(0,10),g=Ss(s),o=ys(s),b=Math.max(3,Math.min(100,100-e.rd/120*100));a.innerHTML=`
   <div class="wrap">
-    <a class="back-link" href="#/">← All rankings</a>
+    <a class="back-link" href="#/">\u2190 All rankings</a>
     <div class="player-hero anim">
       <div class="player-top">
-        ${q ? rankBadge(q.rank, 'lg') : `<div class="rank-badge lg"><span class="num">–</span></div>`}
+        ${n?H(n.rank,"lg"):'<div class="rank-badge lg"><span class="num">\u2013</span></div>'}
         <div>
-          <div class="player-name">${esc(p.name)}</div>
+          <div class="player-name">${u(e.name)}</div>
           <div class="player-rankline">
-            ${q ? `Ranked <b>#${q.rank}</b> of ${topOf.length} qualified players` : 'Unranked — not enough recent games for the board'}
-            ${seed != null ? ` · seeded from an original rating of <b>${seed}</b>` : ''}
-            ${p.provisional ? ' · <span class="tag prov">provisional</span>' : ''}
-            ${p.inactive ? ' · <span class="tag inact">inactive</span>' : ''}
+            ${n?`Ranked <b>#${n.rank}</b> of ${N.length} qualified players`:"Unranked \u2014 not enough recent games for the board"}
+            ${o!=null?` \xB7 seeded from an original rating of <b>${o}</b>`:""}
+            ${e.provisional?' \xB7 <span class="tag prov">provisional</span>':""}
+            ${e.inactive?' \xB7 <span class="tag inact">inactive</span>':""}
           </div>
         </div>
         <div class="player-rating-block">
           <div class="lbl">Visible rating</div>
           <div class="big mono" id="pv-rating">0</div>
-          ${deltaTag(p)}
+          ${K(e)}
           <div class="rd-bar">
-            <div class="bar-track"><div class="bar-fill" style="width:${rdPct}%"></div></div>
-            <div class="caption"><span>certainty</span><span class="mono">RD ${p.rd.toFixed(1)}</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:${b}%"></div></div>
+            <div class="caption"><span>certainty</span><span class="mono">RD ${e.rd.toFixed(1)}</span></div>
           </div>
         </div>
       </div>
       <div class="pstat-grid">
-        <div class="pstat"><div class="k">Glicko</div><div class="v mono">${p.glicko.toFixed(1)}</div></div>
-        <div class="pstat"><div class="k">Matches</div><div class="v mono">${p.matches}</div></div>
-        <div class="pstat"><div class="k">Record</div><div class="v mono" style="font-size:19px"><span style="color:var(--green)">${p.w}W</span> <span style="color:var(--red)">${p.l}L</span> <span style="color:var(--dim)">${p.d}D</span></div></div>
-        <div class="pstat"><div class="k">Win rate</div><div class="v mono">${p.winPct}%</div></div>
-        <div class="pstat"><div class="k">Opponents</div><div class="v mono">${p.opponents}</div></div>
-        <div class="pstat"><div class="k">Avg opp rating</div><div class="v mono">${p.avgOpp.toFixed(1)}</div></div>
+        <div class="pstat"><div class="k">Glicko</div><div class="v mono">${e.glicko.toFixed(1)}</div></div>
+        <div class="pstat"><div class="k">Matches</div><div class="v mono">${e.matches}</div></div>
+        <div class="pstat"><div class="k">Record</div><div class="v mono" style="font-size:19px"><span style="color:var(--green)">${e.w}W</span> <span style="color:var(--red)">${e.l}L</span> <span style="color:var(--dim)">${e.d}D</span></div></div>
+        <div class="pstat"><div class="k">Win rate</div><div class="v mono">${e.winPct}%</div></div>
+        <div class="pstat"><div class="k">Opponents</div><div class="v mono">${e.opponents}</div></div>
+        <div class="pstat"><div class="k">Avg opp rating</div><div class="v mono">${e.avgOpp.toFixed(1)}</div></div>
       </div>
     </div>
 
     <div class="panel reveal">
-      <h3>Recent form <span class="n">— last ${Math.min(10, hist.length)}</span></h3>
+      <h3>Recent form <span class="n">\u2014 last ${Math.min(10,r.length)}</span></h3>
       <div class="form-strip">
-        ${recent.map((m, i) => `<div class="form-pill ${m.res}" style="animation-delay:${i * 55}ms"
-           title="vs ${esc(m.opp)} ${m.for_}-${m.against}">${m.res}</div>`).join('') || '<span class="empty">No games yet</span>'}
+        ${d.map((h,w)=>`<div class="form-pill ${h.res}" style="animation-delay:${w*55}ms"
+           title="vs ${u(h.opp)} ${h.for_}-${h.against}">${h.res}</div>`).join("")||'<span class="empty">No games yet</span>'}
       </div>
     </div>
 
     <div class="panel reveal">
-      <h3>Match history <span class="n">— ${hist.length} games</span></h3>
+      <h3>Match history <span class="n">\u2014 ${r.length} games</span></h3>
       <div class="match-list">
-        ${hist.map((m) => `
+        ${r.map(h=>`
           <div class="match-row">
-            <div class="res-chip ${m.res}">${m.res}</div>
-            <div class="who">${esc(p.name)}</div>
-            <div class="score mono">${m.for_} – ${m.against}</div>
-            <div class="who opp"><a href="#/player/${slug(m.opp)}" style="color:var(--blue)">${esc(m.opp)}</a></div>
-            <div class="date mono">${m.date || 'legacy'}</div>
-          </div>`).join('') || '<div class="empty">No games recorded</div>'}
+            <div class="res-chip ${h.res}">${h.res}</div>
+            <div class="who">${u(e.name)}</div>
+            <div class="score mono">${h.for_} \u2013 ${h.against}</div>
+            <div class="who opp"><a href="#/player/${is(h.opp)}" style="color:var(--blue)">${u(h.opp)}</a></div>
+            <div class="date mono">${h.date||"legacy"}</div>
+          </div>`).join("")||'<div class="empty">No games recorded</div>'}
       </div>
     </div>
 
     <div class="panel reveal">
-      <h3>Head to head <span class="n">— ${h2h.length} opponents</span></h3>
+      <h3>Head to head <span class="n">\u2014 ${g.length} opponents</span></h3>
       <div class="h2h-grid">
-        ${h2h.map((h) => `
-          <div class="h2h-card" data-goto="${esc(h.opp)}">
-            <div class="opp">${esc(h.opp)}</div>
-            <div class="rec mono"><span class="w">${h.w}W</span> · <span class="l">${h.l}L</span> · <span>${h.d}D</span> · ${h.pf}-${h.pa} pts</div>
-          </div>`).join('') || '<div class="empty">No games recorded</div>'}
+        ${g.map(h=>`
+          <div class="h2h-card" data-goto="${u(h.opp)}">
+            <div class="opp">${u(h.opp)}</div>
+            <div class="rec mono"><span class="w">${h.w}W</span> \xB7 <span class="l">${h.l}L</span> \xB7 <span>${h.d}D</span> \xB7 ${h.pf}-${h.pa} pts</div>
+          </div>`).join("")||'<div class="empty">No games recorded</div>'}
       </div>
     </div>
-  </div>`;
-
-  countUp($('#pv-rating'), p.rating, { dec: 1, dur: 900 });
-  observeReveals();
-}
-
-/* ---------- matches page ---------- */
-function renderMatches() {
-  const box = $('#gm-body');
-  const rows = allMatches();
-  $('#gm-count').textContent = `— ${rows.length} games`;
-  box.innerHTML = rows.map((m) => {
-    const aWin = m.sa > m.sb, bWin = m.sb > m.sa;
-    return `
+  </div>`,ns(p("#pv-rating"),e.rating,{dec:1,dur:900}),cs()}function Is(){let s=p("#gm-body"),e=B();p("#gm-count").textContent=`\u2014 ${e.length} games`,s.innerHTML=e.map(a=>{let n=a.sa>a.sb,r=a.sb>a.sa;return`
     <div class="gm-row">
-      <div class="side ${aWin ? 'winner' : 'loser'}">
-        <div class="dot ${aWin ? 'w' : 'l'}"></div>
-        <div class="nm" data-goto="${esc(m.a)}">${esc(m.a)}</div>
+      <div class="side ${n?"winner":"loser"}">
+        <div class="dot ${n?"w":"l"}"></div>
+        <div class="nm" data-goto="${u(a.a)}">${u(a.a)}</div>
       </div>
-      <div class="sc mono" style="color:${aWin ? 'var(--green)' : 'var(--red)'}">${m.sa}</div>
-      <div class="dash mono">–</div>
-      <div class="sc mono" style="color:${bWin ? 'var(--green)' : 'var(--red)'}">${m.sb}</div>
-      <div class="side right ${bWin ? 'winner' : 'loser'}">
-        <div class="dot ${bWin ? 'w' : 'l'}"></div>
-        <div class="nm" data-goto="${esc(m.b)}">${esc(m.b)}</div>
+      <div class="sc mono" style="color:${n?"var(--green)":"var(--red)"}">${a.sa}</div>
+      <div class="dash mono">\u2013</div>
+      <div class="sc mono" style="color:${r?"var(--green)":"var(--red)"}">${a.sb}</div>
+      <div class="side right ${r?"winner":"loser"}">
+        <div class="dot ${r?"w":"l"}"></div>
+        <div class="nm" data-goto="${u(a.b)}">${u(a.b)}</div>
       </div>
-      <div class="dt mono">${m.admin && !m.published ? '<span class="tag fresh">new</span>' : (m.date || 'legacy')}</div>
-    </div>`;
-  }).join('');
-}
-
-/* ---------- roster page ---------- */
-function renderRoster() {
-  const prov = STATE.players
-    .filter((p) => p.provisional)
-    .sort((a, b) => b.rating - a.rating);
-  $('#roster-grid').innerHTML = prov.map((p) => {
-    const pct = Math.min(100, Math.round(
-      (Math.min(1, p.matches / 5) * 50 + Math.min(1, p.opponents / 3) * 50)));
-    return `
-    <div class="roster-card reveal" data-goto="${esc(p.name)}">
+      <div class="dt mono">${a.admin&&!a.published?'<span class="tag fresh">new</span>':a.date||"legacy"}</div>
+    </div>`}).join("")}function qs(){let s=T.players.filter(e=>e.provisional).sort((e,a)=>a.rating-e.rating);p("#roster-grid").innerHTML=s.map(e=>{let a=Math.min(100,Math.round(Math.min(1,e.matches/5)*50+Math.min(1,e.opponents/3)*50));return`
+    <div class="roster-card reveal" data-goto="${u(e.name)}">
       <div class="top">
-        <div class="nm">${esc(p.name)}</div>
+        <div class="nm">${u(e.name)}</div>
         <svg class="shield" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v5c0 4.6-2.9 8.4-7 10-4.1-1.6-7-5.4-7-10V6l7-3Z"/></svg>
       </div>
-      <div class="rating"><span class="big">${Math.round(p.rating)}</span><span class="unit">Glicko</span></div>
-      <div class="req-row"><span>Matches</span><span class="${p.matches >= 5 ? 'ok' : ''}">${p.matches} / 5 ${p.matches >= 5 ? '✓' : ''}</span></div>
-      <div class="req-row"><span>Opponents</span><span class="${p.opponents >= 3 ? 'ok' : ''}">${p.opponents} / 3 ${p.opponents >= 3 ? '✓' : ''}</span></div>
-      <div class="prog-track"><div class="prog-fill" data-w="${pct}"></div></div>
-      <div class="prog-label">${pct}% to qualified</div>
-    </div>`;
-  }).join('');
-  requestAnimationFrame(() =>
-    $$('#roster-grid .prog-fill').forEach((b) => { b.style.width = b.dataset.w + '%'; }));
-}
-
-/* ---------- analytics page ---------- */
-function renderAnalytics() {
-  const all = STATE.players;
-  const byWin = all.filter((p) => p.matches >= 5).sort((a, b) => b.winPct - a.winPct).slice(0, 10);
-  const byActive = all.slice().sort((a, b) => b.matches - a.matches).slice(0, 10);
-
-  /* biggest upsets: wins by the lower-rated side */
-  const upsets = [];
-  allMatches().forEach((m) => {
-    const A = playerByName[m.a], B = playerByName[m.b];
-    if (!A || !B) return;
-    const diff = A.rating - B.rating;
-    if (m.sa === m.sb) return;
-    const winner = m.sa > m.sb ? m.a : m.b;
-    const gap = Math.abs(diff);
-    if ((diff < 0 && winner === m.a) || (diff > 0 && winner === m.b)) {
-      upsets.push({ winner, loser: winner === m.a ? m.b : m.a, gap,
-                    score: winner === m.a ? `${m.sa}-${m.sb}` : `${m.sb}-${m.sa}` });
-    }
-  });
-  upsets.sort((x, y) => y.gap - x.gap);
-
-  /* most contested rivalries */
-  const rivs = {};
-  allMatches().forEach((m) => {
-    const k = [m.a, m.b].sort().join(' vs ');
-    rivs[k] = (rivs[k] || 0) + 1;
-  });
-  const rivalry = Object.entries(rivs).sort((a, b) => b[1] - a[1]).slice(0, 10);
-
-  /* rating distribution histogram + matches-played bars */
-  const ratings = all.map((p) => p.rating);
-  const rMin = Math.min(...ratings), rMax = Math.max(...ratings);
-  const B = 12, span = (rMax - rMin) / B || 1;
-  const buckets = Array.from({ length: B }, () => 0);
-  ratings.forEach((r) => { buckets[Math.min(B - 1, Math.max(0, Math.floor((r - rMin) / span)))]++; });
-  const peak = Math.max(...buckets, 1);
-  const histHTML = buckets.map((n, i) => `
-    <div class="hcol" title="${n} player${n === 1 ? '' : 's'} near ${Math.round(rMin + i * span)}">
-      <div class="hbar" data-h="${Math.round((n / peak) * 100)}"></div>
-      <div class="hlbl">${Math.round(rMin + i * span)}</div>
-    </div>`).join('');
-  const mMax = Math.max(...byActive.map((r) => r.matches), 1);
-  const matchBarsHTML = byActive.slice(0, 8).map((r) => `
-    <div class="mrow reveal" data-goto="${esc(r.name)}">
-      <div class="nm">${esc(r.name)}</div>
-      <div class="mtrack"><div class="abar" data-w="${Math.round((r.matches / mMax) * 100)}"></div></div>
-      <div class="val mono">${r.matches}</div>
-    </div>`).join('');
-
-  const list = (rows, val, unit) => rows.map((r, i) => `
-    <div class="an-row reveal" data-goto="${esc(r.name)}">
-      <div class="idx mono">${i + 1}</div>
-      <div class="nm">${esc(r.name)}</div>
-      <div class="val mono">${val(r)}</div>
-      <div class="unit mono">${unit(r)}</div>
-    </div>`).join('');
-
-  $('#an-grid').innerHTML = `
+      <div class="rating"><span class="big">${Math.round(e.rating)}</span><span class="unit">Glicko</span></div>
+      <div class="req-row"><span>Matches</span><span class="${e.matches>=5?"ok":""}">${e.matches} / 5 ${e.matches>=5?"\u2713":""}</span></div>
+      <div class="req-row"><span>Opponents</span><span class="${e.opponents>=3?"ok":""}">${e.opponents} / 3 ${e.opponents>=3?"\u2713":""}</span></div>
+      <div class="prog-track"><div class="prog-fill" data-w="${a}"></div></div>
+      <div class="prog-label">${a}% to qualified</div>
+    </div>`}).join(""),requestAnimationFrame(()=>M("#roster-grid .prog-fill").forEach(e=>{e.style.width=e.dataset.w+"%"}))}function Gs(){let s=T.players,e=s.filter(i=>i.matches>=5).sort((i,f)=>f.winPct-i.winPct).slice(0,10),a=s.slice().sort((i,f)=>f.matches-i.matches).slice(0,10),n=[];B().forEach(i=>{let f=A[i.a],j=A[i.b];if(!f||!j)return;let D=f.rating-j.rating;if(i.sa===i.sb)return;let C=i.sa>i.sb?i.a:i.b,$s=Math.abs(D);(D<0&&C===i.a||D>0&&C===i.b)&&n.push({winner:C,loser:C===i.a?i.b:i.a,gap:$s,score:C===i.a?`${i.sa}-${i.sb}`:`${i.sb}-${i.sa}`})}),n.sort((i,f)=>f.gap-i.gap);let r={};B().forEach(i=>{let f=[i.a,i.b].sort().join(" vs ");r[f]=(r[f]||0)+1});let d=Object.entries(r).sort((i,f)=>f[1]-i[1]).slice(0,10),g=s.map(i=>i.rating),o=Math.min(...g),b=Math.max(...g),h=12,w=(b-o)/h||1,P=Array.from({length:h},()=>0);g.forEach(i=>{P[Math.min(h-1,Math.max(0,Math.floor((i-o)/w)))]++});let l=Math.max(...P,1),t=P.map((i,f)=>`
+    <div class="hcol" title="${i} player${i===1?"":"s"} near ${Math.round(o+f*w)}">
+      <div class="hbar" data-h="${Math.round(i/l*100)}"></div>
+      <div class="hlbl">${Math.round(o+f*w)}</div>
+    </div>`).join(""),c=Math.max(...a.map(i=>i.matches),1),v=a.slice(0,8).map(i=>`
+    <div class="mrow reveal" data-goto="${u(i.name)}">
+      <div class="nm">${u(i.name)}</div>
+      <div class="mtrack"><div class="abar" data-w="${Math.round(i.matches/c*100)}"></div></div>
+      <div class="val mono">${i.matches}</div>
+    </div>`).join(""),m=(i,f,j)=>i.map((D,C)=>`
+    <div class="an-row reveal" data-goto="${u(D.name)}">
+      <div class="idx mono">${C+1}</div>
+      <div class="nm">${u(D.name)}</div>
+      <div class="val mono">${f(D)}</div>
+      <div class="unit mono">${j(D)}</div>
+    </div>`).join("");p("#an-grid").innerHTML=`
     <div class="an-panel">
       <div class="head"><h3>Top win rate</h3>
         <svg class="ico" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 17l6-6 4 4 8-8" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 7h6v6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
-      ${list(byWin, (r) => r.winPct + '%', (r) => r.matches + ' matches')}
+      ${m(e,i=>i.winPct+"%",i=>i.matches+" matches")}
     </div>
     <div class="an-panel">
       <div class="head"><h3>Most active</h3>
         <svg class="ico" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" stroke-linejoin="round"/></svg>
       </div>
-      ${list(byActive, (r) => r.matches, (r) => 'matches')}
+      ${m(a,i=>i.matches,i=>"matches")}
     </div>
     <div class="an-panel">
       <div class="head"><h3>Biggest upsets</h3>
         <svg class="ico" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3c1.5 3.5-1 5.5-1 7.5a3 3 0 0 0 6 0c0-1-.3-2-1-3 3 2.5 4 5 4 7.5a7 7 0 1 1-14 0c0-5 4-7.5 6-12Z" stroke-linejoin="round"/></svg>
       </div>
-      ${upsets.length ? upsets.slice(0, 8).map((u, i) => `
-        <div class="an-row reveal" data-goto="${esc(u.winner)}">
-          <div class="idx mono">${i + 1}</div>
-          <div class="nm">${esc(u.winner)} <span style="color:var(--dimmer);font-weight:500">def.</span> ${esc(u.loser)}</div>
-          <div class="val mono">${u.score}</div>
-          <div class="unit mono">+${Math.round(u.gap)} pts</div>
-        </div>`).join('') : '<div class="empty">No upsets on record</div>'}
+      ${n.length?n.slice(0,8).map((i,f)=>`
+        <div class="an-row reveal" data-goto="${u(i.winner)}">
+          <div class="idx mono">${f+1}</div>
+          <div class="nm">${u(i.winner)} <span style="color:var(--dimmer);font-weight:500">def.</span> ${u(i.loser)}</div>
+          <div class="val mono">${i.score}</div>
+          <div class="unit mono">+${Math.round(i.gap)} pts</div>
+        </div>`).join(""):'<div class="empty">No upsets on record</div>'}
     </div>
     <div class="an-panel">
       <div class="head"><h3>Most contested rivalries</h3>
         <svg class="ico" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 5h4v4H5zM15 5h4v4h-4zM5 15h4v4H5zM15 15h4v4h-4zM9 7h6M7 9v6M17 9v6M9 17h6" stroke-linecap="round"/></svg>
       </div>
-      ${rivalry.map(([pair, n], i) => `
+      ${d.map(([i,f],j)=>`
         <div class="an-row reveal">
-          <div class="idx mono">${i + 1}</div>
-          <div class="nm">${pair.split(' vs ').map(esc).join(' <span style="color:var(--dimmer);font-weight:500">vs</span> ')}</div>
-          <div class="val mono">${n}</div>
+          <div class="idx mono">${j+1}</div>
+          <div class="nm">${i.split(" vs ").map(u).join(' <span style="color:var(--dimmer);font-weight:500">vs</span> ')}</div>
+          <div class="val mono">${f}</div>
           <div class="unit mono">meetings</div>
-        </div>`).join('')}
+        </div>`).join("")}
     </div>
     <div class="an-panel">
       <div class="head"><h3>Rating distribution</h3>
         <svg class="ico" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 20V10M10 20V4M16 20v-8M2 20h20" stroke-linecap="round"/></svg>
       </div>
-      <div class="hist">${histHTML}</div>
+      <div class="hist">${t}</div>
     </div>
     <div class="an-panel">
       <div class="head"><h3>Matches played</h3>
         <svg class="ico" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 4v5M12 15v5" stroke-linecap="round"/></svg>
       </div>
-      ${matchBarsHTML}
-    </div>`;
-  const growBars = () => {
-    $$('#an-grid .hbar').forEach((b) => { b.style.height = b.dataset.h + '%'; });
-    $$('#an-grid .abar').forEach((b) => { b.style.width = b.dataset.w + '%'; });
-  };
-  requestAnimationFrame(growBars);
-  setTimeout(growBars, 140);
-  observeReveals();
-}
-
-/* ---------- method page ---------- */
-function renderMethod() {
-  $('#settings-body').innerHTML = effectiveSettings().map((s) => `
-    <tr><td><b>${esc(s.name)}</b><div style="color:var(--dimmer);font-size:12.5px">${esc(s.desc)}</div></td>
-        <td class="val">${esc(String(s.value))}</td></tr>`).join('');
-}
-
-/* ---------- admin portal ---------- */
-function renderAdmin() {
-  const wrap = $('#admin-wrap');
-  const unlocked = sessionStorage.getItem(ADMIN_UNLOCK) === '1';
-  if (!unlocked) {
-    wrap.innerHTML = `
+      ${v}
+    </div>`;let y=()=>{M("#an-grid .hbar").forEach(i=>{i.style.height=i.dataset.h+"%"}),M("#an-grid .abar").forEach(i=>{i.style.width=i.dataset.w+"%"})};requestAnimationFrame(y),setTimeout(y,140),cs()}function Fs(){p("#settings-body").innerHTML=ls().map(s=>`
+    <tr><td><b>${u(s.name)}</b><div style="color:var(--dimmer);font-size:12.5px">${u(s.desc)}</div></td>
+        <td class="val">${u(String(s.value))}</td></tr>`).join("")}function x(){let s=p("#admin-wrap");if(!(sessionStorage.getItem(Q)==="1")){s.innerHTML=`
     <div class="admin-gate">
       <div class="admin-card">
         <div class="lock">
@@ -923,74 +221,35 @@ function renderAdmin() {
         <input id="admin-pw" type="password" autocomplete="off">
         <button class="btn btn-primary" id="admin-auth">-) Authenticate</button>
       </div>
-    </div>`;
-    const tryAuth = async () => {
-      const v = $('#admin-pw').value;
-      try {
-        const r = await fetch(VERIFY_URL, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password: v }),
-        });
-        if (r.ok) {
-          sessionStorage.setItem(ADMIN_UNLOCK, '1');
-          sessionStorage.setItem(ADMIN_PW_KEY, v);
-          renderAdmin();
-          toast('Welcome back, commander.');
-          return;
-        }
-        if (r.status === 429) { toast('Too many attempts — wait a few minutes.'); return; }
-      } catch { /* fall through to reject */ }
-      $('#admin-pw').style.borderColor = 'var(--red)';
-      toast('Wrong password.');
-    };
-    $('#admin-auth').addEventListener('click', tryAuth);
-    $('#admin-pw').addEventListener('keydown', (e) => { if (e.key === 'Enter') tryAuth(); });
-    return;
-  }
-
-  const log = logGet();
-  const pubCount = pubMatches().length;
-  const O = overAll();
-  const trashSvg = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 7h14M10 11v6M14 11v6M8 7l1-3h6l1 3M7 7l1 13h8l1-13" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-  const aliasRows = Object.entries(O.aliases).map(([a, b]) => `
+    </div>`;let l=async()=>{let t=p("#admin-pw").value;try{let c=await fetch(Ns,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password:t})});if(c.ok){sessionStorage.setItem(Q,"1"),sessionStorage.setItem(z,t),x(),k("Welcome back, commander.");return}if(c.status===429){k("Too many attempts \u2014 wait a few minutes.");return}}catch{}p("#admin-pw").style.borderColor="var(--red)",k("Wrong password.")};p("#admin-auth").addEventListener("click",l),p("#admin-pw").addEventListener("keydown",t=>{t.key==="Enter"&&l()});return}let a=G(),n=fs().length,r=O(),d='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 7h14M10 11v6M14 11v6M8 7l1-3h6l1 3M7 7l1 13h8l1-13" stroke-linecap="round" stroke-linejoin="round"/></svg>',g=Object.entries(r.aliases).map(([l,t])=>`
     <div class="log-item">
-      <div class="txt"><b>${esc(a)}</b> → <b>${esc(b)}</b>${O.aliasNotes && O.aliasNotes[a] ? ` <span style="color:var(--dimmer)">— ${esc(O.aliasNotes[a])}</span>` : ''}</div>
-      <button class="icon-btn" data-alias-del="${esc(a)}" title="Remove name fix">${trashSvg}</button>
-    </div>`).join('') || '<div class="empty">No name fixes yet.</div>';
-  const inactRows = O.inactive.map((n) => `
+      <div class="txt"><b>${u(l)}</b> \u2192 <b>${u(t)}</b>${r.aliasNotes&&r.aliasNotes[l]?` <span style="color:var(--dimmer)">\u2014 ${u(r.aliasNotes[l])}</span>`:""}</div>
+      <button class="icon-btn" data-alias-del="${u(l)}" title="Remove name fix">${d}</button>
+    </div>`).join("")||'<div class="empty">No name fixes yet.</div>',o=r.inactive.map(l=>`
     <div class="log-item">
-      <div class="txt"><b>${esc(n)}</b> <span style="color:var(--dimmer)">— inactive</span></div>
-      <button class="icon-btn" data-inact-del="${esc(n)}" title="Mark active again">${trashSvg}</button>
-    </div>`).join('') || '<div class="empty">Nobody marked inactive.</div>';
-  const seedRows = Object.keys({ ...(O.seeds || {}), ...(O.seedGlicko || {}), ...(O.seedRd || {}) }).map((n) => `
+      <div class="txt"><b>${u(l)}</b> <span style="color:var(--dimmer)">\u2014 inactive</span></div>
+      <button class="icon-btn" data-inact-del="${u(l)}" title="Mark active again">${d}</button>
+    </div>`).join("")||'<div class="empty">Nobody marked inactive.</div>',b=Object.keys({...r.seeds||{},...r.seedGlicko||{},...r.seedRd||{}}).map(l=>`
     <div class="log-item">
-      <div class="txt"><b>${esc(n)}</b> · <span style="color:var(--dimmer)">old</span> <b class="mono">${esc(String((O.seeds || {})[n] != null ? (O.seeds || {})[n] : '—'))}</b>${(O.seedGlicko || {})[n] != null ? ` · <span style="color:var(--dimmer)">glicko</span> <b class="mono">${esc(String(O.seedGlicko[n]))}</b>` : ''}${(O.seedRd || {})[n] != null ? ` · <span style="color:var(--dimmer)">rd</span> <b class="mono">${esc(String(O.seedRd[n]))}</b>` : ''}</div>
-      <button class="icon-btn" data-seed-del="${esc(n)}" title="Remove seed">${trashSvg}</button>
-    </div>`).join('') || '<div class="empty">No seed overrides — players start from the sheet values.</div>';
-  const settingRows = effectiveSettings().map((s) => `
+      <div class="txt"><b>${u(l)}</b> \xB7 <span style="color:var(--dimmer)">old</span> <b class="mono">${u(String((r.seeds||{})[l]!=null?(r.seeds||{})[l]:"\u2014"))}</b>${(r.seedGlicko||{})[l]!=null?` \xB7 <span style="color:var(--dimmer)">glicko</span> <b class="mono">${u(String(r.seedGlicko[l]))}</b>`:""}${(r.seedRd||{})[l]!=null?` \xB7 <span style="color:var(--dimmer)">rd</span> <b class="mono">${u(String(r.seedRd[l]))}</b>`:""}</div>
+      <button class="icon-btn" data-seed-del="${u(l)}" title="Remove seed">${d}</button>
+    </div>`).join("")||'<div class="empty">No seed overrides \u2014 players start from the sheet values.</div>',h=ls().map(l=>`
     <div class="set-row">
-      <div class="lbl"><b>${esc(s.name)}</b><div class="d">${esc(String(s.desc || ''))}</div></div>
-      <input class="set-val mono" data-set-name="${esc(s.name)}" value="${esc(String(s.value))}">
-    </div>`).join('');
-  const matchRows = (q) => {
-    const ql = (q || '').trim().toLowerCase();
-    const list = allMatches().filter((m) =>
-      !ql || m.a.toLowerCase().includes(ql) || m.b.toLowerCase().includes(ql)).slice(0, 20);
-    return list.map((m) => `
-      <div class="log-item fix-row" data-mkey="${m.key}">
-        <div class="txt"><b>${esc(m.a)}</b> <span style="color:var(--dimmer)">vs</span> <b>${esc(m.b)}</b>${m.date ? '' : ' <span class="tag legacy">legacy</span>'}</div>
-        <input class="mono" data-f="sa" type="number" min="0" value="${m.sa}" title="Score 1">
-        <input class="mono" data-f="sb" type="number" min="0" value="${m.sb}" title="Score 2">
-        <input data-f="date" type="date" value="${m.date || ''}" title="Match date">
-        <button class="icon-btn" data-msave="${m.key}" title="Save fix"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 12l6 6L20 6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <button class="icon-btn" data-mdel="${m.key}" title="Delete match">${trashSvg}</button>
-      </div>`).join('') || '<div class="empty">No matches found.</div>';
-  };
-  wrap.innerHTML = `
+      <div class="lbl"><b>${u(l.name)}</b><div class="d">${u(String(l.desc||""))}</div></div>
+      <input class="set-val mono" data-set-name="${u(l.name)}" value="${u(String(l.value))}">
+    </div>`).join(""),w=l=>{let t=(l||"").trim().toLowerCase();return B().filter(v=>!t||v.a.toLowerCase().includes(t)||v.b.toLowerCase().includes(t)).slice(0,20).map(v=>`
+      <div class="log-item fix-row" data-mkey="${v.key}">
+        <div class="txt"><b>${u(v.a)}</b> <span style="color:var(--dimmer)">vs</span> <b>${u(v.b)}</b>${v.date?"":' <span class="tag legacy">legacy</span>'}</div>
+        <input class="mono" data-f="sa" type="number" min="0" value="${v.sa}" title="Score 1">
+        <input class="mono" data-f="sb" type="number" min="0" value="${v.sb}" title="Score 2">
+        <input data-f="date" type="date" value="${v.date||""}" title="Match date">
+        <button class="icon-btn" data-msave="${v.key}" title="Save fix"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 12l6 6L20 6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button class="icon-btn" data-mdel="${v.key}" title="Delete match">${d}</button>
+      </div>`).join("")||'<div class="empty">No matches found.</div>'};s.innerHTML=`
   <div class="admin-bar anim">
-    <div class="title"><span>●</span> Admin console</div>
+    <div class="title"><span>\u25CF</span> Admin console</div>
     <div class="spacer"></div>
-    <button class="btn btn-primary" id="admin-publish" style="width:auto;margin:0">↑ Publish to everyone</button>
+    <button class="btn btn-primary" id="admin-publish" style="width:auto;margin:0">\u2191 Publish to everyone</button>
     <button class="btn btn-ghost" id="admin-export">Export log</button>
     <button class="btn btn-danger" id="admin-lock">Lock</button>
   </div>
@@ -1024,34 +283,34 @@ function renderAdmin() {
         </div>
       </div>
       <div class="form-note" style="margin-top:14px">
-        Logged matches feed the same Dynamic Glicko engine as the official sheet —
+        Logged matches feed the same Dynamic Glicko engine as the official sheet \u2014
         ratings, ranks, records and head-to-heads recalculate instantly here.
         Hit <b style="color:var(--gold)">Publish to everyone</b> to push the log to
-        the site so every visitor sees it (needs a GitHub token with Contents:write
-        on the site repo — kept only in this tab). Use <b>Customize everything</b>
+        the site so every visitor sees it \u2014 one click, no tokens needed.
+        Use <b>Customize everything</b>
         below to fix names, dates, seeds, settings or any past match.
       </div>
     </div>
 
     <div class="panel" style="margin:0">
-      <h3>Pending <span class="n">log</span> — ${log.length} local · ${pubCount} published</h3>
+      <h3>Pending <span class="n">log</span> \u2014 ${a.length} local \xB7 ${n} published</h3>
       <div class="log-list" id="adm-list">
-        ${log.length ? log.map((e, i) => `
+        ${a.length?a.map((l,t)=>`
           <div class="log-item">
-            <div class="txt"><b>${esc(e.a)}</b> ${e.sa}–${e.sb} <b>${esc(e.b)}</b></div>
-            <div class="txt" style="color:var(--dimmer)">${esc(e.date || '')}</div>
-            <button class="icon-btn" data-del="${i}" title="Remove">
+            <div class="txt"><b>${u(l.a)}</b> ${l.sa}\u2013${l.sb} <b>${u(l.b)}</b></div>
+            <div class="txt" style="color:var(--dimmer)">${u(l.date||"")}</div>
+            <button class="icon-btn" data-del="${t}" title="Remove">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 7h14M10 11v6M14 11v6M8 7l1-3h6l1 3M7 7l1 13h8l1-13" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
-          </div>`).join('') : '<div class="empty">Nothing pending — the log is clean.</div>'}
+          </div>`).join(""):'<div class="empty">Nothing pending \u2014 the log is clean.</div>'}
       </div>
     </div>
   </div>
 
   <div class="admin-bar anim" style="margin-top:22px">
-    <div class="title"><span>●</span> Customize everything</div>
+    <div class="title"><span>\u25CF</span> Customize everything</div>
     <div class="spacer"></div>
-    <div class="form-note" style="margin:0">Everything the master sheet can do — names, inactive, seeds, settings, match fixes & dates. Changes apply live here; <b style="color:var(--gold)">Publish to everyone</b> makes them public.</div>
+    <div class="form-note" style="margin:0">Everything the master sheet can do \u2014 names, inactive, seeds, settings, match fixes & dates. Changes apply live here; <b style="color:var(--gold)">Publish to everyone</b> makes them public.</div>
   </div>
 
   <div class="admin-grid anim">
@@ -1074,7 +333,7 @@ function renderAdmin() {
           <button class="btn btn-primary" id="ov-alias-add" style="margin-top:6px">+) Save name fix</button>
         </div>
       </div>
-      <div class="log-list" id="ov-alias-list" style="margin-top:12px">${aliasRows}</div>
+      <div class="log-list" id="ov-alias-list" style="margin-top:12px">${g}</div>
     </div>
 
     <div class="panel" style="margin:0">
@@ -1089,7 +348,7 @@ function renderAdmin() {
           <button class="btn btn-primary" id="ov-inact-toggle">Toggle inactive</button>
         </div>
       </div>
-      <div class="log-list" id="ov-inact-list" style="margin-top:12px">${inactRows}</div>
+      <div class="log-list" id="ov-inact-list" style="margin-top:12px">${o}</div>
     </div>
 
     <div class="panel" style="margin:0">
@@ -1100,7 +359,7 @@ function renderAdmin() {
           <input id="ov-seed-n" list="player-list" autocomplete="off">
         </div>
         <div class="form-field">
-          <label>Old 0–100 rating</label>
+          <label>Old 0\u2013100 rating</label>
           <input id="ov-seed-v" type="number" step="0.5" placeholder="90">
         </div>
         <div class="form-field">
@@ -1115,19 +374,19 @@ function renderAdmin() {
           <button class="btn btn-primary" id="ov-seed-add" style="margin-top:6px">+) Save seed</button>
         </div>
       </div>
-      <div class="log-list" id="ov-seed-list" style="margin-top:12px">${seedRows}</div>
+      <div class="log-list" id="ov-seed-list" style="margin-top:12px">${b}</div>
     </div>
 
     <div class="panel" style="margin:0">
       <h3>Model <span class="n">settings</span></h3>
-      <div id="ov-settings">${settingRows}</div>
+      <div id="ov-settings">${h}</div>
       <button class="btn btn-ghost" id="ov-set-reset" style="margin-top:12px">Reset to sheet values</button>
     </div>
 
     <div class="panel" style="margin:0;grid-column:1/-1">
       <h3>Fix or delete <span class="n">any match</span></h3>
       <div class="form-note" style="margin:0 0 10px">Search a player, then fix scores, set or fix the date, or delete the match. Ratings recalculate instantly.</div>
-      <input id="ov-mq" placeholder="Search a player to find their matches…" autocomplete="off" style="width:100%">
+      <input id="ov-mq" placeholder="Search a player to find their matches\u2026" autocomplete="off" style="width:100%">
       <div class="fix-row" style="margin-top:12px;opacity:.5">
         <div class="txt" style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--dimmer)">Players</div>
         <div style="font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--dimmer)">Score</div>
@@ -1139,329 +398,9 @@ function renderAdmin() {
     </div>
   </div>
 
-  <datalist id="player-list">${STATE.players.map((p) => `<option value="${esc(p.name)}">`).join('')}</datalist>`;
-
-  $('#admin-lock').addEventListener('click', () => {
-    sessionStorage.removeItem(ADMIN_UNLOCK);
-    sessionStorage.removeItem(ADMIN_PW_KEY);
-    renderAdmin();
-  });
-  $('#admin-publish').addEventListener('click', publishLog);
-
-  async function publishLog() {
-    const pw = sessionStorage.getItem(ADMIN_PW_KEY) || (window.prompt('Admin password:') || '').trim();
-    if (!pw) { toast('Publish cancelled.'); return; }
-    /* flatten: bake pending/edited entries into one published list; keep only
-       archive fixes (a:*) as ongoing overrides */
-    const doc = overAll();
-    const keepEdits = {}, keepRemoved = [];
-    for (const [k, v] of Object.entries(doc.matchEdits || {})) if (k.startsWith('a:')) keepEdits[k] = v;
-    for (const k of (doc.matchRemoved || [])) if (k.startsWith('a:')) keepRemoved.push(k);
-    const merged = allMatches().filter((m) => m.admin)
-      .map((e) => ({ a: e.a, b: e.b, sa: e.sa, sb: e.sb, date: e.date || '' }));
-    const pubDoc = {
-      matches: merged,
-      aliases: doc.aliases || {},
-      aliasNotes: doc.aliasNotes || {},
-      inactive: doc.inactive || [],
-      seeds: doc.seeds || {},
-      seedGlicko: doc.seedGlicko || {},
-      seedRd: doc.seedRd || {},
-      settings: doc.settings || {},
-      matchEdits: keepEdits,
-      matchRemoved: keepRemoved,
-    };
-    /* the service serializes this itself (JSON only) — no way to smuggle code */
-    try {
-      const r = await fetch(PUBLISH_URL, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: pw, doc: pubDoc, message: `Publish match log (${merged.length} matches)` }),
-      });
-      const out = await r.json().catch(() => ({}));
-      if (!r.ok || !out.ok) {
-        if (r.status === 403) sessionStorage.removeItem(ADMIN_PW_KEY);
-        toast('Publish failed: ' + (out.error || ('HTTP ' + r.status)));
-        return;
-      }
-      window.LB_PUB = pubDoc;
-      window.LB_LOG = merged;
-      logSet([]);
-      overSet({});
-      rebuildState();
-      renderAdmin();
-      toast('Published! Everyone sees it on their next visit.');
-    } catch (err) {
-      toast('Publish failed: network error.');
-    }
-  }
-  $('#admin-export').addEventListener('click', () => {
-    const blob = new Blob([JSON.stringify(logGet(), null, 2)], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'match-log.json';
-    a.click();
-    URL.revokeObjectURL(a.href);
-    toast('Log exported.');
-  });
-  $('#adm-add').addEventListener('click', () => {
-    const a = $('#adm-a').value.trim(), b = $('#adm-b').value.trim();
-    const sa = parseInt($('#adm-sa').value, 10), sb = parseInt($('#adm-sb').value, 10);
-    if (!a || !b || a.toLowerCase() === b.toLowerCase() ||
-        !Number.isFinite(sa) || !Number.isFinite(sb)) {
-      toast('Fill in both players and scores.');
-      return;
-    }
-    const arr = logGet();
-    arr.unshift({ a, b, sa, sb, date: $('#adm-date') ? ($('#adm-date').value || new Date().toISOString().slice(0, 10)) : new Date().toISOString().slice(0, 10) });
-    logSet(arr);
-    rebuildState();
-    renderAdmin();
-    toast(`${a} ${sa}–${sb} ${b} added — site recalculated live.`);
-  });
-  $('#adm-list').addEventListener('click', (e) => {
-    const del = e.target.closest('[data-del]');
-    if (!del) return;
-    const arr = logGet();
-    arr.splice(parseInt(del.dataset.del, 10), 1);
-    logSet(arr);
-    rebuildState();
-    renderAdmin();
-  });
-
-  /* ---- customize: names & merges ---- */
-  $('#ov-alias-add').addEventListener('click', () => {
-    const a = $('#ov-alias-a').value.trim(), b = $('#ov-alias-b').value.trim();
-    const note = ($('#ov-alias-note') || {}).value.trim();
-    if (!a || !b) { toast('Fill both: the wrong name and the correct player.'); return; }
-    const loc = overGet();
-    overSet({ ...loc,
-      aliases: { ...(loc.aliases || {}), [a]: b },
-      aliasNotes: note ? { ...(loc.aliasNotes || {}), [a]: note } : (loc.aliasNotes || {}) });
-    rebuildState(); renderAdmin();
-    toast(`Name fix saved — "${a}" now counts as ${b}.`);
-  });
-  $('#ov-alias-list').addEventListener('click', (e) => {
-    const del = e.target.closest('[data-alias-del]');
-    if (!del) return;
-    const loc = overGet();
-    const al = { ...(loc.aliases || {}) };
-    const nt = { ...(loc.aliasNotes || {}) };
-    delete al[del.dataset.aliasDel]; delete nt[del.dataset.aliasDel];
-    overSet({ ...loc, aliases: al, aliasNotes: nt });
-    rebuildState(); renderAdmin();
-  });
-
-  /* ---- customize: active / inactive ---- */
-  $('#ov-inact-toggle').addEventListener('click', () => {
-    const n = $('#ov-inact-n').value.trim();
-    if (!n) { toast('Type a player name first.'); return; }
-    const loc = overGet();
-    const cur = overAll().inactive || [];
-    const next = cur.includes(n) ? cur.filter((x) => x !== n) : [...cur, n];
-    overSet({ ...loc, inactive: next });
-    rebuildState(); renderAdmin();
-    toast(next.includes(n) ? `${n} marked inactive.` : `${n} marked active again.`);
-  });
-  $('#ov-inact-list').addEventListener('click', (e) => {
-    const del = e.target.closest('[data-inact-del]');
-    if (!del) return;
-    const loc = overGet();
-    overSet({ ...loc, inactive: (overAll().inactive || []).filter((x) => x !== del.dataset.inactDel) });
-    rebuildState(); renderAdmin();
-  });
-
-  /* ---- customize: start ratings ---- */
-  $('#ov-seed-add').addEventListener('click', () => {
-    const n = $('#ov-seed-n').value.trim();
-    const v = $('#ov-seed-v').value.trim();
-    const g = $('#ov-seed-g').value.trim();
-    const rd = $('#ov-seed-rd').value.trim();
-    if (!n) { toast('Pick a player first.'); return; }
-    if (v === '' && g === '' && rd === '') { toast('Enter an Old 0–100 rating, or a Starting Glicko / RD.'); return; }
-    const loc = overGet();
-    const seeds = { ...(loc.seeds || {}) }, seedGlicko = { ...(loc.seedGlicko || {}) }, seedRd = { ...(loc.seedRd || {}) };
-    if (v !== '' && Number.isFinite(Number(v))) seeds[n] = Number(v); else delete seeds[n];
-    if (g !== '' && Number.isFinite(Number(g))) seedGlicko[n] = Number(g); else delete seedGlicko[n];
-    if (rd !== '' && Number.isFinite(Number(rd))) seedRd[n] = Number(rd); else delete seedRd[n];
-    overSet({ ...loc, seeds, seedGlicko, seedRd });
-    rebuildState(); renderAdmin();
-    toast(`Seed saved for ${n}.`);
-  });
-  $('#ov-seed-list').addEventListener('click', (e) => {
-    const del = e.target.closest('[data-seed-del]');
-    if (!del) return;
-    const key = del.dataset.seedDel;
-    const loc = overGet();
-    const sd = { ...(loc.seeds || {}) }; delete sd[key];
-    const sg = { ...(loc.seedGlicko || {}) }; delete sg[key];
-    const sr = { ...(loc.seedRd || {}) }; delete sr[key];
-    overSet({ ...loc, seeds: sd, seedGlicko: sg, seedRd: sr });
-    rebuildState(); renderAdmin();
-  });
-
-  /* ---- customize: model settings ---- */
-  $('#ov-settings').addEventListener('change', (e) => {
-    const inp = e.target.closest('[data-set-name]');
-    if (!inp) return;
-    const loc = overGet();
-    overSet({ ...loc, settings: { ...(loc.settings || {}), [inp.dataset.setName]: inp.value } });
-    rebuildState(); renderAdmin();
-    toast('Setting applied — everything recalculated.');
-  });
-  $('#ov-set-reset').addEventListener('click', () => {
-    const loc = overGet();
-    overSet({ ...loc, settings: {} });
-    rebuildState(); renderAdmin();
-    toast('Settings back to the master sheet values.');
-  });
-
-  /* ---- customize: match fixes ---- */
-  $('#ov-mq').addEventListener('input', () => {
-    $('#ov-mresults').innerHTML = matchRows($('#ov-mq').value);
-  });
-  $('#ov-mresults').addEventListener('click', (e) => {
-    const save = e.target.closest('[data-msave]');
-    const del = e.target.closest('[data-mdel]');
-    if (save) {
-      const row = save.closest('[data-mkey]');
-      const key = row.dataset.mkey;
-      const g = (f) => row.querySelector(`[data-f="${f}"]`).value;
-      const loc = overGet();
-      overSet({ ...loc, matchEdits: { ...(loc.matchEdits || {}), [key]: { sa: +g('sa'), sb: +g('sb'), date: g('date') } } });
-      rebuildState();
-      $('#ov-mresults').innerHTML = matchRows($('#ov-mq').value);
-      toast('Match fixed — ratings recalculated.');
-    } else if (del) {
-      const key = del.dataset.mdel;
-      const loc = overGet();
-      overSet({ ...loc, matchRemoved: [...new Set([...(loc.matchRemoved || []), key])] });
-      rebuildState();
-      $('#ov-mresults').innerHTML = matchRows($('#ov-mq').value);
-      toast('Match deleted — ratings recalculated.');
-    }
-  });
-}
-
-/* ---------- search ---------- */
-$('#search').addEventListener('input', (e) => {
-  const v = e.target.value.trim().toLowerCase();
-  const drop = $('#search-drop');
-  if (!v) { drop.classList.remove('show'); return; }
-  const hits = STATE.players.filter((p) => p.name.toLowerCase().includes(v)).slice(0, 8);
-  if (!hits.length) { drop.classList.remove('show'); return; }
-  drop.innerHTML = hits.map((p) => `
-    <a class="drop-row" href="#/player/${slug(p.name)}">
-      ${p.rank ? rankBadge(p.rank, 'sm') : '<div class="rank-badge sm">–</div>'}
-      <span>${esc(p.name)}</span>
-      <span class="mono" style="margin-left:auto;color:var(--dim)">${p.rating.toFixed(1)}</span>
-    </a>`).join('');
-  drop.classList.add('show');
-});
-document.addEventListener('click', (e) => {
-  if (!e.target.closest('.search-box')) $('#search-drop').classList.remove('show');
-  if (e.target.closest('.drop-row')) {
-    $('#search-drop').classList.remove('show');
-    $('#search').value = '';
-  }
-});
-
-/* ---------- toast ---------- */
-let toastTimer;
-function toast(msg) {
-  const t = $('#toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
-}
-
-/* ---------- scroll reveal ---------- */
-let io;
-function observeReveals() {
-  if (io) io.disconnect();
-  io = new IntersectionObserver((entries) => {
-    entries.forEach((en) => {
-      if (en.isIntersecting) {
-        en.target.classList.add('in');
-        $$('.cu', en.target).forEach((el) =>
-          countUp(el, parseFloat(el.dataset.target), { dec: parseInt(el.dataset.dec || 0) }));
-        io.unobserve(en.target);
-      }
-    });
-  }, { threshold: 0.12 });
-  $$('.reveal').forEach((el) => io.observe(el));
-}
-
-/* ---------- scroll polish: progress bar, hero drift, back-to-top ---------- */
-(function scrollPolish() {
-  const bar = $('#scroll-progress');
-  const toTop = $('#to-top');
-  const drift = $('#page-home .hero-row');
-  const topbar = document.querySelector('.topbar');
-  const onScroll = () => {
-    const y = window.scrollY;
-    const max = document.documentElement.scrollHeight - window.innerHeight;
-    if (bar) bar.style.width = (max > 0 ? (y / max) * 100 : 0) + '%';
-    if (toTop) toTop.classList.toggle('show', y > 640);
-    if (topbar) topbar.classList.toggle('scrolled', y > 10);
-    if (drift && y < 1400) {
-      drift.style.transform = `translateY(${y * 0.14}px)`;
-      drift.style.opacity = String(Math.max(0.3, 1 - y / 950));
-    }
-  };
-  window.addEventListener('scroll', onScroll, { passive: true });
-  if (toTop) toTop.addEventListener('click', () =>
-    window.scrollTo({ top: 0, behavior: 'smooth' }));
-  onScroll();
-})();
-
-/* ---------- boot ---------- */
-computeBaseline();
-rebuildState();
-renderHome();
-route();
-
-/* pull `window.NAME = <json>;` out of a generated file (brace/bracket scan) */
-function extractAssign(txt, name) {
-  const i = txt.indexOf('window.' + name);
-  if (i < 0) return null;
-  let k = txt.indexOf('=', i);
-  while (k < txt.length && '{['.indexOf(txt[k]) < 0) k++;
-  let depth = 0, inStr = false, q = '', esc = false;
-  for (let j = k; j < txt.length; j++) {
-    const ch = txt[j];
-    if (inStr) {
-      if (esc) esc = false;
-      else if (ch === '\\') esc = true;
-      else if (ch === q) inStr = false;
-      continue;
-    }
-    if (ch === '"' || ch === "'") { inStr = true; q = ch; continue; }
-    if (ch === '{' || ch === '[') depth++;
-    else if (ch === '}' || ch === ']') {
-      depth--;
-      if (depth <= 0) return JSON.parse(txt.slice(k, j + 1));
-    }
-  }
-  return null;
-}
-
-/* Re-fetch the published log with a cache-buster so every visitor sees admin
-   publishes even if the browser (or the Pages CDN) cached log.js. */
-(async () => {
-  try {
-    const r = await fetch('log.js?cb=' + Date.now(), { cache: 'no-store' });
-    if (!r.ok) return;
-    const txt = await r.text();
-    const fresh = extractAssign(txt, 'LB_PUB') ||
-      (extractAssign(txt, 'LB_LOG') ? { matches: extractAssign(txt, 'LB_LOG') } : null);
-    if (!fresh) return;
-    if (JSON.stringify(fresh) !== JSON.stringify(window.LB_PUB || null)) {
-      window.LB_PUB = fresh;
-      window.LB_LOG = fresh.matches || [];
-      rebuildState();
-      renderHome();
-      route();
-    }
-  } catch (e) { /* offline — keep the bundled log */ }
-})();
+  <datalist id="player-list">${T.players.map(l=>`<option value="${u(l.name)}">`).join("")}</datalist>`,p("#admin-lock").addEventListener("click",()=>{sessionStorage.removeItem(Q),sessionStorage.removeItem(z),x()}),p("#admin-publish").addEventListener("click",P);async function P(){let l=sessionStorage.getItem(z)||(window.prompt("Admin password:")||"").trim();if(!l){k("Publish cancelled.");return}let t=O(),c={},v=[];for(let[i,f]of Object.entries(t.matchEdits||{}))i.startsWith("a:")&&(c[i]=f);for(let i of t.matchRemoved||[])i.startsWith("a:")&&v.push(i);let m=B().filter(i=>i.admin).map(i=>({a:i.a,b:i.b,sa:i.sa,sb:i.sb,date:i.date||""})),y={matches:m,aliases:t.aliases||{},aliasNotes:t.aliasNotes||{},inactive:t.inactive||[],seeds:t.seeds||{},seedGlicko:t.seedGlicko||{},seedRd:t.seedRd||{},settings:t.settings||{},matchEdits:c,matchRemoved:v};try{let i=await fetch(ms,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password:l,doc:y,message:`Publish match log (${m.length} matches)`})}),f=await i.json().catch(()=>({}));if(!i.ok||!f.ok){i.status===403&&sessionStorage.removeItem(z),k("Publish failed: "+(f.error||"HTTP "+i.status));return}window.LB_PUB=y,window.LB_LOG=m,X([]),E({}),L(),x(),k("Published! Everyone sees it on their next visit.")}catch{k("Publish failed: network error.")}}p("#admin-export").addEventListener("click",()=>{let l=new Blob([JSON.stringify(G(),null,2)],{type:"application/json"}),t=document.createElement("a");t.href=URL.createObjectURL(l),t.download="match-log.json",t.click(),URL.revokeObjectURL(t.href),k("Log exported.")}),p("#adm-add").addEventListener("click",()=>{let l=p("#adm-a").value.trim(),t=p("#adm-b").value.trim(),c=parseInt(p("#adm-sa").value,10),v=parseInt(p("#adm-sb").value,10);if(!l||!t||l.toLowerCase()===t.toLowerCase()||!Number.isFinite(c)||!Number.isFinite(v)){k("Fill in both players and scores.");return}let m=G();m.unshift({a:l,b:t,sa:c,sb:v,date:p("#adm-date")?p("#adm-date").value||new Date().toISOString().slice(0,10):new Date().toISOString().slice(0,10)}),X(m),L(),x(),k(`${l} ${c}\u2013${v} ${t} added \u2014 site recalculated live.`)}),p("#adm-list").addEventListener("click",l=>{let t=l.target.closest("[data-del]");if(!t)return;let c=G();c.splice(parseInt(t.dataset.del,10),1),X(c),L(),x()}),p("#ov-alias-add").addEventListener("click",()=>{let l=p("#ov-alias-a").value.trim(),t=p("#ov-alias-b").value.trim(),c=(p("#ov-alias-note")||{}).value.trim();if(!l||!t){k("Fill both: the wrong name and the correct player.");return}let v=R();E({...v,aliases:{...v.aliases||{},[l]:t},aliasNotes:c?{...v.aliasNotes||{},[l]:c}:v.aliasNotes||{}}),L(),x(),k(`Name fix saved \u2014 "${l}" now counts as ${t}.`)}),p("#ov-alias-list").addEventListener("click",l=>{let t=l.target.closest("[data-alias-del]");if(!t)return;let c=R(),v={...c.aliases||{}},m={...c.aliasNotes||{}};delete v[t.dataset.aliasDel],delete m[t.dataset.aliasDel],E({...c,aliases:v,aliasNotes:m}),L(),x()}),p("#ov-inact-toggle").addEventListener("click",()=>{let l=p("#ov-inact-n").value.trim();if(!l){k("Type a player name first.");return}let t=R(),c=O().inactive||[],v=c.includes(l)?c.filter(m=>m!==l):[...c,l];E({...t,inactive:v}),L(),x(),k(v.includes(l)?`${l} marked inactive.`:`${l} marked active again.`)}),p("#ov-inact-list").addEventListener("click",l=>{let t=l.target.closest("[data-inact-del]");if(!t)return;let c=R();E({...c,inactive:(O().inactive||[]).filter(v=>v!==t.dataset.inactDel)}),L(),x()}),p("#ov-seed-add").addEventListener("click",()=>{let l=p("#ov-seed-n").value.trim(),t=p("#ov-seed-v").value.trim(),c=p("#ov-seed-g").value.trim(),v=p("#ov-seed-rd").value.trim();if(!l){k("Pick a player first.");return}if(t===""&&c===""&&v===""){k("Enter an Old 0\u2013100 rating, or a Starting Glicko / RD.");return}let m=R(),y={...m.seeds||{}},i={...m.seedGlicko||{}},f={...m.seedRd||{}};t!==""&&Number.isFinite(Number(t))?y[l]=Number(t):delete y[l],c!==""&&Number.isFinite(Number(c))?i[l]=Number(c):delete i[l],v!==""&&Number.isFinite(Number(v))?f[l]=Number(v):delete f[l],E({...m,seeds:y,seedGlicko:i,seedRd:f}),L(),x(),k(`Seed saved for ${l}.`)}),p("#ov-seed-list").addEventListener("click",l=>{let t=l.target.closest("[data-seed-del]");if(!t)return;let c=t.dataset.seedDel,v=R(),m={...v.seeds||{}};delete m[c];let y={...v.seedGlicko||{}};delete y[c];let i={...v.seedRd||{}};delete i[c],E({...v,seeds:m,seedGlicko:y,seedRd:i}),L(),x()}),p("#ov-settings").addEventListener("change",l=>{let t=l.target.closest("[data-set-name]");if(!t)return;let c=R();E({...c,settings:{...c.settings||{},[t.dataset.setName]:t.value}}),L(),x(),k("Setting applied \u2014 everything recalculated.")}),p("#ov-set-reset").addEventListener("click",()=>{let l=R();E({...l,settings:{}}),L(),x(),k("Settings back to the master sheet values.")}),p("#ov-mq").addEventListener("input",()=>{p("#ov-mresults").innerHTML=w(p("#ov-mq").value)}),p("#ov-mresults").addEventListener("click",l=>{let t=l.target.closest("[data-msave]"),c=l.target.closest("[data-mdel]");if(t){let v=t.closest("[data-mkey]"),m=v.dataset.mkey,y=f=>v.querySelector(`[data-f="${f}"]`).value,i=R();E({...i,matchEdits:{...i.matchEdits||{},[m]:{sa:+y("sa"),sb:+y("sb"),date:y("date")}}}),L(),p("#ov-mresults").innerHTML=w(p("#ov-mq").value),k("Match fixed \u2014 ratings recalculated.")}else if(c){let v=c.dataset.mdel,m=R();E({...m,matchRemoved:[...new Set([...m.matchRemoved||[],v])]}),L(),p("#ov-mresults").innerHTML=w(p("#ov-mq").value),k("Match deleted \u2014 ratings recalculated.")}})}p("#search").addEventListener("input",s=>{let e=s.target.value.trim().toLowerCase(),a=p("#search-drop");if(!e){a.classList.remove("show");return}let n=T.players.filter(r=>r.name.toLowerCase().includes(e)).slice(0,8);if(!n.length){a.classList.remove("show");return}a.innerHTML=n.map(r=>`
+    <a class="drop-row" href="#/player/${is(r.name)}">
+      ${r.rank?H(r.rank,"sm"):'<div class="rank-badge sm">\u2013</div>'}
+      <span>${u(r.name)}</span>
+      <span class="mono" style="margin-left:auto;color:var(--dim)">${r.rating.toFixed(1)}</span>
+    </a>`).join(""),a.classList.add("show")});document.addEventListener("click",s=>{s.target.closest(".search-box")||p("#search-drop").classList.remove("show"),s.target.closest(".drop-row")&&(p("#search-drop").classList.remove("show"),p("#search").value="")});var ps;function k(s){let e=p("#toast");e.textContent=s,e.classList.add("show"),clearTimeout(ps),ps=setTimeout(()=>e.classList.remove("show"),2600)}var I;function cs(){I&&I.disconnect(),I=new IntersectionObserver(s=>{s.forEach(e=>{e.isIntersecting&&(e.target.classList.add("in"),M(".cu",e.target).forEach(a=>ns(a,parseFloat(a.dataset.target),{dec:parseInt(a.dataset.dec||0)})),I.unobserve(e.target))})},{threshold:.12}),M(".reveal").forEach(s=>I.observe(s))}(function(){let e=p("#scroll-progress"),a=p("#to-top"),n=p("#page-home .hero-row"),r=document.querySelector(".topbar"),d=()=>{let g=window.scrollY,o=document.documentElement.scrollHeight-window.innerHeight;e&&(e.style.width=(o>0?g/o*100:0)+"%"),a&&a.classList.toggle("show",g>640),r&&r.classList.toggle("scrolled",g>10),n&&g<1400&&(n.style.transform=`translateY(${g*.14}px)`,n.style.opacity=String(Math.max(.3,1-g/950)))};window.addEventListener("scroll",d,{passive:!0}),a&&a.addEventListener("click",()=>window.scrollTo({top:0,behavior:"smooth"})),d()})();Rs();L();rs();ds();function ss(s,e){let a=s.indexOf("window."+e);if(a<0)return null;let n=s.indexOf("=",a);for(;n<s.length&&"{[".indexOf(s[n])<0;)n++;let r=0,d=!1,g="",o=!1;for(let b=n;b<s.length;b++){let h=s[b];if(d){o?o=!1:h==="\\"?o=!0:h===g&&(d=!1);continue}if(h==='"'||h==="'"){d=!0,g=h;continue}if(h==="{"||h==="[")r++;else if((h==="}"||h==="]")&&(r--,r<=0))return JSON.parse(s.slice(n,b+1))}return null}(async()=>{try{let s=await fetch("log.js?cb="+Date.now(),{cache:"no-store"});if(!s.ok)return;let e=await s.text(),a=ss(e,"LB_PUB")||(ss(e,"LB_LOG")?{matches:ss(e,"LB_LOG")}:null);if(!a)return;JSON.stringify(a)!==JSON.stringify(window.LB_PUB||null)&&(window.LB_PUB=a,window.LB_LOG=a.matches||[],L(),rs(),ds())}catch{}})();})();
