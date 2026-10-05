@@ -2,10 +2,13 @@
    matches = shared match log (newest first). aliases = name fixes / merges.
    inactive = manually inactive players. seeds = start rating overrides.
    settings = model overrides. matchEdits/matchRemoved = archive fixes.
+   faq = admin-managed Q&A entries.
    The Glicko engine recalculates every rating from these at page load. */
 window.LB_PUB = {
   "matches": [],
-  "aliases": {},
+  "aliases": {
+    "Alternator": "Alternator5"
+  },
   "aliasNotes": {},
   "inactive": [],
   "seeds": {},
@@ -13,6 +16,7 @@ window.LB_PUB = {
   "seedRd": {},
   "settings": {},
   "matchEdits": {},
-  "matchRemoved": []
+  "matchRemoved": [],
+  "faq": []
 };
 window.LB_LOG = window.LB_PUB.matches;
