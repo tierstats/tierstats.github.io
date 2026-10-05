@@ -47,12 +47,12 @@
   <div class="wrap">
     <section class="hero anim">
       <div class="hero-row">
-        <span class="chip-stat">Dynamic <b>Glicko-2</b></span>
+        <span class="chip-stat">Dynamic <b>Glicko</b></span>
         <span class="chip-stat"><b id="hero-matches">0</b> matches logged</span>
         <span class="chip-stat">Season <b>2026</b></span>
       </div>
-      <h1>Every duel.<br>Every rank.<br><span class="gold">One leaderboard.</span></h1>        <p class="sub">The definitive Tank Trouble 1v1 rankings — built on Glicko-2, so your rating
-      knows how certain it is. Click any player for their full dossier.</p>
+      <h1>Every duel.<br>Every rank.<br><span class="gold">One leaderboard.</span></h1>        <p class="sub">The definitive Tank Trouble 1v1 rankings — built on the Glicko rating system,
+      so your rating knows how reliable it is. Click any player for their full profile.</p>
     </section>
 
     <section class="stat-strip anim" id="stat-strip"></section>
@@ -60,23 +60,22 @@
     <section class="anim">
       <div class="section-head reveal">
         <div>
-          <div class="kicker">Top 10</div>
-          <h2>The front line</h2>
+          <div class="kicker">Leaders</div>
+          <h2>Current top 3</h2>
         </div>
         <a class="section-link" href="#full-rankings">Full rankings
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
       </div>
       <div class="fl-cards" id="fl-cards"></div>
-      <div class="fl-rows" id="fl-rows"></div>
     </section>
 
     <section class="anim" id="full-rankings">
       <div class="section-head reveal">
         <div>
-          <div class="kicker">Combat rankings</div>
+          <div class="kicker">Rankings</div>
           <h2>Leaderboard</h2>
-          <div class="sub-note">Qualified contenders (≥5 matches / ≥3 opponents). Click any row for full dossier.</div>
+          <div class="sub-note">Qualified contenders (≥5 matches / ≥3 opponents). Click any row for the full profile.</div>
         </div>
         <div class="lb-controls reveal">
           <div class="lb-filter-box">
@@ -120,8 +119,9 @@
     <section class="anim">
       <div class="section-head reveal">
         <div>
-          <div class="kicker">Recent engagements</div>
-          <h2>Latest battles</h2>
+          <div class="kicker">Fresh results</div>
+          <h2>Recent verified matches</h2>
+          <div class="sub-note">Only matches with a recorded date appear here.</div>
         </div>
         <a class="section-link" href="#/matches">All matches
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -182,9 +182,52 @@
     <section class="hero anim" style="padding-top:10px">
       <div class="kicker">Transparent ratings</div>
       <h1 style="font-size:clamp(36px,5vw,58px)">How the <span class="gold">rating works</span></h1>
-      <p class="sub">No black boxes. The system is Dynamic Glicko-2 — the same maths behind
-      competitive chess and table-tennis rankings, tuned for 1v1 tank duels.</p>
+      <p class="sub">No black boxes. Ratings come from the Glicko system — the same approach behind
+      competitive chess and table-tennis rankings — driven purely by your recorded duels.</p>
     </section>
+
+    <div class="method-plain anim">
+      <div class="panel">
+        <h3>What is Glicko?</h3>
+        <p style="color:var(--dim);font-size:15px">Glicko is a rating system that works like Elo, but smarter:
+        every opponent is weighted by how reliable <i>their</i> rating is, and your own reliability is tracked
+        at the same time. Beat someone stronger and you gain more; lose to someone weaker and you drop more.</p>
+      </div>
+      <div class="panel">
+        <h3>What is RD?</h3>
+        <p style="color:var(--dim);font-size:15px">RD shows how certain the system is about your rating.
+        More reliable match data = lower RD. The leaderboard ranks the <b style="color:var(--ink)">visible rating</b> —
+        Glicko minus a small uncertainty penalty — so an unproven rating can't rocket to the top on luck alone.</p>
+        <div class="formula-box">visible = glicko − <span class="cons-val">0.5</span> × RD</div>
+      </div>
+      <div class="panel">
+        <h3>How inactivity affects you</h3>
+        <p style="color:var(--dim);font-size:15px">Play regularly and your certainty stays high. Stop playing and
+        your RD grows a little every 30 days — which slowly pulls your visible rating down until you return.
+        After a full year without a dated match you're marked <b style="color:var(--ink)">inactive</b> and hidden
+        from the board (still searchable, still in the maths) until you play again.</p>
+      </div>
+      <div class="panel">
+        <h3>How you get ranked</h3>
+        <p style="color:var(--dim);font-size:15px">Play at least <b style="color:var(--ink)"><span class="min-matches-val">5</span> matches</b>
+        against at least <b style="color:var(--ink)"><span class="min-opp-val">3</span> different opponents</b>.
+        Until then you're <b style="color:var(--ink)">provisional</b>: your rating is real and takes part in every
+        calculation — it just isn't ranked until it's earned.</p>
+      </div>
+      <div class="panel">
+        <h3>How ratings change after wins and losses</h3>
+        <p style="color:var(--dim);font-size:15px">Each result moves your rating toward what the system expected
+        to happen — surprising results move it a lot, expected ones a little. Wins over strong, well-known
+        opponents are worth the most; beating a brand-new or much weaker player barely moves the needle.</p>
+      </div>
+    </div>
+
+    <details class="advanced anim">
+      <summary>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" stroke-linecap="round"/></svg>
+        Advanced — the maths &amp; live settings
+        <span class="adv-hint">seeds, formulas, periods, verification</span>
+      </summary>
 
     <div class="method-grid anim">
       <div>
@@ -197,9 +240,9 @@
             <li><span class="num">2</span><div><b>Every match moves the numbers.</b>
               Beat someone stronger and you gain more; lose to someone weaker and you
               drop more. Results are processed in 30-day rating periods.</div></li>
-            <li><span class="num">3</span><div><b>Your rating knows what it doesn't know.</b>
-              Each player carries an <b>RD</b> (ratings deviation) — a certainty score.
-              The leaderboard shows <b>visible rating = Glicko − <span class="cons-val">0.5</span> × RD</b>, so uncertain
+            <li><span class="num">3</span><div><b>Your rating comes with a certainty score.</b>
+              Each player carries an <b>RD</b> (ratings deviation). More reliable match data = lower RD.
+              The leaderboard ranks <b>visible rating = Glicko − <span class="cons-val">0.5</span> × RD</b>, so uncertain
               ratings are held back until they've earned trust.</div></li>
           </ul>
           <div class="formula-box">visible = glicko − <span class="cons-val">0.5</span> × RD &nbsp;&nbsp;·&nbsp;&nbsp; RD shrinks with results, grows with inactivity</div>
@@ -301,6 +344,7 @@
         </div>
       </div>
     </div>
+    </details>
   </div>
 </main>
 
@@ -381,7 +425,7 @@
   <div class="wrap">
     <div>© 2026 <b>1v1 Leaderboard</b> — Tank Trouble competitive rankings.<br>
       <span class="foot-sub">Owned &amp; run by <b class="gold">Alternator</b> &amp; <b class="gold">interstellar</b></span></div>
-    <div class="foot-sub">Ratings by <b>Dynamic Glicko-2</b> · data from the community match archive</div>
+    <div class="foot-sub">Ratings by the <b>Dynamic Glicko</b> system · data from the community match archive</div>
   </div>
 </footer>
 
