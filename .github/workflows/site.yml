@@ -5,9 +5,14 @@ name: site
 # must NOT regenerate data.js, or two writers fight over the file forever
 # (Python writes 1550.0, JS writes 1550 → endless "changed" commits).
 
+# The site deploys via classic Pages branch builds (build_type: legacy) — no
+# workflow needed and deploys keep working through GitHub Actions outages.
+# Manual-only fallback kept in case workflow-based deploys are ever wanted.
+# (One-off switch-back: PATCH /pages {"build_type":"workflow"} + re-add `push`.)
+# This file must NOT regenerate data.js — sync is owned by the tierstats-publish
+# Worker (5-minute Cloudflare cron + the sheet's Apps Script trigger).
+
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
