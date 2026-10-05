@@ -7,7 +7,9 @@ window.LB_PUB = {
   "matches": [],
   "aliases": {},
   "aliasNotes": {},
-  "inactive": [],
+  "inactive": [
+    "spendullix"
+  ],
   "seeds": {},
   "seedGlicko": {},
   "seedRd": {},
