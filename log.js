@@ -5,11 +5,13 @@
    The Glicko engine recalculates every rating from these at page load. */
 window.LB_PUB = {
   "matches": [],
-  "aliases": {},
-  "aliasNotes": {},
-  "inactive": [
-    "spendullix"
-  ],
+  "aliases": {
+    "Infuriater": "interstellar"
+  },
+  "aliasNotes": {
+    "Infuriater": "Infuriater"
+  },
+  "inactive": [],
   "seeds": {},
   "seedGlicko": {},
   "seedRd": {},
