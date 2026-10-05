@@ -5,15 +5,7 @@
    faq = admin-managed Q&A entries.
    The Glicko engine recalculates every rating from these at page load. */
 window.LB_PUB = {
-  "matches": [
-    {
-      "a": "</script><img src=x onerror=alert(1)>",
-      "b": "b\"; window.hacked=1;//",
-      "sa": 1,
-      "sb": 0,
-      "date": ""
-    }
-  ],
+  "matches": [],
   "aliases": {},
   "aliasNotes": {},
   "inactive": [],
@@ -22,6 +14,7 @@ window.LB_PUB = {
   "seedRd": {},
   "settings": {},
   "matchEdits": {},
-  "matchRemoved": []
+  "matchRemoved": [],
+  "faq": []
 };
 window.LB_LOG = window.LB_PUB.matches;
