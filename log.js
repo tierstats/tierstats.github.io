@@ -7,7 +7,8 @@
 window.LB_PUB = {
   "matches": [],
   "aliases": {
-    "Alternator5": "Alternator"
+    "Alternator5": "Alternator",
+    "ImTrAsH": "Fishy"
   },
   "aliasNotes": {},
   "aliasRemoved": [
