@@ -5,7 +5,15 @@
    faq = admin-managed Q&A entries.
    The Glicko engine recalculates every rating from these at page load. */
 window.LB_PUB = {
-  "matches": [],
+  "matches": [
+    {
+      "a": "Test123",
+      "b": "Test1234",
+      "sa": 120312,
+      "sb": 12381281,
+      "date": "3129-02-10"
+    }
+  ],
   "aliases": {
     "Alternator5": "Alternator"
   },
