@@ -9,8 +9,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20261012211014">
-<link rel="stylesheet" href="cards.css?v=20261012211014">
+<link rel="stylesheet" href="styles.css?v=20261012222551">
+<link rel="stylesheet" href="cards.css?v=20261012222551">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23ffb020'/><text x='50' y='68' font-size='52' font-weight='900' text-anchor='middle' fill='%23241a02' font-family='Arial'>1v1</text></svg>">
 </head>
 <body>
@@ -56,10 +56,6 @@
       <svg class="ic-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" stroke-linecap="round"/></svg>
       <span class="tl" aria-hidden="true"><b class="tl-dark" data-i18n="top.dark">Dark</b><b class="tl-light" data-i18n="top.light">Light</b></span>
     </button>
-    <a class="admin-btn" href="#/admin">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
-      <span data-i18n="nav.admin">Admin</span>
-    </a>
   </div>
 </header>
 
@@ -498,7 +494,8 @@
     </nav>
     <div><span data-i18n-html="foot.rights">© 2026 <b>1v1 Leaderboard</b> — Tank Trouble competitive rankings.</span><br>
       <span class="foot-sub" data-i18n-html="foot.owned">Owned &amp; run by <b class="gold">Alternator</b> &amp; <b class="gold">interstellar</b></span></div>
-    <div class="foot-sub" data-i18n-html="foot.ratings">Ratings by the <b>Dynamic Glicko</b> system · data from the community match archive</div>
+    <div class="foot-sub"><span data-i18n-html="foot.ratings">Ratings by the <b>Dynamic Glicko</b> system · data from the community match archive</span>
+      <a class="admin-foot" href="#/admin" data-i18n="nav.admin">Admin</a></div>
   </div>
 </footer>
 
@@ -526,18 +523,18 @@
 <button class="to-top" id="to-top" aria-label="Back to top" data-i18n-attr="aria-label:misc.toTop">
   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 19V5M5 12l7-7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
 </button>
-<script src="i18n.js?v=20261012211014"></script>
+<script src="i18n.js?v=20261012222551"></script>
 <script>
   /* data.js is rewritten by the sheet sync worker outside of site deploys —
      load it with a per-request cache-buster so every refresh shows the
      latest sync (GitHub Pages caches static URLs for 10 minutes otherwise).
-     Uses ?t= (not ?v=20261012211014's ?v=20261012211014't touch it. */
+     Uses ?t= (not ?v=20261012222551's ?v=20261012222551't touch it. */
   document.write('<script src="data.js?t=' + Date.now() + '\"><\/script>');
 </script>
-<script src="log.js?v=1791836433835"></script>
-<script src="tanks.js?v=20261012211014"></script>
-<script src="tankrender.js?v=20261012211014"></script>
-<script src="cards.js?v=20261012211014"></script>
-<script src="app.js?v=20261012211014"></script>
+<script src="log.js?v=20261012222551"></script>
+<script src="tanks.js?v=20261012222551"></script>
+<script src="tankrender.js?v=20261012222551"></script>
+<script src="cards.js?v=20261012222551"></script>
+<script src="app.js?v=20261012222551"></script>
 </body>
 </html>
