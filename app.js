@@ -189,7 +189,11 @@
            title="${t("pl.vsOpp",{opp:w(l.opp)})} ${l.for_}-${l.against}">${C(l.res)}</div>`).join("")||`<span class="empty">${t("pl.noGames")}</span>`}
       </div>
     </div>
+    </div>
+    <div class="pv-side">${typeof cardsHeroHTML=="function"?cardsHeroHTML(e):""}</div>
+    </div>
 
+    <div class="pv-lower">
     <div class="panel reveal">
       <h3>${t("pl.matchHistory")} <span class="n">${tp("pl.nGames",o.length)}</span></h3>
       <div class="match-list">
@@ -214,8 +218,6 @@
           </div>`).join("")||`<div class="empty">${t("pl.noGamesRec")}</div>`}
       </div>
     </div>
-    </div>
-    <div class="pv-side">${typeof cardsHeroHTML=="function"?cardsHeroHTML(e):""}</div>
     </div>
   </div>`,s.provisional||kt(d("#pv-rating"),s.rating,{dec:1,dur:900}),typeof cardsMountAll=="function"&&cardsMountAll(a),Rt()}function Be(){oe();let e=d("#gm-body"),s=G();d("#gm-count").textContent=tp("gm.count",s.length),e.innerHTML=s.map(a=>{let i=a.sa>a.sb,o=a.sb>a.sa;return`
     <div class="gm-row">
