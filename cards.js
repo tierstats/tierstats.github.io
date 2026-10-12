@@ -33,7 +33,7 @@
       <button class="pc-share" data-share="dl" data-name="${u(a)}">${t("cards.shareDl")}</button>
       <button class="pc-share pc-share-link" data-share="link" data-name="${u(a)}">${V}<span>${t("cards.shareLink")}</span></button>
     </div>`}function H(e,a){a=a||{};let s=e.name,n=w(e.rating),i=e.inactive?`<span class="pc-retired">${t("cards.retired")}</span>`:"";return`
-  <article class="pcard-wrap tier-${n}${a.hero?" hero":""}" data-name="${u(s)}">
+  <article class="pcard-wrap tier-${n}${a.hero?" card-hero":""}" data-name="${u(s)}">
     <div class="pcard" tabindex="0" role="button" aria-label="${u(s)} \u2014 ${g(n)} \u2014 ${t("cards.flipTip")}">
       <div class="pcard-face pcard-front">
         <div class="pcard-art">
