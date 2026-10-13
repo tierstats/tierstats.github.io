@@ -6,11 +6,7 @@
    gmLevel or banned fields can exist in this file.
    Once the sync Worker emits window.LB_TANKS inside data.js (Layer A),
    that live copy wins — this snapshot is the offline fallback. */
-window.LB_TANKS_META = {"generated": "2026-10-12 23:11", "source": "tanktrouble.getPlayerDetailsByUsername"};
-/* exposed under its OWN name as well: data.js loads first and sets
-   window.LB_TANKS from the live sync, so the `LB_TANKS || ...` guard below
-   made this snapshot unreachable whenever data.js was present and the
-   documented fallback in cards.js/app.js never fired. */
+window.LB_TANKS_META = {"generated": "2026-10-13 18:18", "source": "tanktrouble.getPlayerDetailsByUsername"};
 window.LB_TANKS_SNAPSHOT = window.LB_TANKS_SNAPSHOT || {
  "-Trippy-": {
   "backAccessory": "383",
