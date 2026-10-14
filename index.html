@@ -9,8 +9,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20261013182315">
-<link rel="stylesheet" href="cards.css?v=20261013182315">
+<link rel="stylesheet" href="styles.css?v=20261014202935">
+<link rel="stylesheet" href="cards.css?v=20261014202935">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23ffb020'/><text x='50' y='68' font-size='52' font-weight='900' text-anchor='middle' fill='%23241a02' font-family='Arial'>1v1</text></svg>">
 </head>
 <body>
@@ -103,6 +103,7 @@
       </div>
     </section>
 
+    <div id="home-guide"></div>
     <section class="anim" id="full-rankings">
       <div class="section-head reveal">
         <div>
@@ -199,6 +200,17 @@
       <h2><span data-i18n="matches.allTitle">All matches</span> <span class="n" id="gm-count"></span></h2>
       <div class="hint" data-i18n="matches.hint">Winner in bright · loser dimmed</div>
     </div>
+    <div class="gm-filters reveal" id="gm-filters">
+      <div class="lb-filter-box">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3" stroke-linecap="round"/></svg>
+        <input id="gm-search" type="text" placeholder="Search player, opponent or score…" data-i18n-attr="placeholder:matches.searchPh" autocomplete="off">
+      </div>
+      <div class="deck-chips">
+        <button class="chip on" data-scope="all" data-i18n="matches.scopeAll">All</button>
+        <button class="chip" data-scope="dated" data-i18n="matches.scopeDated">Dated</button>
+        <button class="chip" data-scope="legacy" data-i18n="matches.scopeLegacy">Legacy (no date)</button>
+      </div>
+    </div>
     <div class="global-matches anim" id="gm-body">
       <div class="skeleton sk-line sk-rowline"></div>
       <div class="skeleton sk-line sk-rowline"></div>
@@ -231,6 +243,24 @@
       <h1 style="font-size:clamp(36px,5vw,58px)" data-i18n="an.h1">Analytics</h1>
       <p class="sub" data-i18n="an.sub">Rivalries, upsets, and the hardest-working tanks in the circuit.</p>
     </section>
+    <div class="an-controls reveal" id="an-controls">
+      <div class="ac-group">
+        <span class="ac-label" data-i18n="an.rangeLabel">Time range</span>
+        <div class="deck-chips">
+          <button class="chip on" data-an-range="all" data-i18n="an.rangeAll">All time</button>
+          <button class="chip" data-an-range="90" data-i18n="an.range90">Last 90 days</button>
+          <button class="chip" data-an-range="30" data-i18n="an.range30">Last 30 days</button>
+        </div>
+      </div>
+      <div class="ac-group">
+        <span class="ac-label" data-i18n="an.minLabel">Min matches</span>
+        <div class="deck-chips">
+          <button class="chip on" data-an-min="0" data-i18n="an.minAny">Any</button>
+          <button class="chip" data-an-min="5">5+</button>
+          <button class="chip" data-an-min="10">10+</button>
+        </div>
+      </div>
+    </div>
     <div class="an-grid anim" id="an-grid"></div>
   </div>
 </main>
@@ -523,18 +553,18 @@
 <button class="to-top" id="to-top" aria-label="Back to top" data-i18n-attr="aria-label:misc.toTop">
   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 19V5M5 12l7-7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
 </button>
-<script src="i18n.js?v=20261013182315"></script>
+<script src="i18n.js?v=20261014202935"></script>
 <script>
   /* data.js is rewritten by the sheet sync worker outside of site deploys —
      load it with a per-request cache-buster so every refresh shows the
      latest sync (GitHub Pages caches static URLs for 10 minutes otherwise).
-     Uses ?t= (not ?v=20261013182315's ?v=20261013182315't touch it. */
+     Uses ?t= (not ?v=20261014202935's ?v=20261014202935't touch it. */
   document.write('<script src="data.js?t=' + Date.now() + '\"><\/script>');
 </script>
-<script src="log.js?v=1792005912978"></script>
-<script src="tanks.js?v=20261013182315"></script>
-<script src="tankrender.js?v=20261013182315"></script>
-<script src="cards.js?v=20261013182315"></script>
-<script src="app.js?v=20261013182315"></script>
+<script src="log.js?v=20261014202935"></script>
+<script src="tanks.js?v=20261014202935"></script>
+<script src="tankrender.js?v=20261014202935"></script>
+<script src="cards.js?v=20261014202935"></script>
+<script src="app.js?v=20261014202935"></script>
 </body>
 </html>
