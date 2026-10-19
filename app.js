@@ -473,4 +473,194 @@
       <span>${x(r.name)}</span>        <span class="mono" style="margin-left:auto;color:var(--dim)">${_t(r,!0)}</span>
     </a>`).join(""),a.classList.add("show")});document.addEventListener("click",e=>{e.target.closest(".search-box")||$("#search-drop").classList.remove("show"),e.target.closest(".drop-row")&&($("#search-drop").classList.remove("show"),$("#search").value="")});var it=qt.replace(/\/publish$/,"/feedback"),zt="tt1v1_fb_tickets";function Hs(){try{return JSON.parse(localStorage.getItem(zt)||"[]")}catch{return[]}}function Us(e){let s=Hs();s.push({id:e,ts:Date.now()});try{localStorage.setItem(zt,JSON.stringify(s.slice(-20)))}catch{}}function Gs(){let e=$("#fb-overlay"),s=()=>{e.classList.add("show"),e.setAttribute("aria-hidden","false"),setTimeout(()=>$("#fb-msg").focus(),180)},a=()=>{e.classList.remove("show"),e.setAttribute("aria-hidden","true")};$("#fab-feedback").addEventListener("click",s),$("#fb-close").addEventListener("click",a),$("#fb-done").addEventListener("click",a),e.addEventListener("click",n=>{n.target===e&&a()}),document.addEventListener("keydown",n=>{n.key==="Escape"&&e.classList.contains("show")&&a()});let i=$("#faq-feedback-btn");i&&i.addEventListener("click",s);let r=$("#fb-msg"),p=$("#fb-count-n");r.addEventListener("input",()=>{p.textContent=String(r.value.length);try{localStorage.setItem("tt1v1_fb_draft",r.value)}catch{}});try{let n=localStorage.getItem("tt1v1_fb_draft");n&&(r.value=n,p.textContent=String(n.length))}catch{}let h=$("#fb-send");h.addEventListener("click",async()=>{let n=r.value.trim();if(n.length<5){r.focus(),r.classList.add("fb-nudge"),setTimeout(()=>r.classList.remove("fb-nudge"),500),R(t("fb.writeFirst"));return}h.classList.add("busy"),h.disabled=!0;try{let l=await fetch(it,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:$("#fb-name").value.trim(),contact:$("#fb-contact").value.trim(),message:n})}),o=await l.json().catch(()=>({}));if(!l.ok||!o.ok){R(t("fb.couldNotSend",{err:o.error||"HTTP "+l.status}));return}Us(o.id);try{localStorage.removeItem("tt1v1_fb_draft")}catch{}$("#fb-ticket-code").textContent=o.id,$("#fb-view-form").hidden=!0,$("#fb-view-done").hidden=!1}catch{R(t("fb.netError"))}finally{h.classList.remove("busy"),h.disabled=!1}});let g=document.querySelector(".fb-ticket");g&&g.addEventListener("click",async()=>{let n=($("#fb-ticket-code").textContent||"").trim();if(!n||n==="\u2014")return;try{await navigator.clipboard.writeText(n)}catch{let c=document.createElement("textarea");c.value=n,document.body.appendChild(c),c.select();try{document.execCommand("copy")}catch{}c.remove()}let l=$("#fb-copied");l&&(l.classList.add("show"),clearTimeout(window._fbCopiedT),window._fbCopiedT=setTimeout(()=>l.classList.remove("show"),1800)),R(t("fb.ticketCopied"))}),$("#fb-check").addEventListener("click",async()=>{let n=$("#fb-ticket-in").value.trim(),l=$("#fb-reply-out");if(n){l.classList.add("show"),l.textContent=t("fb.checking");try{let o=await fetch(it+"/status?id="+encodeURIComponent(n)),c=await o.json().catch(()=>({}));if(!o.ok||!c.ok){l.textContent=t("fb.noTicket");return}l.innerHTML=c.resolved?`${t("fb.statusResolved")}${c.reply?`<br>${t("fb.replyFrom",{reply:x(c.reply)})}`:""}`:c.reply?t("fb.replyFrom",{reply:x(c.reply)}):t("fb.statusPending",{status:x(c.status)})}catch{l.textContent=t("fb.netErrorShort")}}})}function Ws(){let e=document.createElement("div");e.className="x-tip",document.body.appendChild(e);let s=null,a=null,i=null,r=0,p=0,h=0,g=c=>{let v=c&&c.closest?c.closest("[title],[data-tip]"):null;return v&&v.hasAttribute("title")&&(v.setAttribute("data-tip",v.getAttribute("title")),v.removeAttribute("title")),v&&v.getAttribute("data-tip")?v:null},n=(c,v)=>{let y=e.offsetWidth,f=e.offsetHeight,k=c+14,S=v+18;k+y>window.innerWidth-8&&(k=c-y-14),S+f>window.innerHeight-8&&(S=v-f-14),k=Math.max(8,k),S=Math.max(8,S);let q=e.classList.contains("show")&&e.style.left?Math.abs(parseFloat(e.style.left)-k)+Math.abs(parseFloat(e.style.top)-S)<150:!1;e.classList.toggle("snap",!q),e.style.left=k+"px",e.style.top=S+"px"},l=(c,v,y)=>{s=c,e.textContent=c.getAttribute("data-tip"),n(v,y),e.classList.add("show")},o=()=>{clearTimeout(a),clearTimeout(i),a=i=null,e.classList.remove("show"),s=null};document.addEventListener("mousemove",c=>{p=c.clientX,h=c.clientY;let v=g(c.target);if(v){if(clearTimeout(i),i=null,v===s){e.classList.contains("show")&&(cancelAnimationFrame(r),r=requestAnimationFrame(()=>n(p,h)));return}clearTimeout(a),e.classList.contains("show")?l(v,p,h):a=setTimeout(()=>l(v,p,h),90);return}s&&!i&&(i=setTimeout(o,110))},{passive:!0}),window.addEventListener("scroll",o,{passive:!0}),document.addEventListener("mousedown",o,{passive:!0})}var Ce;function R(e){let s=$("#toast");s.textContent=e,s.classList.add("show"),clearTimeout(Ce),Ce=setTimeout(()=>s.classList.remove("show"),2600)}var bt;function Yt(){bt&&bt.disconnect(),bt=new IntersectionObserver(e=>{e.forEach(s=>{s.isIntersecting&&(s.target.classList.add("in"),B(".cu",s.target).forEach(a=>Ht(a,parseFloat(a.dataset.target),{dec:parseInt(a.dataset.dec||0)})),bt.unobserve(s.target))})},{threshold:.12}),B(".reveal").forEach(e=>bt.observe(e))}(function(){let s=$("#scroll-progress"),a=$("#to-top"),i=$("#page-home .hero-row"),r=document.querySelector(".topbar"),p=!1,h=null,g=null,n=()=>{p=!1;let v=window.scrollY,y=document.documentElement.scrollHeight-window.innerHeight;if(s&&(s.style.transform=`scaleX(${y>0?Math.min(1,v/y):0})`),a&&a.classList.toggle("show",v>640),r&&r.classList.toggle("scrolled",v>10),i&&v<1400){let f=Math.round(v*.14),k=Math.max(.3,1-v/950).toFixed(2);f!==h&&(i.style.transform=`translateY(${f}px)`,h=f),k!==g&&(i.style.opacity=k,g=k)}},l,o=document.documentElement,c=()=>{o.classList.add("is-scrolling"),r&&r.classList.add("scrolling"),clearTimeout(l),l=setTimeout(()=>{o.classList.remove("is-scrolling"),r&&r.classList.remove("scrolling")},160),p||(p=!0,requestAnimationFrame(n))};window.addEventListener("scroll",c,{passive:!0}),a&&a.addEventListener("click",()=>window.scrollTo({top:0,behavior:"smooth"})),n()})();window.lbScrollNow=e=>{window.scrollTo({top:e||0,behavior:"instant"})};window.lbCards={topOf:()=>U,all:()=>Z.players,byName:()=>K,histOf:At,h2hOf:Fe,deltaTag:Wt,resLetter:j,fmtDate:tt,canon:P,allMatches:Q,ratingTimeline:Xs,ratingSeries:ta,altsOf:Re,lastSeenText:Pe,lastSeenExact:je};St();fe();ft();Gs();Ws();window.addEventListener("lb-lang",()=>{let e=window.scrollY,s=nt,a={...I};ft(),$("#page-home").classList.contains("active")&&(s!=="all"||a.key!=="rank"||a.dir!==1)&&(nt=s,I=a,B(".chip[data-filter]").forEach(i=>i.classList.toggle("on",i.dataset.filter===s)),me(),ht(s,a.key,a.dir)),ge(),window.lbScrollNow(e)});function wt(e,s){let a=e.indexOf("window."+s);if(a<0)return null;let i=e.indexOf("=",a);for(;i<e.length&&"{[".indexOf(e[i])<0;)i++;let r=0,p=!1,h="",g=!1;for(let n=i;n<e.length;n++){let l=e[n];if(p){g?g=!1:l==="\\"?g=!0:l===h&&(p=!1);continue}if(l==='"'||l==="'"){p=!0,h=l;continue}if(l==="{"||l==="[")r++;else if((l==="}"||l==="]")&&(r--,r<=0))return JSON.parse(e.slice(i,n+1))}return null}var qe="https://tierstats.github.io/";async function Ae(e,s){for(let a of e)try{let i=await fetch(a+(a.includes("?")?"&":"?")+s,{cache:"no-store"});if(i.ok)return await i.text()}catch{}return null}async function Jt(e){try{let s="cb="+Date.now(),[a,i]=await Promise.all([Ae([qe+"data.js","data.js"],s),Ae([qe+"log.js","log.js"],s)]);if(!a||!i)throw new Error("data unavailable");let r=wt(a,"LB_TANKS");r&&(window.LB_TANKS={...window.LB_TANKS_SNAPSHOT||{},...r});let p=wt(a,"LB_DATA"),h=wt(i,"LB_PUB")||(wt(i,"LB_LOG")?{matches:wt(i,"LB_LOG")}:null),g=[];if(p&&JSON.stringify(p)!==JSON.stringify(D)&&(D=p,window.LB_DATA=p,g.push("data")),h&&JSON.stringify(h)!==JSON.stringify(window.LB_PUB||null)&&(window.LB_PUB=h,window.LB_LOG=h.matches||[],g.push("log")),g.length){let n=window.scrollY;St(),fe(),ft(),window.scrollTo({top:n,behavior:"instant"}),document.querySelectorAll(".reveal:not(.in), .anim:not(.in)").forEach(o=>o.classList.add("in"));let l=$("#last-updated");l&&(l.textContent=t("home.lastUpdated",{when:tt(D.generated)||"today"}))}e&&R(g.length?t("misc.refreshed"):t("misc.upToDate"))}catch{e&&R(t("misc.refreshFailed"))}}Jt(!1);var Nt=$("#lb-refresh-btn");Nt&&Nt.addEventListener("click",async()=>{Nt.classList.add("spinning"),await Jt(!0),setTimeout(()=>Nt.classList.remove("spinning"),400)});setInterval(()=>Jt(!1),6e4);document.addEventListener("visibilitychange",()=>{document.hidden||Jt(!1)});var ze="tt1v1_fb_seen",X=null;function zs(){try{return JSON.parse(localStorage.getItem(zt)||"[]")}catch{return[]}}function Ye(){try{return JSON.parse(localStorage.getItem(ze)||"{}")||{}}catch{return{}}}function Ys(){let e=$("#fab-feedback");if(e&&!e.querySelector(".fb-dot")){let a=document.createElement("span");a.className="fb-dot",e.appendChild(a),requestAnimationFrame(()=>a.classList.add("in"))}let s=$("#fb-view-form");if(s&&!$("#fb-reply-banner")&&X){let a=document.createElement("div");a.id="fb-reply-banner",a.innerHTML=`${t("fb.teamReplied",{id:x(X.id)})}
       <div class="r">${x(X.reply)}</div>
-      <button class="btn btn-ghost" id="fb-got-it" style="margin-top:9px;padding:6px 13px">${t("fb.gotIt")}</button>`,s.insertAdjacentElement("beforebegin",a),requestAnimationFrame(()=>a.classList.add("show")),$("#fb-got-it").addEventListener("click",Js)}}function Js(){if(X){let a=Ye();a[X.id]=1;try{localStorage.setItem(ze,JSON.stringify(a))}catch{}X=null}let e=$(".fb-dot");e&&(e.classList.add("out"),setTimeout(()=>e.remove(),420));let s=$("#fb-reply-banner");s&&(s.classList.remove("show"),setTimeout(()=>s.remove(),420))}async function Je(){let e=Ye();X=null;let s=zs(),a=s.slice(0,Math.max(0,s.length-6)),i=[];for(let r of s.slice(-6))try{let p=await fetch(it+"/status?id="+encodeURIComponent(r.id),{cache:"no-store"}),h=await p.json().catch(()=>({}));if(p.status===404||p.ok&&h.ok===!1)continue;i.push(r),p.ok&&h.ok&&h.reply&&!e[r.id]&&!X&&(X={id:r.id,reply:h.reply})}catch{i.push(r)}if(i.length!==s.slice(-6).length)try{localStorage.setItem(zt,JSON.stringify([...a,...i]))}catch{}X&&Ys()}setTimeout(Je,3500);setInterval(Je,9e4);var Vs=qt.replace(/\/publish$/,"/api/ttstats"),Ks=15e3;function Qs(e,s){let a=e&&e.stats||{};return s==="kd"?a.deaths?a.kills/a.deaths:a.kills!=null?a.kills:null:a[s]!=null?a[s]:null}function Zs(e){let s=a=>String(a).replace(/["\\]/g,"\\$&");Object.keys(e).forEach(a=>{let i=e[a];window.LB_TANKS=Object.assign({},window.LB_TANKS||{},{[a]:i}),document.querySelectorAll(`[data-live-name="${s(a)}"][data-live]`).forEach(r=>{let p=r.dataset.live,h=Qs(i,p);if(h==null)return;let g=p==="kd"&&i.stats&&i.stats.deaths?2:0,n=Number(h.toFixed(g)),l=parseFloat(String(r.textContent).replace(/[^0-9.\-]/g,""));(isNaN(l)||l!==n)&&Ht(r,n,{dec:g,dur:900})}),document.querySelectorAll(`canvas[data-tank-name="${s(a)}"]`).forEach(r=>{r.dataset.mounted&&window.TankRender&&window.TankRender.render(r,i,r.dataset.tankSize||"medium")})})}(function(){let s=!1,a=0,i=new Set,r=0,p=0,h=n=>{a||(a=setTimeout(()=>{a=0,g()},n))};window.lbTankWant=n=>{n&&i.add(String(n)),s&&h(350)};let g=async()=>{if(s){h(300);return}if(document.visibilityState!=="visible")return;let n=[...new Set([...[...document.querySelectorAll("[data-live-name]")].map(d=>d.dataset.liveName),...[...document.querySelectorAll("canvas[data-tank-name]")].map(d=>d.dataset.tankName)])].filter(Boolean),l=window.LB_DATA||{},o=[...new Set([...l.qualified||[],...l.players||[]].map(d=>d&&d.name).filter(Boolean))],c=12,v=new Set,y=(d,w,u)=>{let b=[];for(let m=0;m<d.length&&b.length<u;m++){let L=d[(w+m)%d.length];v.has(L)||(v.add(L),b.push(L))}return b},f=[...i].filter(Boolean);f.forEach(d=>v.add(d));let k=n.filter(d=>!v.has(d)),S=y(k,r,Math.min(6,Math.max(0,c-v.size)));k.length>S.length&&(r=(r+S.length)%k.length);let q=o.filter(d=>!v.has(d)),E=y(q,p,Math.max(0,c-v.size));q.length>E.length&&(p=(p+E.length)%q.length);let A=[...f,...S,...E].slice(0,c);if(A.length){s=!0;try{let w=await(await fetch(Vs+"?names="+encodeURIComponent(A.join(",")),{cache:"no-store"})).json();w&&w.ok&&w.tanks&&(Zs(w.tanks),typeof window.lbTankFreshMark=="function"&&window.lbTankFreshMark(Object.keys(w.tanks))),A.forEach(u=>i.delete(u))}catch{}s=!1}};window.lbLiveStatsTick=()=>h(0),g(),setTimeout(g,900),setInterval(g,Ks)})();var xt=null;function Ve(){if(xt)return xt;let e={},s=(o,c,v,y)=>{let f=c-C.conservative*v;(!e[o]||f>e[o].rating)&&(e[o]={rating:f,date:y||""})},a={},i=o=>{if(!a[o]){let[c,v]=le(o);a[o]={r:c,rd:v,lastIdx:null}}return a[o]},r={};for(let o of Q()){if(o.date)continue;let c=o.sa>o.sb?1:o.sa<o.sb?0:.5;(r[o.a]=r[o.a]||[]).push([o.b,c]),(r[o.b]=r[o.b]||[]).push([o.a,1-c]),i(o.a).lastIdx=st,i(o.b).lastIdx=st}let p={};for(let o in r)p[o]=[i(o).r,i(o).rd];for(let o in r){let c=i(o),[v,y]=pt(c.r,c.rd,r[o].map(([f,k])=>[p[f][0],p[f][1],k]));c.r=v,c.rd=y,s(o,v,y,C.graceStart)}let h={},g={};for(let o in a)g[P(o)]={r:a[o].r,rd:a[o].rd,lastIdx:a[o].lastIdx};let n=o=>{if(!g[o]){let[c,v]=le(o);g[o]={r:c,rd:v,lastIdx:null}}return g[o]};for(let o of Q().slice().reverse()){let c=o.date?Tt(o.date):null,v=P(o.a),y=P(o.b),f=n(v),k=n(y);if(c!=null)for(let w of[f,k]){let u=c-(w.lastIdx==null?st:w.lastIdx);u>0&&(w.rd=Math.min(Math.sqrt(w.rd*w.rd+C.growth*C.growth*u),C.maxRd))}let S=o.sa>o.sb?1:o.sa<o.sb?0:.5,[q,E]=pt(f.r,f.rd,[[k.r,k.rd,S]]),[A,d]=pt(k.r,k.rd,[[f.r,f.rd,1-S]]);f.r=q,f.rd=E,c!=null&&(f.lastIdx=c),k.r=A,k.rd=d,c!=null&&(k.lastIdx=c),o.date&&((h[v]=h[v]||[]).push({date:o.date,r:q-C.conservative*E,opp:o.b,pf:o.sa,pa:o.sb,w:S}),(h[y]=h[y]||[]).push({date:o.date,r:A-C.conservative*d,opp:o.a,pf:o.sb,pa:o.sa,w:1-S}))}let l=new Map;for(let o of Q().filter(c=>c.date).slice().reverse()){let c=Tt(o.date);l.has(c)||l.set(c,[]),l.get(c).push({a:P(o.a),b:P(o.b),sa:+o.sa,sb:+o.sb,date:o.date})}for(let o of[...l.keys()].sort((c,v)=>c-v)){for(let f in a){let k=a[f],S=o-(k.lastIdx==null?st:k.lastIdx);S>0&&(k.rd=Math.min(Math.sqrt(k.rd*k.rd+C.growth*C.growth*S),C.maxRd))}let c={},v="";for(let f of l.get(o)){let k=f.sa>f.sb?1:f.sa<f.sb?0:.5;(c[f.a]=c[f.a]||[]).push([f.b,k]),(c[f.b]=c[f.b]||[]).push([f.a,1-k]),i(f.a).lastIdx=o,i(f.b).lastIdx=o,f.date>v&&(v=f.date)}let y={};for(let f in c)y[f]=[i(f).r,i(f).rd];for(let f in c){let k=i(f),[S,q]=pt(k.r,k.rd,c[f].map(([E,A])=>[y[E][0],y[E][1],A]));k.r=S,k.rd=q,s(f,S,q,v)}}return xt={peaks:e,series:h},xt}function Xs(){return Ve().peaks}function ta(e){let s=P(e);return(Ve().series[s]||[]).slice()}})();
+      <button class="btn btn-ghost" id="fb-got-it" style="margin-top:9px;padding:6px 13px">${t("fb.gotIt")}</button>`,s.insertAdjacentElement("beforebegin",a),requestAnimationFrame(()=>a.classList.add("show")),$("#fb-got-it").addEventListener("click",Js)}}function Js(){if(X){let a=Ye();a[X.id]=1;try{localStorage.setItem(ze,JSON.stringify(a))}catch{}X=null}let e=$(".fb-dot");e&&(e.classList.add("out"),setTimeout(()=>e.remove(),420));let s=$("#fb-reply-banner");s&&(s.classList.remove("show"),setTimeout(()=>s.remove(),420))}async function Je(){let e=Ye();X=null;let s=zs(),a=s.slice(0,Math.max(0,s.length-6)),i=[];for(let r of s.slice(-6))try{let p=await fetch(it+"/status?id="+encodeURIComponent(r.id),{cache:"no-store"}),h=await p.json().catch(()=>({}));if(p.status===404||p.ok&&h.ok===!1)continue;i.push(r),p.ok&&h.ok&&h.reply&&!e[r.id]&&!X&&(X={id:r.id,reply:h.reply})}catch{i.push(r)}if(i.length!==s.slice(-6).length)try{localStorage.setItem(zt,JSON.stringify([...a,...i]))}catch{}X&&Ys()}setTimeout(Je,3500);setInterval(Je,9e4);var Vs=qt.replace(/\/publish$/,"/api/ttstats"),Ks=15e3;function Qs(e,s){let a=e&&e.stats||{};return s==="kd"?a.deaths?a.kills/a.deaths:a.kills!=null?a.kills:null:a[s]!=null?a[s]:null}function Zs(e){let s=a=>String(a).replace(/["\\]/g,"\\$&");Object.keys(e).forEach(a=>{let i=e[a];window.LB_TANKS=Object.assign({},window.LB_TANKS||{},{[a]:i}),document.querySelectorAll(`[data-live-name="${s(a)}"][data-live]`).forEach(r=>{let p=r.dataset.live,h=Qs(i,p);if(h==null)return;let g=p==="kd"&&i.stats&&i.stats.deaths?2:0,n=Number(h.toFixed(g)),l=parseFloat(String(r.textContent).replace(/[^0-9.\-]/g,""));(isNaN(l)||l!==n)&&Ht(r,n,{dec:g,dur:900})}),document.querySelectorAll(`canvas[data-tank-name="${s(a)}"]`).forEach(r=>{r.dataset.mounted&&window.TankRender&&window.TankRender.render(r,i,r.dataset.tankSize||"medium")})})}(function(){let s=!1,a=0,i=new Set,r=0,p=0,h=n=>{a||(a=setTimeout(()=>{a=0,g()},n))};window.lbTankWant=n=>{n&&i.add(String(n)),s&&h(350)};let g=async()=>{if(s){h(300);return}if(document.visibilityState!=="visible")return;let n=[...new Set([...[...document.querySelectorAll("[data-live-name]")].map(d=>d.dataset.liveName),...[...document.querySelectorAll("canvas[data-tank-name]")].map(d=>d.dataset.tankName)])].filter(Boolean),l=window.LB_DATA||{},o=[...new Set([...l.qualified||[],...l.players||[]].map(d=>d&&d.name).filter(Boolean))],c=12,v=new Set,y=(d,w,u)=>{let b=[];for(let m=0;m<d.length&&b.length<u;m++){let L=d[(w+m)%d.length];v.has(L)||(v.add(L),b.push(L))}return b},f=[...i].filter(Boolean);f.forEach(d=>v.add(d));let k=n.filter(d=>!v.has(d)),S=y(k,r,Math.min(6,Math.max(0,c-v.size)));k.length>S.length&&(r=(r+S.length)%k.length);let q=o.filter(d=>!v.has(d)),E=y(q,p,Math.max(0,c-v.size));q.length>E.length&&(p=(p+E.length)%q.length);let A=[...f,...S,...E].slice(0,c);if(A.length){s=!0;try{let w=await(await fetch(Vs+"?names="+encodeURIComponent(A.join(",")),{cache:"no-store"})).json();w&&w.ok&&w.tanks&&(Zs(w.tanks),typeof window.lbTankFreshMark=="function"&&window.lbTankFreshMark(Object.keys(w.tanks))),A.forEach(u=>i.delete(u))}catch{}s=!1}};window.lbLiveStatsTick=()=>h(0),g(),setTimeout(g,900),setInterval(g,Ks)})();var xt=null;function Ve(){
+  if(xt)return xt;
+
+  let peaks={};
+  let rememberPeak=(name,rating,rd,date)=>{
+    let shown=rating-C.conservative*rd;
+    if(!peaks[name]||shown>peaks[name].rating)peaks[name]={rating:shown,date:date||""};
+  };
+
+  let state={};
+  let getState=name=>{
+    name=P(name);
+    if(!state[name]){
+      let[startR,startRD]=le(name),oldSeed=bs(name);
+      state[name]={
+        r:startR,
+        rd:startRD,
+        seeded:oldSeed!=null&&oldSeed!==""&&Number.isFinite(Number(oldSeed)),
+        calibGames:0,
+        calibOpps:new Set,
+        lastDate:null
+      };
+    }
+    return state[name];
+  };
+
+  // Q() is newest-first. Reverse it so dated matches keep spreadsheet order
+  // when multiple matches have the same date.
+  let ordered=Q().slice().reverse().map((m,idx)=>({
+    ...m,
+    a:P(m.a),
+    b:P(m.b),
+    _ord:idx
+  }));
+
+  ordered.forEach(m=>{getState(m.a);getState(m.b)});
+
+  let legacy=ordered.filter(m=>!m.date);
+  let dated=ordered.filter(m=>!!m.date).sort((a,b)=>
+    String(a.date).localeCompare(String(b.date))||a._ord-b._ord
+  );
+
+  // Legacy / undated history stays one Glicko batch.
+  let legacyGames={};
+  for(let m of legacy){
+    let score=m.sa>m.sb?1:m.sa<m.sb?0:.5;
+    (legacyGames[m.a]=legacyGames[m.a]||[]).push([m.b,score]);
+    (legacyGames[m.b]=legacyGames[m.b]||[]).push([m.a,1-score]);
+  }
+
+  let legacyPre={};
+  for(let name in legacyGames){
+    let st=getState(name);
+    legacyPre[name]=[st.r,st.rd];
+  }
+
+  for(let name in legacyGames){
+    let st=getState(name);
+    let[nextR,nextRD]=pt(
+      legacyPre[name][0],
+      legacyPre[name][1],
+      legacyGames[name].map(([opp,score])=>[
+        legacyPre[opp][0],
+        legacyPre[opp][1],
+        score
+      ])
+    );
+    st.r=nextR;
+    st.rd=nextRD;
+    rememberPeak(name,nextR,nextRD,C.graceStart);
+  }
+
+  // Legacy matches count toward newcomer calibration.
+  for(let m of legacy){
+    let a=getState(m.a),b=getState(m.b);
+    a.calibGames++;
+    b.calibGames++;
+    a.calibOpps.add(m.b);
+    b.calibOpps.add(m.a);
+  }
+
+  let series={};
+
+  // IMPORTANT: these match the current Kode.gs backend.
+  // Seeded players are calibrated immediately.
+  // Unseeded players calibrate after 3 prior matches + 2 prior opponents.
+  const CALIBRATION_MATCHES=3;
+  const CALIBRATION_OPPONENTS=2;
+  const UNCALIBRATED_WEIGHT=.25;
+
+  let calibrated=st=>
+    st.seeded||
+    (st.calibGames>=CALIBRATION_MATCHES&&
+     st.calibOpps.size>=CALIBRATION_OPPONENTS);
+
+  let weightedUpdate=(own,opp,score,weight)=>{
+    let gg=He(opp.rd);
+    let expected=ce(own.r,opp.r,opp.rd);
+
+    let varianceSum=weight*gg*gg*expected*(1-expected);
+    let deltaSum=weight*gg*(score-expected);
+
+    if(varianceSum<=0)return[own.r,own.rd];
+
+    let d2=1/(Lt*Lt*varianceSum);
+    let inv=1/(own.rd*own.rd)+1/d2;
+
+    return[
+      own.r+(Lt/inv)*deltaSum,
+      Math.sqrt(1/inv)
+    ];
+  };
+
+  // Dated matches: one match at a time, chronological order.
+  for(let m of dated){
+    let a=getState(m.a),b=getState(m.b);
+
+    // RD growth only for full inactivity periods between this player's
+    // dated matches. Do not invent a gap before their first dated match.
+    for(let st of[a,b]){
+      if(st.lastDate){
+        let gapDays=Math.max(
+          0,
+          Math.floor(
+            (Date.parse(m.date+"T00:00:00Z")-
+             Date.parse(st.lastDate+"T00:00:00Z"))/Pt
+          )
+        );
+        let idlePeriods=Math.floor(gapDays/C.periodDays);
+        if(idlePeriods>0){
+          st.rd=Math.min(
+            C.maxRd,
+            Math.sqrt(st.rd*st.rd+C.growth*C.growth*idlePeriods)
+          );
+        }
+      }
+    }
+
+    let aCal=calibrated(a),bCal=calibrated(b);
+    let weightA=aCal&&!bCal?UNCALIBRATED_WEIGHT:1;
+    let weightB=bCal&&!aCal?UNCALIBRATED_WEIGHT:1;
+
+    let scoreA=m.sa>m.sb?1:m.sa<m.sb?0:.5;
+    let scoreB=1-scoreA;
+
+    // Freeze both PRE-match states before either update.
+    let preA={r:a.r,rd:a.rd};
+    let preB={r:b.r,rd:b.rd};
+
+    let[nextAR,nextARD]=weightedUpdate(preA,preB,scoreA,weightA);
+    let[nextBR,nextBRD]=weightedUpdate(preB,preA,scoreB,weightB);
+
+    a.r=nextAR;
+    a.rd=nextARD;
+    b.r=nextBR;
+    b.rd=nextBRD;
+
+    a.calibGames++;
+    b.calibGames++;
+    a.calibOpps.add(m.b);
+    b.calibOpps.add(m.a);
+    a.lastDate=m.date;
+    b.lastDate=m.date;
+
+    let shownA=a.r-C.conservative*a.rd;
+    let shownB=b.r-C.conservative*b.rd;
+
+    (series[m.a]=series[m.a]||[]).push({
+      date:m.date,
+      r:shownA,
+      opp:m.b,
+      pf:m.sa,
+      pa:m.sb,
+      w:scoreA
+    });
+
+    (series[m.b]=series[m.b]||[]).push({
+      date:m.date,
+      r:shownB,
+      opp:m.a,
+      pf:m.sb,
+      pa:m.sa,
+      w:scoreB
+    });
+
+    rememberPeak(m.a,a.r,a.rd,m.date);
+    rememberPeak(m.b,b.r,b.rd,m.date);
+  }
+
+  return xt={peaks:peaks,series:series},xt;
+}function Xs(){return Ve().peaks}function ta(e){let s=P(e);return(Ve().series[s]||[]).slice()}})();
