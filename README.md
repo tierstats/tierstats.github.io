@@ -7,15 +7,19 @@ archive, head-to-head dossiers, provisional roster and analytics.
 
 - Owned & run by **Alternator** & **interstellar**
 - Every rating is computed from the recorded match history — no manual rankings
-- Visible rating = Glicko − 0.35 × RD (uncertain ratings are held back)
+- Visible rating = Glicko − 0.5 × RD (uncertain ratings are held back)
 
 ## Pages
 
-- **Rankings** — front line top 10, full leaderboard, latest battles
+- **Rankings** — the full qualified leaderboard
+- **Player cards** — collectible cards with per-player stat sheets
+- **Compare** — head-to-head dossiers and win probability
 - **Matches** — the complete duel archive
-- **Roster** — provisional players climbing toward qualification
-- **Analytics** — win rates, activity, biggest upsets, rivalries
-- **Method** — how the rating system works
+- **Provisional** — players climbing toward qualification
+- **Analytics** — win rates, schedules, upsets, activity and rivalries
+- **Find a 1v1** — availability posts and the shared match board
+- **Method** — how the Dynamic Glicko-2 ratings work
+- **FAQ** — answers about the board, records and qualification
 - **Admin** — owners-only match log (password protected)
 
 ## How published matches work

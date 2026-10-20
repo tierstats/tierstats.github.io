@@ -5,26 +5,26 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ttw — 1v1 Leaderboard</title>
-<meta name="description" content="Rank #18 · 1638.4 rating · 18W 14L — rating history, full match archive and head-to-head stats.">
+<meta name="description" content="Rank #19 · 1638.4 rating · 18W 14L — rating history, full match archive and head-to-head stats.">
 <!-- Open Graph: the DEFAULT embed — shown only for home/default links.
      work/gen_share_pages.js rewrites these per player & route into static
      share pages, so shared profile links carry exclusive text + tank art. -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="1v1 Leaderboard">
 <meta property="og:title" content="ttw — 1v1 Leaderboard">
-<meta property="og:description" content="Rank #18 · 1638.4 rating · 18W 14L — rating history, full match archive and head-to-head stats.">
+<meta property="og:description" content="Rank #19 · 1638.4 rating · 18W 14L — rating history, full match archive and head-to-head stats.">
 <meta property="og:url" content="https://tierstats.github.io/player/ttw">
 <meta property="og:image" content="https://tierstats.github.io/share/ttw.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="ttw — 1v1 Leaderboard">
-<meta name="twitter:description" content="Rank #18 · 1638.4 rating · 18W 14L — rating history, full match archive and head-to-head stats.">
+<meta name="twitter:description" content="Rank #19 · 1638.4 rating · 18W 14L — rating history, full match archive and head-to-head stats.">
 <meta name="twitter:image" content="https://tierstats.github.io/share/ttw.png">
 <script>try{document.documentElement.dataset.theme=localStorage.getItem('tt1v1_theme')||'dark'}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20261017135043">
-<link rel="stylesheet" href="cards.css?v=20261017135043">
+<link rel="stylesheet" href="styles.css?v=20261020234624">
+<link rel="stylesheet" href="cards.css?v=20261020234624">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23ffb020'/><text x='50' y='68' font-size='52' font-weight='900' text-anchor='middle' fill='%23241a02' font-family='Arial'>1v1</text></svg>">
 </head>
 <body>
@@ -32,11 +32,18 @@
 <!-- ======================= TOP BAR ======================= -->
 <header class="topbar">
   <div class="topbar-in">
-    <a class="brand" href="#/">
-      <div class="brand-mark">1v1</div>
-      <div class="brand-name">1v1 <em>Leaderboard</em></div>
+    <a class="brand" href="#/" aria-label="1v1 Leaderboard">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="21" height="21">
+          <rect x="1.8" y="14.6" width="20.4" height="5.4" rx="2.7" fill="currentColor"/>
+          <rect x="4.6" y="10.4" width="14.8" height="4.8" rx="1.3" fill="currentColor"/>
+          <rect x="10.2" y="6.4" width="6.4" height="5.4" rx="1.5" fill="currentColor"/>
+          <rect x="15.8" y="7.4" width="6.2" height="1.8" rx=".9" fill="currentColor"/>
+        </svg>
+      </span>
+      <span class="brand-lock" aria-hidden="true"><b>1v1</b><i data-i18n="top.brandSub">Leaderboard</i></span>
     </a>
-    <nav class="nav">
+    <nav class="nav" aria-label="Site sections" data-i18n-attr="aria-label:foot.sections">
       <span class="nav-glide" id="nav-glide"></span>
       <a href="#/" data-i18n="nav.rankings">Rankings</a>
       <a href="#/cards" data-i18n="nav.cards">Cards</a>
@@ -44,34 +51,53 @@
       <a href="#/matches" data-i18n="nav.matches">Matches</a>
       <a href="#/roster" data-i18n="nav.roster">Roster</a>
       <a href="#/analytics" data-i18n="nav.analytics">Analytics</a>
+      <i class="nav-div" aria-hidden="true"></i>
+      <a href="#/find" class="nav-minor" data-i18n="nav.find">Find 1v1</a>
       <a href="#/method" class="nav-minor" data-i18n="nav.method">Method</a>
       <a href="#/faq" class="nav-minor" data-i18n="nav.faq">FAQ</a>
     </nav>
     <div class="spacer"></div>
     <div class="search-box">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3" stroke-linecap="round"/></svg>
-      <input id="search" type="text" placeholder="Find a player…" data-i18n-attr="placeholder:top.searchPh" autocomplete="off">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3" stroke-linecap="round"/></svg>
+      <input id="search" type="text" placeholder="Find a player…" data-i18n-attr="placeholder:top.searchPh" autocomplete="off" aria-keyshortcuts="/">
+      <kbd class="search-kbd" aria-hidden="true">/</kbd>
       <div id="search-drop" class="search-drop"></div>
     </div>
-    <div class="lang-switch" id="lang-switch">
-      <button class="icon-btn lang-btn" id="lang-btn" aria-haspopup="true" aria-expanded="false" aria-label="Language" title="Language">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9S14.5 18.3 12 21c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3Z"/></svg>
-        <span class="lang-code">EN</span>
-      </button>
-      <div class="lang-menu" id="lang-menu" role="menu">
-        <button data-lang="en" role="menuitemradio" aria-checked="true"><span class="ck">✓</span><span class="ln">English</span><span class="lc">EN</span></button>
-        <button data-lang="zh" role="menuitemradio" aria-checked="false"><span class="ck">✓</span><span class="ln">简体中文</span><span class="lc">中</span></button>
-        <button data-lang="ja" role="menuitemradio" aria-checked="false"><span class="ck">✓</span><span class="ln">日本語</span><span class="lc">日</span></button>
-        <button data-lang="ru" role="menuitemradio" aria-checked="false"><span class="ck">✓</span><span class="ln">Русский</span><span class="lc">РУ</span></button>
+    <div class="top-controls">
+      <div class="lang-switch" id="lang-switch">
+        <button class="icon-btn lang-btn" id="lang-btn" aria-haspopup="true" aria-expanded="false" aria-label="Language" title="Language" data-i18n-attr="aria-label:top.language;title:top.language">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9S14.5 18.3 12 21c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3Z"/></svg>
+          <span class="lang-code">EN</span>
+        </button>
+        <div class="lang-menu" id="lang-menu" role="menu">
+          <button data-lang="en" role="menuitemradio" aria-checked="true"><span class="ck">✓</span><span class="ln">English</span><span class="lc">EN</span></button>
+          <button data-lang="zh" role="menuitemradio" aria-checked="false"><span class="ck">✓</span><span class="ln">简体中文</span><span class="lc">中</span></button>
+          <button data-lang="ja" role="menuitemradio" aria-checked="false"><span class="ck">✓</span><span class="ln">日本語</span><span class="lc">日</span></button>
+          <button data-lang="ru" role="menuitemradio" aria-checked="false"><span class="ck">✓</span><span class="ln">Русский</span><span class="lc">РУ</span></button>
+        </div>
       </div>
+      <button class="icon-btn theme-toggle" id="theme-toggle" title="Switch to light mode" aria-label="Switch to light mode" aria-pressed="false">
+        <svg class="ic-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" stroke-linejoin="round"/></svg>
+        <svg class="ic-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" stroke-linecap="round"/></svg>
+      </button>
+      <button class="icon-btn mnav-btn" id="mnav-btn" aria-controls="mnav" aria-expanded="false" aria-label="Menu" title="Menu" data-i18n-attr="aria-label:top.menu;title:top.menu">
+        <span class="mnav-bars" aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
     </div>
-    <button class="icon-btn theme-toggle" id="theme-toggle" title="Switch to light mode" aria-label="Switch to light mode" aria-pressed="false">
-      <svg class="ic-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" stroke-linejoin="round"/></svg>
-      <svg class="ic-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" stroke-linecap="round"/></svg>
-      <span class="tl" aria-hidden="true"><b class="tl-dark" data-i18n="top.dark">Dark</b><b class="tl-light" data-i18n="top.light">Light</b></span>
-    </button>
   </div>
 </header>
+
+<nav class="mnav" id="mnav" aria-label="Site sections" data-i18n-attr="aria-label:foot.sections">
+  <a href="#/" data-i18n="nav.rankings">Rankings</a>
+  <a href="#/cards" data-i18n="nav.cards">Cards</a>
+  <a href="#/compare" data-i18n="nav.compare">Compare</a>
+  <a href="#/matches" data-i18n="nav.matches">Matches</a>
+  <a href="#/roster" data-i18n="nav.roster">Roster</a>
+  <a href="#/analytics" data-i18n="nav.analytics">Analytics</a>
+  <a href="#/find" data-i18n="nav.find">Find 1v1</a>
+  <a href="#/method" data-i18n="nav.method">Method</a>
+  <a href="#/faq" data-i18n="nav.faq">FAQ</a>
+</nav>
 
 <!-- ======================= HOME ======================= -->
 <main id="page-home" class="page">
@@ -90,34 +116,32 @@
           <h1 data-i18n-html="home.h1">Every duel.<br>Every rank.<br><span class="gold">One leaderboard.</span></h1>
           <p class="sub" data-i18n="home.sub">The definitive Tank Trouble 1v1 rankings — built on the Glicko rating system,
       so your rating knows how reliable it is. Click any player for their full profile.</p>
+          <a class="section-link hero-link" href="#full-rankings"><span data-i18n="home.fullRankings">Full rankings</span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
         </div>
-        <section class="stat-strip anim" id="stat-strip">
-          <div class="stat-card"><div class="skeleton sk-line" style="width:58%"></div><div class="skeleton sk-line sk-big" style="width:42%"></div></div>
-          <div class="stat-card"><div class="skeleton sk-line" style="width:58%"></div><div class="skeleton sk-line sk-big" style="width:42%"></div></div>
-          <div class="stat-card"><div class="skeleton sk-line" style="width:58%"></div><div class="skeleton sk-line sk-big" style="width:42%"></div></div>
-          <div class="stat-card"><div class="skeleton sk-line" style="width:58%"></div><div class="skeleton sk-line sk-big" style="width:42%"></div></div>
-        </section>
+        <div class="hero-cards">
+          <div class="fan-cap">
+            <span class="fan-cap-k" data-i18n="home.leaders">Leaders</span>
+            <a class="fan-cap-link" href="#/cards"><span data-i18n="nav.cards">Cards</span>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+          </div>
+          <div class="fl-cards" id="fl-cards">
+            <div class="skeleton sk-card"></div>
+            <div class="skeleton sk-card sk-tall"></div>
+            <div class="skeleton sk-card"></div>
+          </div>
+        </div>
       </div>
+      <section class="stat-strip anim" id="stat-strip">
+        <div class="stat-card"><div class="skeleton sk-line" style="width:58%"></div><div class="skeleton sk-line sk-big" style="width:42%"></div></div>
+        <div class="stat-card"><div class="skeleton sk-line" style="width:58%"></div><div class="skeleton sk-line sk-big" style="width:42%"></div></div>
+        <div class="stat-card"><div class="skeleton sk-line" style="width:58%"></div><div class="skeleton sk-line sk-big" style="width:42%"></div></div>
+        <div class="stat-card"><div class="skeleton sk-line" style="width:58%"></div><div class="skeleton sk-line sk-big" style="width:42%"></div></div>
+      </section>
     </section>
 
-    <section class="anim">
-      <div class="section-head reveal">
-        <div>
-          <div class="kicker" data-i18n="home.leaders">Leaders</div>
-          <h2 data-i18n="home.top3">Current top 3</h2>
-        </div>
-        <a class="section-link" href="#full-rankings"><span data-i18n="home.fullRankings">Full rankings</span>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </a>
-      </div>
-      <div class="fl-cards" id="fl-cards">
-        <div class="skeleton sk-card"></div>
-        <div class="skeleton sk-card sk-tall"></div>
-        <div class="skeleton sk-card"></div>
-      </div>
-    </section>
-
-    <div id="home-guide"></div>
     <section class="anim" id="full-rankings">
       <div class="section-head reveal">
         <div>
@@ -125,53 +149,59 @@
           <h2 data-i18n="lb.title">Leaderboard</h2>
           <div class="sub-note" data-i18n="lb.subNote">Qualified contenders (≥5 matches / ≥3 opponents). Click any row for the full profile.</div>
         </div>
-        <div class="lb-controls reveal">
-          <div class="lb-filter-box">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3" stroke-linecap="round"/></svg>
-            <input id="lb-filter" type="text" placeholder="Filter player..." data-i18n-attr="placeholder:lb.filterPh" autocomplete="off">
-          </div>
-          <button class="toggle-btn on" id="lb-qual">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 5h16l-6 7v6l-4 2v-8L4 5Z" stroke-linejoin="round"/></svg>
-            <span data-i18n="lb.qualOnly">Qualified only</span>
-          </button>
+        <div class="lb-meta">
           <span class="last-updated mono" id="last-updated" data-i18n-attr="title:lb.updatedTip" title="When the ratings data last changed"></span>
-          <button class="toggle-btn" id="lb-refresh-btn" data-i18n-attr="title:lb.refreshTip" title="Pull the very latest data">
+          <button class="lb-refresh" id="lb-refresh-btn" data-i18n-attr="title:lb.refreshTip" title="Pull the very latest data">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
             <span data-i18n="lb.refresh">Refresh</span>
           </button>
         </div>
       </div>
 
-      <div class="filter-chips reveal">
-        <button class="chip on" data-filter="all" data-i18n="chip.all">All players</button>
-        <button class="chip" data-filter="rising" data-i18n="chip.rising">Rising (60%+ win rate)</button>
-        <button class="chip" data-filter="veterans" data-i18n="chip.veterans">Veterans (15+ games)</button>
-        <button class="chip" data-filter="provisional" data-i18n="chip.provisional">Provisional</button>
-        <button class="chip" data-filter="inactive" data-i18n="chip.inactive">Inactive</button>
+      <div class="lb-bar reveal">
+        <div class="lb-bar-top">
+          <div class="lb-filter-box">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3" stroke-linecap="round"/></svg>
+            <input id="lb-filter" type="text" placeholder="Filter player..." data-i18n-attr="placeholder:lb.filterPh" autocomplete="off">
+            <button type="button" class="lb-clear" id="lb-filter-clear" data-i18n-attr="aria-label:lb.clearSearch" hidden>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </button>
+          </div>
+          <a class="home-find-teaser" href="#/find">
+            <span data-i18n="home.findQ">Looking for a match?</span>
+            <span class="hft-cta"><span data-i18n="nav.find">Find 1v1</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+          </a>
+        </div>
+        <div class="lb-segs" id="lb-segs" role="group" data-i18n-attr="aria-label:lb.filterPh">
+          <button class="lb-seg on" data-filter="all" aria-pressed="true"><span data-i18n="chip.all">All players</span><b id="lb-c-all">—</b></button>
+          <button class="lb-seg" data-filter="rising" aria-pressed="false" data-i18n-attr="title:chip.risingTip"><span data-i18n="chip.rising">Rising</span><b id="lb-c-rising">—</b></button>
+          <button class="lb-seg" data-filter="veterans" aria-pressed="false" data-i18n-attr="title:chip.veteransTip"><span data-i18n="chip.veterans">Veterans</span><b id="lb-c-veterans">—</b></button>
+          <button class="lb-seg" data-filter="provisional" aria-pressed="false"><span data-i18n="chip.provisional">Provisional</span><b id="lb-c-provisional">—</b></button>
+          <button class="lb-seg" data-filter="inactive" aria-pressed="false"><span data-i18n="chip.inactive">Inactive</span><b id="lb-c-inactive">—</b></button>
+          <button class="toggle-btn on" id="lb-qual" data-i18n-attr="aria-label:lb.qualOnly">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 5h16l-6 7v6l-4 2v-8L4 5Z" stroke-linejoin="round"/></svg>
+            <span data-i18n="lb.qualOnly">Qualified only</span>
+          </button>
+        </div>
       </div>
 
       <div class="lb-table reveal">
         <div class="lb-head">
           <div class="sortable sorted" data-key="rank">#</div>
-          <div class="sortable" data-key="name" data-i18n="th.player">Player</div>
+          <div class="sortable lb-th-player" data-key="name"><span data-i18n="th.player">Player</span><span class="lb-th-trend" data-i18n="lb.trendLabel">Last 10</span></div>
           <div class="sortable h-rating" data-key="rating" data-i18n="th.rating">Rating</div>
-          <div class="col-hide sortable h-num" data-key="rd" data-i18n="th.rd">RD</div>
-          <div class="col-hide sortable h-num" data-key="matches" data-i18n="th.m">M</div>
-          <div class="col-hide sortable h-num" data-key="w" data-i18n="th.w">W</div>
-          <div class="col-hide sortable h-num" data-key="l" data-i18n="th.l">L</div>
           <div class="sortable h-num" data-key="winPct" data-i18n="th.winPct">Win %</div>
-          <div class="col-hide sortable h-num" data-key="opponents" data-i18n="th.opp">Opp</div>
-          <div class="col-hide sortable h-num" data-key="avgOpp" data-i18n="th.avgOpp">Avg opp</div>
-          <div class="col-status" data-i18n="th.status">Status</div>
+          <div class="h-form" data-i18n="th.form">Form</div>
           <div></div>
         </div>
         <div id="lb-body">
-          <div class="sk-row"><div class="skeleton sk-line" style="width:34px"></div><div class="skeleton sk-line" style="width:38%"></div><div class="skeleton sk-line" style="width:74px"></div><div class="skeleton sk-line" style="width:52px"></div><div class="skeleton sk-line" style="width:96px"></div></div>
-          <div class="sk-row"><div class="skeleton sk-line" style="width:34px"></div><div class="skeleton sk-line" style="width:32%"></div><div class="skeleton sk-line" style="width:74px"></div><div class="skeleton sk-line" style="width:52px"></div><div class="skeleton sk-line" style="width:96px"></div></div>
-          <div class="sk-row"><div class="skeleton sk-line" style="width:34px"></div><div class="skeleton sk-line" style="width:44%"></div><div class="skeleton sk-line" style="width:74px"></div><div class="skeleton sk-line" style="width:52px"></div><div class="skeleton sk-line" style="width:96px"></div></div>
-          <div class="sk-row"><div class="skeleton sk-line" style="width:34px"></div><div class="skeleton sk-line" style="width:29%"></div><div class="skeleton sk-line" style="width:74px"></div><div class="skeleton sk-line" style="width:52px"></div><div class="skeleton sk-line" style="width:96px"></div></div>
-          <div class="sk-row"><div class="skeleton sk-line" style="width:34px"></div><div class="skeleton sk-line" style="width:36%"></div><div class="skeleton sk-line" style="width:74px"></div><div class="skeleton sk-line" style="width:52px"></div><div class="skeleton sk-line" style="width:96px"></div></div>
-          <div class="sk-row"><div class="skeleton sk-line" style="width:34px"></div><div class="skeleton sk-line" style="width:41%"></div><div class="skeleton sk-line" style="width:74px"></div><div class="skeleton sk-line" style="width:52px"></div><div class="skeleton sk-line" style="width:96px"></div></div>
+          <div class="sk-row"><div class="skeleton sk-line" style="width:34px"></div><div class="skeleton sk-line" style="width:38%"></div><div class="skeleton sk-line" style="width:74px"></div><div class="skeleton sk-line" style="width:96px"></div><div class="skeleton sk-line" style="width:70px"></div></div>
+          <div class="sk-row"><div class="skeleton sk-line" style="width:34px"></div><div class="skeleton sk-line" style="width:32%"></div><div class="skeleton sk-line" style="width:74px"></div><div class="skeleton sk-line" style="width:96px"></div><div class="skeleton sk-line" style="width:70px"></div></div>
+          <div class="sk-row"><div class="skeleton sk-line" style="width:34px"></div><div class="skeleton sk-line" style="width:44%"></div><div class="skeleton sk-line" style="width:74px"></div><div class="skeleton sk-line" style="width:96px"></div><div class="skeleton sk-line" style="width:70px"></div></div>
+          <div class="sk-row"><div class="skeleton sk-line" style="width:34px"></div><div class="skeleton sk-line" style="width:29%"></div><div class="skeleton sk-line" style="width:74px"></div><div class="skeleton sk-line" style="width:96px"></div><div class="skeleton sk-line" style="width:70px"></div></div>
+          <div class="sk-row"><div class="skeleton sk-line" style="width:34px"></div><div class="skeleton sk-line" style="width:36%"></div><div class="skeleton sk-line" style="width:74px"></div><div class="skeleton sk-line" style="width:96px"></div><div class="skeleton sk-line" style="width:70px"></div></div>
         </div>
       </div>
     </section>
@@ -190,46 +220,43 @@
 <!-- ======================= MATCHES ======================= -->
 <main id="page-matches" class="page">
   <div class="wrap">
-    <section class="hero anim" style="padding-top:10px">
+    <section class="hero gm-hero anim" style="padding-top:10px">
       <div class="kicker" data-i18n="matches.kicker">Complete archive</div>
       <h1 style="font-size:clamp(36px,5vw,58px)" data-i18n-html="matches.h1">The <span class="gold">match log</span></h1>
-      <p class="sub" data-i18n="matches.sub">Every recorded duel, newest first. Click a name to jump to that player.</p>
+      <p class="sub" data-i18n="matches.sub">Every recorded duel, grouped by month. Search or open a player.</p>
+      <div class="hero-row" id="gm-hero-meta"></div>
     </section>
-    <section class="anim">
-      <div class="section-head reveal">
-        <div>
-          <div class="kicker" data-i18n="matches.freshKicker">Fresh results</div>
-          <h2 data-i18n="matches.freshTitle">Recent verified matches</h2>
-          <div class="sub-note" data-i18n="matches.freshNote">Only matches with a recorded date appear here.</div>
+    <section class="gm-panel anim">
+      <div class="gm-panel-head">
+        <h2><span data-i18n="matches.allTitle">All matches</span> <span class="n" id="gm-count"></span></h2>
+        <button type="button" class="gm-sort" id="gm-sort" data-order="new" aria-label="Newest first" data-i18n-attr="aria-label:matches.sortNewest">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4v16"/><path d="m4 16 4 4 4-4"/><path d="M16 20V4"/><path d="m12 8 4-4 4 4"/></svg>
+          <span id="gm-sort-label" data-i18n="matches.sortNewest">Newest first</span>
+        </button>
+      </div>
+      <div class="gm-toolbar reveal">
+        <div class="lb-filter-box gm-search">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3" stroke-linecap="round"/></svg>
+          <input id="gm-search" type="text" placeholder="Search matches…" aria-label="Search matches…" data-i18n-attr="placeholder:matches.searchPh;aria-label:matches.searchPh" autocomplete="off" spellcheck="false">
+          <button type="button" class="gm-clear" id="gm-clear" data-i18n-attr="aria-label:matches.clear" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+        </div>
+        <div class="gm-scopes" id="gm-scopes" role="group">
+          <button type="button" class="gm-scope on" data-scope="all" aria-pressed="true"><span data-i18n="matches.scopeAll">All</span><b id="gm-c-all">—</b></button>
+          <button type="button" class="gm-scope" data-scope="dated" aria-pressed="false"><span data-i18n="matches.scopeDated">Dated</span><b id="gm-c-dated">—</b></button>
+          <button type="button" class="gm-scope" data-scope="legacy" aria-pressed="false"><span data-i18n="matches.scopeLegacy">Legacy (no date)</span><b id="gm-c-legacy">—</b></button>
         </div>
       </div>
-      <div class="battles-grid reveal" id="battles-grid">
-        <div class="skeleton sk-line sk-rowline"></div>
+      <div class="gm-resultline" id="gm-result-line" aria-live="polite">
+        <span class="gm-summary" id="gm-summary"></span>
+      </div>
+      <div class="gm-board" id="gm-body">
         <div class="skeleton sk-line sk-rowline"></div>
         <div class="skeleton sk-line sk-rowline"></div>
         <div class="skeleton sk-line sk-rowline"></div>
       </div>
     </section>
-    <div class="section-head anim">
-      <h2><span data-i18n="matches.allTitle">All matches</span> <span class="n" id="gm-count"></span></h2>
-      <div class="hint" data-i18n="matches.hint">Winner in bright · loser dimmed</div>
-    </div>
-    <div class="gm-filters reveal" id="gm-filters">
-      <div class="lb-filter-box">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3" stroke-linecap="round"/></svg>
-        <input id="gm-search" type="text" placeholder="Search player, opponent or score…" data-i18n-attr="placeholder:matches.searchPh" autocomplete="off">
-      </div>
-      <div class="deck-chips">
-        <button class="chip on" data-scope="all" data-i18n="matches.scopeAll">All</button>
-        <button class="chip" data-scope="dated" data-i18n="matches.scopeDated">Dated</button>
-        <button class="chip" data-scope="legacy" data-i18n="matches.scopeLegacy">Legacy (no date)</button>
-      </div>
-    </div>
-    <div class="global-matches anim" id="gm-body">
-      <div class="skeleton sk-line sk-rowline"></div>
-      <div class="skeleton sk-line sk-rowline"></div>
-      <div class="skeleton sk-line sk-rowline"></div>
-    </div>
   </div>
 </main>
 
@@ -242,10 +269,35 @@
     <section class="hero anim" style="padding-top:10px">
       <div class="kicker" data-i18n="roster.kicker">Up and coming</div>
       <h1 style="font-size:clamp(36px,5vw,58px)" data-i18n-html="roster.h1">Provisional <span class="gold">roster</span></h1>
-      <p class="sub" data-i18n="roster.sub">Climbing toward qualification. Requires ≥5 matches and ≥3 distinct opponents
-      before a rating is considered earned.</p>
+      <p class="sub" data-i18n="roster.sub">Climbing toward qualification — 5 matches and 3 different opponents earn a real rank.
+      Click any row for the profile.</p>
+      <div class="hero-row" id="ros-hero-meta"></div>
     </section>
-    <div class="roster-grid anim" id="roster-grid"></div>
+    <section class="ros-panel anim">
+      <div class="ros-panel-head">
+        <h2><span data-i18n="roster.boardTitle">Provisional players</span> <span class="n" id="ros-count"></span></h2>
+        <div class="ros-tools">
+          <div class="lb-filter-box ros-search">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3" stroke-linecap="round"/></svg>
+            <input id="ros-search" type="text" placeholder="Search players…" aria-label="Search players…" data-i18n-attr="placeholder:roster.searchPh;aria-label:roster.searchPh" autocomplete="off" spellcheck="false">
+            <button type="button" class="ros-clear" id="ros-clear" data-i18n-attr="aria-label:roster.clear" hidden>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </button>
+          </div>
+          <div class="ros-sort" id="ros-sort" role="group" data-i18n-attr="aria-label:roster.sortLabel">
+            <button type="button" class="ros-sort-btn on" data-ros-sort="progress" aria-pressed="true" data-i18n="roster.sortProgress">Progress</button>
+            <button type="button" class="ros-sort-btn" data-ros-sort="rating" aria-pressed="false" data-i18n="roster.sortRating">Rating</button>
+            <button type="button" class="ros-sort-btn" data-ros-sort="seen" aria-pressed="false" data-i18n="roster.sortSeen">Last seen</button>
+          </div>
+        </div>
+      </div>
+      <div class="ros-summaryline" id="ros-summary" aria-live="polite"></div>
+      <div class="ros-body" id="ros-body">
+        <div class="skeleton sk-line sk-rowline"></div>
+        <div class="skeleton sk-line sk-rowline"></div>
+        <div class="skeleton sk-line sk-rowline"></div>
+      </div>
+    </section>
   </div>
 </main>
 
@@ -257,25 +309,81 @@
       <h1 style="font-size:clamp(36px,5vw,58px)" data-i18n="an.h1">Analytics</h1>
       <p class="sub" data-i18n="an.sub">Rivalries, upsets, and the hardest-working tanks in the circuit.</p>
     </section>
-    <div class="an-controls reveal" id="an-controls">
-      <div class="ac-group">
-        <span class="ac-label" data-i18n="an.rangeLabel">Time range</span>
-        <div class="deck-chips">
-          <button class="chip on" data-an-range="all" data-i18n="an.rangeAll">All time</button>
-          <button class="chip" data-an-range="90" data-i18n="an.range90">Last 90 days</button>
-          <button class="chip" data-an-range="30" data-i18n="an.range30">Last 30 days</button>
+    <div class="an-scope reveal" id="an-controls">
+      <div class="an-scope-group">
+        <span class="an-scope-k" data-i18n="an.rangeLabel">Time range</span>
+        <div class="an-seg" role="group">
+          <button type="button" class="an-seg-btn on" data-an-range="all" aria-pressed="true" data-i18n="an.rangeAll">All time</button>
+          <button type="button" class="an-seg-btn" data-an-range="90" aria-pressed="false" data-i18n="an.range90">Last 90 days</button>
+          <button type="button" class="an-seg-btn" data-an-range="30" aria-pressed="false" data-i18n="an.range30">Last 30 days</button>
         </div>
       </div>
-      <div class="ac-group">
-        <span class="ac-label" data-i18n="an.minLabel">Min matches</span>
-        <div class="deck-chips">
-          <button class="chip on" data-an-min="0" data-i18n="an.minAny">Any</button>
-          <button class="chip" data-an-min="5">5+</button>
-          <button class="chip" data-an-min="10">10+</button>
+      <div class="an-scope-group">
+        <span class="an-scope-k" data-i18n="an.minLabel">Min matches</span>
+        <div class="an-seg" role="group">
+          <button type="button" class="an-seg-btn" data-an-min="0" aria-pressed="false" data-i18n="an.minAny">Any</button>
+          <button type="button" class="an-seg-btn on" data-an-min="5" aria-pressed="true">5+</button>
+          <button type="button" class="an-seg-btn" data-an-min="10" aria-pressed="false">10+</button>
         </div>
       </div>
+      <button type="button" class="an-reset" id="an-reset" data-i18n="an.reset" hidden>Reset</button>
     </div>
+    <div class="an-scope-note" data-i18n="an.scopeNote">Windows count dated matches only; the match floor filters player boards.</div>
+    <div class="an-kpis anim" id="an-kpis" aria-live="polite"></div>
     <div class="an-grid anim" id="an-grid"></div>
+
+    <section class="panel method-lab anim an-lab" id="method-lab">
+      <div class="method-lab-head">
+        <div><div class="kicker" data-i18n="method.change">How ratings change after wins and losses</div><h2 data-i18n="method.labTitle">Try a duel</h2></div>
+        <div class="method-lab-copy"><p data-i18n-html="method.changeBody">Each result moves your rating toward what the system expected
+        to happen — surprising results move it a lot, expected ones a little. Wins over strong, well-known
+        opponents are worth the most; beating a brand-new or much weaker player barely moves the needle.</p>
+        <div class="method-lab-sub" data-i18n="method.labSub">One match from the same pre-match ratings.</div></div>
+      </div>
+      <div class="ml-layout">
+        <div class="ml-controls">
+          <div class="ml-players">
+            <div class="ml-player">
+              <div class="ml-who" data-i18n="method.labYou">You</div>
+              <div class="ml-fields">
+                <label class="ml-field" data-i18n-attr="data-tip:method.tipGlicko"><span class="k" data-i18n="method.labGlicko">Glicko</span><input id="ml-r1" type="number" value="1650" min="1" max="4000" step="1" inputmode="numeric"></label>
+                <label class="ml-field" data-i18n-attr="data-tip:method.tipRd"><span class="k" data-i18n="method.labRd">RD</span><input id="ml-rd1" type="number" value="60" min="1" max="250" step="1" inputmode="numeric"></label>
+              </div>
+            </div>
+            <span class="ml-vs" aria-hidden="true">VS</span>
+            <div class="ml-player">
+              <div class="ml-who" data-i18n="method.labOpp">Opponent</div>
+              <div class="ml-fields">
+                <label class="ml-field" data-i18n-attr="data-tip:method.tipGlicko"><span class="k" data-i18n="method.labGlicko">Glicko</span><input id="ml-r2" type="number" value="1600" min="1" max="4000" step="1" inputmode="numeric"></label>
+                <label class="ml-field" data-i18n-attr="data-tip:method.tipRd"><span class="k" data-i18n="method.labRd">RD</span><input id="ml-rd2" type="number" value="80" min="1" max="250" step="1" inputmode="numeric"></label>
+              </div>
+            </div>
+          </div>
+          <div class="ml-resultbar" role="group" aria-label="Match result" data-i18n-attr="aria-label:method.labResult">
+            <button type="button" data-ml-result="1" class="on" aria-pressed="true" data-i18n="method.labWin">Win</button>
+            <button type="button" data-ml-result="0.5" aria-pressed="false" data-i18n="method.labDraw">Draw</button>
+            <button type="button" data-ml-result="0" aria-pressed="false" data-i18n="method.labLoss">Loss</button>
+          </div>
+        </div>
+        <div class="ml-output">
+          <div class="ml-outhead"><span class="k" data-i18n="method.labExpected">Expected score</span><b class="mono" id="ml-exp">—</b></div>
+          <div class="ml-prob" aria-hidden="true"><i id="ml-prob-fill"></i></div>
+          <div class="ml-outgrid">
+            <div class="ml-card">
+              <div class="ml-card-h"><span data-i18n="method.labYou">You</span><span class="ml-delta mono" id="ml-d1">—</span></div>
+              <div class="ml-visible"><span class="k" data-i18n="method.labVisible">Visible</span><span class="mono" id="ml-v1b">—</span><span class="arr" aria-hidden="true">→</span><b class="mono" id="ml-v1a">—</b></div>
+              <div class="ml-sub mono" id="ml-sub1"></div>
+            </div>
+            <div class="ml-card">
+              <div class="ml-card-h"><span data-i18n="method.labOpp">Opponent</span><span class="ml-delta mono" id="ml-d2">—</span></div>
+              <div class="ml-visible"><span class="k" data-i18n="method.labVisible">Visible</span><span class="mono" id="ml-v2b">—</span><span class="arr" aria-hidden="true">→</span><b class="mono" id="ml-v2a">—</b></div>
+              <div class="ml-sub mono" id="ml-sub2"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="method-lab-note" data-i18n="method.labNote">One game only — rating periods and inactivity decay aren't included.</div>
+    </section>
   </div>
 </main>
 
@@ -289,41 +397,102 @@
       competitive chess and table-tennis rankings — driven purely by your recorded duels.</p>
     </section>
 
-    <div class="method-plain anim">
-      <div class="panel">
-        <h3 data-i18n="method.whatGlicko">What is Glicko?</h3>
-        <p style="color:var(--dim);font-size:15px" data-i18n-html="method.whatGlickoBody">Glicko is a rating system that works like Elo, but smarter:
+    <section class="method-glance anim">
+      <div class="mg-cell"><div class="k" data-i18n="method.glVisible">Visible rating</div><div class="v mono" data-i18n-html="method.glVisibleVal">Glicko − <span class="cons-val">0.5</span> × RD</div></div>
+      <div class="mg-cell"><div class="k" data-i18n="method.glQualify">To qualify</div><div class="v" data-i18n-html="method.glQualifyVal"><span class="min-matches-val">5</span> matches · <span class="min-opp-val">3</span> opponents</div></div>
+      <div class="mg-cell"><div class="k" data-i18n="method.glPeriod">Rating period</div><div class="v mono"><span id="method-period-val">30</span> <span data-i18n="method.days">days</span></div></div>
+      <div class="mg-cell"><div class="k" data-i18n="method.glInactive">Inactive after</div><div class="v mono"><span id="method-inactive-val">365</span> <span data-i18n="method.days">days</span></div></div>
+    </section>
+
+    <section class="method-intro anim">
+      <div class="method-sec-head"><h2 data-i18n-html="method.idea3">The idea in <span class="n">3 steps</span></h2></div>
+      <div class="method-steps">
+        <article class="method-step"><span class="step-n mono">01</span><div data-i18n-html="method.step1"><b>Everyone starts from their old rating.</b>
+          The original 0–100 scores are converted into Glicko starting points
+          (old 80 ≈ 1500), so history carries over.</div></article>
+        <article class="method-step"><span class="step-n mono">02</span><div data-i18n-html="method.step2"><b>Every match moves the numbers.</b>
+          Beat someone stronger and you gain more; lose to someone weaker and you
+          drop more. Results are processed in 30-day rating periods.</div></article>
+        <article class="method-step"><span class="step-n mono">03</span><div data-i18n-html="method.step3"><b>Your rating comes with a certainty score.</b>
+          Each player carries an <b>RD</b> (ratings deviation). More reliable match data = lower RD.
+          The leaderboard ranks <b>visible rating = Glicko − <span class="cons-val">0.5</span> × RD</b>, so uncertain
+          ratings are held back until they've earned trust.</div></article>
+      </div>
+    </section>
+
+    <section class="panel method-prov anim">
+      <div class="method-prov-head">
+        <div class="kicker" data-i18n="method.provKicker">Calibration safeguard</div>
+        <h2 data-i18n="method.provTitle">Provisional influence</h2>
+      </div>
+      <div class="method-prov-body">
+        <div class="method-prov-copy">
+          <p data-i18n-html="method.provLead">New players start at <b>1500 Glicko / 250 RD</b>. Until they have <b>3 rated matches against 2 different opponents</b>, an established opponent's rating change is scaled to <b>25%</b>. The newcomer's own rating still moves at <b>100%</b>.</p>
+          <p data-i18n-html="method.provBoth">It works in both directions — a newcomer's win or loss can only move an established player by a quarter of the usual amount, so one unknown result cannot swing the board.</p>
+          <p class="method-prov-example" data-i18n-html="method.provExample">An 1800 who loses to an uncalibrated newcomer takes a quarter of the usual hit; the newcomer still climbs — or falls — at full speed. Once calibrated, every result counts in full.</p>
+        </div>
+        <div class="method-prov-stats">
+          <div class="method-prov-stat"><b class="mono">25%</b><span data-i18n="method.provEstablished">established opponent's change</span></div>
+          <div class="method-prov-stat alt"><b class="mono">100%</b><span data-i18n="method.provNewcomer">newcomer's own change</span></div>
+          <div class="method-prov-when" data-i18n="method.provWhen">Until 3 matches · 2 opponents</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="method-concepts anim">
+      <section class="panel method-concept mc-7">
+        <h2 data-i18n="method.whatGlicko">What is Glicko?</h2>
+        <p data-i18n-html="method.whatGlickoBody">Glicko is a rating system that works like Elo, but smarter:
         every opponent is weighted by how reliable <i>their</i> rating is, and your own reliability is tracked
         at the same time. Beat someone stronger and you gain more; lose to someone weaker and you drop more.</p>
-      </div>
-      <div class="panel">
-        <h3 data-i18n="method.whatRd">What is RD?</h3>
-        <p style="color:var(--dim);font-size:15px" data-i18n-html="method.whatRdBody">RD shows how certain the system is about your rating.
+        <div class="method-quote" data-i18n-html="method.formulaNote">visible = glicko − <span class="cons-val">0.5</span> × RD &nbsp;&nbsp;·&nbsp;&nbsp; RD shrinks with results, grows with inactivity</div>
+      </section>
+      <section class="panel method-concept mc-5">
+        <h2 data-i18n="method.whatRd">What is RD?</h2>
+        <p data-i18n-html="method.whatRdBody">RD shows how certain the system is about your rating.
         More reliable match data = lower RD. The leaderboard ranks the <b style="color:var(--ink)">visible rating</b> —
         Glicko minus a small uncertainty penalty — so an unproven rating can't rocket to the top on luck alone.</p>
-        <div class="formula-box">visible = glicko − <span class="cons-val">0.5</span> × RD</div>
-      </div>
-      <div class="panel">
-        <h3 data-i18n="method.inactivity">How inactivity affects you</h3>
-        <p style="color:var(--dim);font-size:15px" data-i18n-html="method.inactivityBody">Play regularly and your certainty stays high. Stop playing and
-        your RD grows a little every 30 days — which slowly pulls your visible rating down until you return.
-        After a full year without a dated match you're marked <b style="color:var(--ink)">inactive</b> and hidden
-        from the board (still searchable, still in the maths) until you play again.</p>
-      </div>
-      <div class="panel">
-        <h3 data-i18n="method.getRanked">How you get ranked</h3>
-        <p style="color:var(--dim);font-size:15px" data-i18n-html="method.getRankedBody">Play at least <b style="color:var(--ink)"><span class="min-matches-val">5</span> matches</b>
+        <div class="method-rd">
+          <div class="method-rd-labels"><span data-i18n="method.rdNew">New · 250</span><span data-i18n="method.rdSettled">Settled · 50</span></div>
+          <div class="method-rd-track" aria-hidden="true"><i></i><span></span></div>
+          <div class="method-rd-note" data-i18n="method.rdNote">Lower RD means more trust.</div>
+        </div>
+      </section>
+      <section class="panel method-concept mc-5">
+        <h2 data-i18n="method.getRanked">How you get ranked</h2>
+        <p data-i18n-html="method.getRankedBody">Play at least <b style="color:var(--ink)"><span class="min-matches-val">5</span> matches</b>
         against at least <b style="color:var(--ink)"><span class="min-opp-val">3</span> different opponents</b>.
         Until then you're <b style="color:var(--ink)">provisional</b>: your rating is real and takes part in every
         calculation — it just isn't ranked until it's earned.</p>
-      </div>
-      <div class="panel">
-        <h3 data-i18n="method.change">How ratings change after wins and losses</h3>
-        <p style="color:var(--dim);font-size:15px" data-i18n-html="method.changeBody">Each result moves your rating toward what the system expected
-        to happen — surprising results move it a lot, expected ones a little. Wins over strong, well-known
-        opponents are worth the most; beating a brand-new or much weaker player barely moves the needle.</p>
-      </div>
+        <div class="method-reqs">
+          <div class="method-req"><span class="n mono"><span class="min-matches-val">5</span></span><span class="k" data-i18n="method.reqMatches">matches</span></div>
+          <div class="method-req"><span class="n mono"><span class="min-opp-val">3</span></span><span class="k" data-i18n="method.reqOpponents">opponents</span></div>
+        </div>
+      </section>
+      <section class="panel method-concept mc-7">
+        <h2 data-i18n="method.inactivity">How inactivity affects you</h2>
+        <p data-i18n-html="method.inactivityBody">Play regularly and your certainty stays high. Stop playing and
+        your RD grows a little every 30 days — which slowly pulls your visible rating down until you return.
+        After a full year without a dated match you're marked <b style="color:var(--ink)">inactive</b> and hidden
+        from the board (still searchable, still in the maths) until you play again.</p>
+        <div class="method-decay">
+          <div class="md-step"><span class="n mono" id="method-decay-period">30d</span><span class="k" data-i18n="method.decayGrowth">RD grows after a silent period</span></div>
+          <span class="md-arrow" aria-hidden="true">→</span>
+          <div class="md-step"><span class="n mono" id="method-decay-inactive">365d</span><span class="k" data-i18n="method.decayHidden">Hidden after a long absence</span></div>
+        </div>
+      </section>
     </div>
+
+    <section class="method-verified anim">
+      <span class="mv-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+      <div class="mv-body">
+        <h2 data-i18n="method.verified">Verified against the master sheet</h2>
+        <p data-i18n-html="method.verifiedBody">Every value on this site is recomputed from raw match results and validated to
+        match the official Google Sheet exactly — every player, every rating, RD,
+        record and average-opponent figure. No manual rankings, no politics. Just duels.</p>
+      </div>
+      <a class="method-faq-link" href="#/faq"><span data-i18n="method.faqLink">Read the FAQ</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></a>
+    </section>
 
     <details class="advanced anim">
       <summary>
@@ -331,122 +500,72 @@
         <span data-i18n-html="method.advSummary">Advanced — the maths &amp; live settings</span>
         <span class="adv-hint" data-i18n="method.advHint">seeds, formulas, periods, verification</span>
       </summary>
-
-    <div class="method-grid anim">
-      <div>
-        <div class="panel">
-          <h3 data-i18n-html="method.idea3">The idea in <span class="n">3 steps</span></h3>
-          <ul class="explain-list">
-            <li><span class="num">1</span><div data-i18n-html="method.step1"><b>Everyone starts from their old rating.</b>
-              The original 0–100 scores are converted into Glicko starting points
-              (old 80 ≈ 1500), so history carries over.</div></li>
-            <li><span class="num">2</span><div data-i18n-html="method.step2"><b>Every match moves the numbers.</b>
-              Beat someone stronger and you gain more; lose to someone weaker and you
-              drop more. Results are processed in 30-day rating periods.</div></li>
-            <li><span class="num">3</span><div data-i18n-html="method.step3"><b>Your rating comes with a certainty score.</b>
-              Each player carries an <b>RD</b> (ratings deviation). More reliable match data = lower RD.
-              The leaderboard ranks <b>visible rating = Glicko − <span class="cons-val">0.5</span> × RD</b>, so uncertain
-              ratings are held back until they've earned trust.</div></li>
-          </ul>
-          <div class="formula-box" data-i18n-html="method.formulaNote">visible = glicko − <span class="cons-val">0.5</span> × RD &nbsp;&nbsp;·&nbsp;&nbsp; RD shrinks with results, grows with inactivity</div>
-        </div>
-
-        <div class="panel">
-          <h3 data-i18n-html="method.seedsTitle">Step 1 · <span class="n">Starting ratings (seeds)</span></h3>
-          <p style="color:var(--dim);font-size:15px" data-i18n-html="method.seedsBody">
-            Players from the old 0–100 ladder keep their history: the old score is converted
+      <div class="method-adv-body">
+        <div class="method-adv-grid">
+          <div class="panel">
+            <h3 data-i18n-html="method.seedsTitle">Step 1 · <span class="n">Starting ratings (seeds)</span></h3>
+            <p data-i18n-html="method.seedsBody">Players from the old 0–100 ladder keep their history: the old score is converted
             into a starting Glicko with the midpoint mapping below. A player with no old
             rating starts unrated with maximum uncertainty. Very low old scores never start
             below the floor the master sheet uses.</p>
-          <div class="formula-box">seed glicko = max( 700 , 1500 + (old − 80) × 30 ) &nbsp;·&nbsp; seed RD = 80<br>unrated start = 1500 / RD 250</div>
-          <p style="color:var(--dimmer);font-size:13px;margin-top:10px" data-i18n="method.seedsNote">
-            The floor matters: an old score of 8 maps to −660 by the raw formula, but the
+            <div class="formula-box">seed glicko = max( 700 , 1500 + (old − 80) × 30 )<br>seed RD = 80 &nbsp;·&nbsp; unrated start = 1500 / RD 250</div>
+            <p class="method-foot" data-i18n="method.seedsNote">The floor matters: an old score of 8 maps to −660 by the raw formula, but the
             master sheet seeds that player at 700 — and this site reproduces it exactly.</p>
-        </div>
-
-        <div class="panel">
-          <h3 data-i18n-html="method.updateTitle">Step 2 · <span class="n">The Glicko update</span></h3>
-          <p style="color:var(--dim);font-size:15px" data-i18n-html="method.updateBody">
-            Glicko is Elo's smarter cousin: every opponent is weighted by how certain <i>their</i>
+          </div>
+          <div class="panel">
+            <h3 data-i18n-html="method.updateTitle">Step 2 · <span class="n">The Glicko update</span></h3>
+            <p data-i18n-html="method.updateBody">Glicko is Elo's smarter cousin: every opponent is weighted by how certain <i>their</i>
             rating is, and each batch of results shrinks your own RD. With
             <b style="color:var(--ink)">q = ln(10)/400</b> and:</p>
-          <div class="formula-box">g(RD) = 1 / √(1 + 3·q²·RD²/π²)<br>E(r, r<sub>o</sub>) = 1 / (1 + 10^(−g(RD<sub>o</sub>)·(r − r<sub>o</sub>)/400))<br>D² = 1 / (q²·Σ g²·E·(1−E)) &nbsp;&nbsp;→&nbsp;&nbsp; r′ = r + (q/(1/RD² + q²·Σg²E(1−E)))·Σ g·(s − E)<br>RD′ = √(1 / (1/RD² + q²·Σg²E(1−E)))</div>
-          <p style="color:var(--dimmer);font-size:13px;margin-top:10px" data-i18n="method.updateNote">
-            s is the match score (1 win, 0 loss, ½ draw). All games inside one rating period
+            <div class="formula-box">g(RD) = 1 / √(1 + 3·q²·RD²/π²)<br>E(r, r<sub>o</sub>) = 1 / (1 + 10^(−g(RD<sub>o</sub>)·(r − r<sub>o</sub>)/400))<br>D² = 1 / (q²·Σ g²·E·(1−E))<br>r′ = r + (q/(1/RD² + q²·Σg²E(1−E)))·Σ g·(s − E)<br>RD′ = √(1 / (1/RD² + q²·Σg²E(1−E)))</div>
+            <p class="method-foot" data-i18n="method.updateNote">s is the match score (1 win, 0 loss, ½ draw). All games inside one rating period
             are processed simultaneously from the same snapshot — exactly like the official sheet.</p>
-        </div>
-
-        <div class="panel">
-          <h3 data-i18n-html="method.periodsTitle">Step 3 · <span class="n">Rating periods &amp; legacy matches</span></h3>
-          <p style="color:var(--dim);font-size:15px" data-i18n-html="method.periodsBody">
-            Dated matches are grouped into chronological <b style="color:var(--ink)">30-day rating periods</b>.
+          </div>
+          <div class="panel">
+            <h3 data-i18n-html="method.periodsTitle">Step 3 · <span class="n">Rating periods &amp; legacy matches</span></h3>
+            <p data-i18n-html="method.periodsBody">Dated matches are grouped into chronological <b style="color:var(--ink)">30-day rating periods</b>.
             Old archive matches whose dates were never recorded — <i>legacy</i> matches — are
             processed together as one simultaneous period at the legacy grace start, so
             unknown dates can't be gamed.</p>
-          <div class="formula-box" data-i18n-html="method.formulaPeriods">period = ⌊date / 30 days⌋ &nbsp;·&nbsp; legacy = one simultaneous batch</div>
-        </div>
-      </div>
-
-      <div>
-        <div class="panel">
-          <h3 data-i18n="method.inactAuto">The inactivity automation</h3>
-          <p style="color:var(--dim);font-size:15px" data-i18n-html="method.inactAutoBody">
-            Ratings decay automatically when you stop playing — the same behaviour as the
+            <div class="formula-box" data-i18n-html="method.formulaPeriods">period = ⌊date / 30 days⌋ &nbsp;·&nbsp; legacy = one simultaneous batch</div>
+          </div>
+          <div class="panel">
+            <h3 data-i18n="method.inactAuto">The inactivity automation</h3>
+            <p data-i18n-html="method.inactAutoBody">Ratings decay automatically when you stop playing — the same behaviour as the
             master sheet's auto-recalculation:</p>
-          <ul class="explain-list" style="margin-top:8px">
-            <li><span class="num">↓</span><div data-i18n-html="method.inact1"><b>RD grows every 30 days of silence.</b>
-              Each full rating period without a match adds inactivity growth inside the
-              square root — <span class="mono">RD′ = √(RD² + 20²·k)</span> for k silent periods, capped at 250.
-              Because visible rating subtracts <span class="cons-val">0.5</span> × RD, an inactive player's
-              visible rating sinks on its own.</div></li>
-            <li><span class="num">⏳</span><div data-i18n-html="method.inact2"><b>Hidden after 365 days.</b>
-              A qualified player who hasn't logged a dated match in 365 days is hidden from
-              the leaderboard (still searchable, still in the maths) until they return.</div></li>
-            <li><span class="num">🕰</span><div data-i18n-html="method.inact3"><b>Legacy grace.</b>
-              Date-unknown veterans stay visible for 365 days from the grace start
-              (2026-10-04) before the inactivity rule applies to them.</div></li>
-          </ul>
+            <ul class="explain-list" style="margin-top:8px">
+              <li><span class="num">↓</span><div data-i18n-html="method.inact1"><b>RD grows every 30 days of silence.</b>
+                Each full rating period without a match adds inactivity growth inside the
+                square root — <span class="mono">RD′ = √(RD² + 20²·k)</span> for k silent periods, capped at 250.
+                Because visible rating subtracts <span class="cons-val">0.5</span> × RD, an inactive player's
+                visible rating sinks on its own.</div></li>
+              <li><span class="num">365</span><div data-i18n-html="method.inact2"><b>Hidden after 365 days.</b>
+                A qualified player who hasn't logged a dated match in 365 days is hidden from
+                the leaderboard (still searchable, still in the maths) until they return.</div></li>
+              <li><span class="num">L</span><div data-i18n-html="method.inact3"><b>Legacy grace.</b>
+                Date-unknown veterans stay visible for 365 days from the grace start
+                (2026-10-04) before the inactivity rule applies to them.</div></li>
+            </ul>
+          </div>
+          <div class="panel mspan-2 method-stats">
+            <h3 data-i18n="method.statsTitle">Every stat, explained</h3>
+            <ul class="explain-list">
+              <li><span class="num">G</span><div data-i18n-html="method.statG"><b>Glicko</b> — the raw model output (the true estimated skill).</div></li>
+              <li><span class="num">RD</span><div data-i18n-html="method.statRd"><b>Ratings deviation</b> — the uncertainty. Shrinks with results (never above 250, never below… well, very confident), grows with silence. RD ~50 = well known; RD 200+ = brand new.</div></li>
+              <li><span class="num">V</span><div data-i18n-html="method.statV"><b>Visible rating</b> — what the board ranks by: Glicko − <span class="cons-val">0.5</span> × RD. Uncertainty is held back until trust is earned.</div></li>
+              <li><span class="num">%</span><div data-i18n-html="method.statPct"><b>Win %</b> — wins / matches, rounded at the display precision.</div></li>
+              <li><span class="num">Ø</span><div data-i18n-html="method.statAvg"><b>Avg opp</b> — the average final Glicko of your <i>distinct</i> opponents. High here means you've been fighting the top of the board.</div></li>
+            </ul>
+          </div>
         </div>
-
-        <div class="panel">
-          <h3 data-i18n="method.whoTitle">Who appears on the board?</h3>
-          <p style="color:var(--dim);font-size:15px" data-i18n-html="method.whoBody">
-            A player is ranked once they have at least <b style="color:var(--ink)"><span class="min-matches-val">5</span> matches</b>
-            against at least <b style="color:var(--ink)"><span class="min-opp-val">3</span> different opponents</b>.
-            Everyone else is <b style="color:var(--ink)">provisional</b>: their rating is real and
-            takes part in every calculation — they just aren't ranked until it's earned.
-            Inactive players are hidden the same way, on their own filter.</p>
-        </div>
-
-        <div class="panel">
-          <h3 data-i18n="method.statsTitle">Every stat, explained</h3>
-          <ul class="explain-list">
-            <li><span class="num">G</span><div data-i18n-html="method.statG"><b>Glicko</b> — the raw model output (the true estimated skill).</div></li>
-            <li><span class="num">RD</span><div data-i18n-html="method.statRd"><b>Ratings deviation</b> — the uncertainty. Shrinks with results (never above 250, never below… well, very confident), grows with silence. RD ~50 = well known; RD 200+ = brand new.</div></li>
-            <li><span class="num">V</span><div data-i18n-html="method.statV"><b>Visible rating</b> — what the board ranks by: Glicko − <span class="cons-val">0.5</span> × RD. Uncertainty is held back until trust is earned.</div></li>
-            <li><span class="num">%</span><div data-i18n-html="method.statPct"><b>Win %</b> — wins / matches, rounded at the display precision.</div></li>
-            <li><span class="num">Ø</span><div data-i18n-html="method.statAvg"><b>Avg opp</b> — the average final Glicko of your <i>distinct</i> opponents. High here means you've been fighting the top of the board.</div></li>
-          </ul>
-        </div>
-
-        <div class="panel">
+        <div class="panel method-settings">
           <h3 data-i18n="method.liveSettings">Live settings</h3>
           <table class="settings-table">
             <thead><tr><th data-i18n="method.setting">Setting</th><th data-i18n="method.value">Value</th></tr></thead>
             <tbody id="settings-body"></tbody>
           </table>
         </div>
-
-        <div class="panel">
-          <h3 data-i18n="method.verified">Verified against the master sheet</h3>
-          <p style="color:var(--dim);font-size:14.5px" data-i18n-html="method.verifiedBody">
-            Every value on this site is recomputed from raw match results and validated to
-            match the official Google Sheet exactly — all 96 players, every rating, RD,
-            record and average-opponent figure. No manual rankings, no politics. Just duels.
-          </p>
-        </div>
       </div>
-    </div>
     </details>
   </div>
 </main>
@@ -457,16 +576,126 @@
     <section class="hero anim" style="padding-top:10px">
       <div class="kicker" data-i18n="faq.kicker">Questions, answered</div>
       <h1 style="font-size:clamp(36px,5vw,58px)" data-i18n-html="faq.h1">The <span class="gold">Q &amp; A</span></h1>
-      <p class="sub" data-i18n="faq.sub">Everything players ask about ratings, rankings and the circuit —
-      answered plainly. Tap any question to open it.</p>
+      <p class="sub" data-i18n="faq.sub">Everything players ask about ratings, rankings and the circuit — answered plainly. Search a question or browse by topic.</p>
+      <div class="hero-row" id="fq-meta"></div>
     </section>
-    <div class="faq-list anim" id="faq-list"></div>
-    <section class="panel anim" style="margin-top:26px;text-align:center;padding:34px">
-      <h3 style="justify-content:center" data-i18n="faq.stuck">Still stuck on something?</h3>
-      <p style="color:var(--dim);font-size:15px;max-width:520px;margin:8px auto 18px" data-i18n="faq.stuckBody">
-        Send us a message — the team reads every one and you can check back for a reply.</p>
-      <button class="btn btn-primary" id="faq-feedback-btn" style="width:auto;margin:0" data-i18n="faq.sendBtn">✎ Send feedback</button>
+    <div class="fq-layout anim">
+      <div class="fq-main">
+        <div class="fq-sheet reveal">
+          <div class="fq-sheet-head">
+            <div class="fq-desk">
+              <div class="lb-filter-box fq-search">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3" stroke-linecap="round"/></svg>
+                <input id="fq-search" type="text" placeholder="Search questions…" aria-label="Search questions…" data-i18n-attr="placeholder:faq.searchPh;aria-label:faq.searchPh" autocomplete="off" spellcheck="false">
+                <button type="button" class="fq-clear" id="fq-clear" data-i18n-attr="aria-label:faq.clear" hidden>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                </button>
+              </div>
+              <div class="fq-count" id="faq-count" aria-live="polite"></div>
+            </div>
+            <div class="fq-cats" id="faq-cats" role="group"></div>
+          </div>
+          <div class="fq-list" id="faq-list"></div>
+        </div>
+      </div>
+      <aside class="fq-side">
+        <section class="panel fq-ladder-panel reveal">
+          <div class="fq-side-head">
+            <h2 data-i18n="faq.ladderTitle">Badge ladder</h2>
+            <span class="fq-side-note" id="faq-ladder-note"></span>
+          </div>
+          <div class="fq-ladder" id="faq-ladder"></div>
+          <div class="fq-ladder-note" data-i18n-html="faq.ladderNote">Badge tier comes from visible rating = Glicko − <span class="cons-val">0.5</span> × RD.</div>
+          <a class="fq-ladder-link" href="#/cards"><span data-i18n="faq.ladderLink">View the deck</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></a>
+        </section>
+        <section class="panel fq-links-panel reveal">
+          <h2 data-i18n="faq.quickTitle">Go deeper</h2>
+          <a class="fq-link" href="#/method"><span data-i18n="faq.linkMethod">How the rating works</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></a>
+          <a class="fq-link" href="#/compare"><span data-i18n="faq.linkCompare">Compare players</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></a>
+          <a class="fq-link" href="#/find"><span data-i18n="faq.linkFind">Find a 1v1</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></a>
+          <a class="fq-link" href="#/cards"><span data-i18n="faq.linkCards">Player cards</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></a>
+        </section>
+        <section class="panel fq-help-panel reveal">
+          <h2 data-i18n="faq.stuck">Still stuck on something?</h2>
+          <p data-i18n="faq.stuckBody">Send us a message — the team reads every one and you can check back for a reply.</p>
+          <button class="btn btn-primary" id="faq-feedback-btn" data-i18n="faq.sendBtn">Send feedback</button>
+        </section>
+      </aside>
+    </div>
+  </div>
+</main>
+
+<!-- ======================= FIND A 1V1 ======================= -->
+<main id="page-find" class="page">
+  <div class="wrap">
+    <section class="hero anim fd-hero">
+      <div class="kicker" data-i18n="find.kicker">Line up a match</div>
+      <div class="fd-head">
+        <h1 data-i18n-html="find.h1">Find a <span class="gold">1v1</span></h1>
+        <div class="fd-counts" aria-live="polite">
+          <span class="fd-count"><b id="av-now-n">0</b><span data-i18n="find.nowShort">now</span></span>
+          <i class="fd-count-sep" aria-hidden="true"></i>
+          <span class="fd-count"><b id="av-sched-n">0</b><span data-i18n="find.schedShort">scheduled</span></span>
+        </div>
+      </div>
+      <p class="sub" data-i18n="find.sub">Post when you can play — every time is shown in your own time zone.</p>
     </section>
+
+    <div class="fd-verify anim" id="av-verify-strip" hidden>
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.3 3.2L13 4.6"/></svg>
+      <span class="fd-verify-txt" data-i18n="find.verifyHint">Posting needs a verified name — a one-time in-game check, about two minutes.</span>
+      <button type="button" class="fd-verify-btn" id="av-strip-verify" data-i18n="find.verifyCta">Verify a name</button>
+    </div>
+
+    <div class="fd-bar anim">
+      <div class="fd-bar-l">
+        <span class="fd-title" data-i18n="find.board">The board</span>
+        <i class="fd-rule" aria-hidden="true"></i>
+        <span class="fd-clock" id="av-clock-line"></span>
+        <button type="button" class="av-updated" id="av-updated" data-i18n-attr="title:find.refreshTip" title="Click to refresh now">updated just now</button>
+      </div>
+      <div class="fd-bar-r">
+        <div class="av-dd" id="av-server-dd">
+          <span class="av-dd-label" data-i18n="find.server">Server</span>
+          <button type="button" class="av-dd-btn" id="av-dd-btn" aria-haspopup="listbox" aria-expanded="false">
+            <span class="av-dd-val" id="av-dd-val">Any</span>
+            <svg class="av-dd-caret" width="11" height="11" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="av-dd-menu" id="av-dd-menu" role="listbox" hidden></div>
+        </div>
+        <button class="btn btn-primary av-post-btn" id="av-open-form">
+          <span class="av-post-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 9.5h17M8 2.8v4M16 2.8v4M12 12.7v4.6M9.7 15h4.6"/></svg></span>
+          <span data-i18n="find.post">Post availability</span>
+        </button>
+      </div>
+    </div>
+
+    <section class="fd-sec anim" id="av-sec-now" hidden>
+      <div class="fd-sec-head">
+        <h2 data-i18n="find.now">Available now</h2>
+        <span class="fd-sec-n" id="av-now-count"></span>
+        <i class="fd-sec-rule" aria-hidden="true"></i>
+        <span class="fd-sec-hint" data-i18n="find.nowHint">posts fade out after 30 minutes</span>
+      </div>
+      <div class="av-list" id="av-now-list"></div>
+    </section>
+    <section class="fd-sec anim" id="av-sec-today" hidden>
+      <div class="fd-sec-head">
+        <h2 data-i18n="find.today">Later today</h2>
+        <span class="fd-sec-n" id="av-today-count"></span>
+        <i class="fd-sec-rule" aria-hidden="true"></i>
+      </div>
+      <div class="av-list" id="av-today-list"></div>
+    </section>
+    <section class="fd-sec anim" id="av-sec-upcoming" hidden>
+      <div class="fd-sec-head">
+        <h2 data-i18n="find.upcoming">Upcoming</h2>
+        <span class="fd-sec-n" id="av-upcoming-count"></span>
+        <i class="fd-sec-rule" aria-hidden="true"></i>
+      </div>
+      <div class="av-list" id="av-upcoming-list"></div>
+    </section>
+    <div class="av-empty-page anim" id="av-empty-page"></div>
   </div>
 </main>
 
@@ -476,49 +705,85 @@
 </main>
 
 <!-- ======================= FEEDBACK ======================= -->
-<button class="fab" id="fab-feedback" aria-label="Feedback" title="Feedback" data-i18n-attr="aria-label:fab.feedback;title:fab.feedback">
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M21 12a8 8 0 0 1-8 8H5l-2 2V12a8 8 0 0 1 8-8h2a8 8 0 0 1 8 8Z" stroke-linejoin="round"/><path d="M8.5 11h7M8.5 14.5h4" stroke-linecap="round"/></svg>
+<button class="fab" id="fab-feedback" aria-label="Feedback" title="Feedback" aria-haspopup="dialog" data-i18n-attr="aria-label:fab.feedback;title:fab.feedback">
+  <span class="fab-ico" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M21 12a8 8 0 0 1-8 8H5l-2 2V12a8 8 0 0 1 8-8h2a8 8 0 0 1 8 8Z" stroke-linejoin="round"/><path d="M8.5 11h7M8.5 14.5h4" stroke-linecap="round"/></svg></span>
   <span data-i18n="fab.feedback">Feedback</span>
 </button>
 
-<div class="fb-overlay" id="fb-overlay" aria-hidden="true">
-  <div class="fb-modal" role="dialog" aria-modal="true">
-    <button class="fb-close" id="fb-close" aria-label="Close" data-i18n-attr="aria-label:fb.close">✕</button>
+<div class="fb-overlay" id="fb-overlay" aria-hidden="true" inert>
+  <div class="fb-modal" role="dialog" aria-modal="true" aria-labelledby="fb-title">
+    <button class="fb-close" id="fb-close" aria-label="Close" data-i18n-attr="aria-label:fb.close"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
     <div class="fb-view" id="fb-view-form">
-      <div class="fb-kicker" data-i18n="fb.kicker">Talk to the team</div>
-      <h3 class="fb-title" data-i18n-html="fb.title">Send us your <span class="gold">feedback</span></h3>
-      <p class="fb-sub" data-i18n="fb.sub">Bug report, idea, question or a shout-out — every message is read by a human.</p>
-      <div class="fb-field">
-        <label for="fb-name"><span data-i18n="fb.name">Name</span> <span class="opt" data-i18n="fb.optional">optional</span></label>
-        <input id="fb-name" maxlength="60" placeholder="What should we call you?" data-i18n-attr="placeholder:fb.namePh" autocomplete="off">
+      <div class="fb-head">
+        <span class="fb-head-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M21 12a8 8 0 0 1-8 8H5l-2 2V12a8 8 0 0 1 8-8h2a8 8 0 0 1 8 8Z" stroke-linejoin="round"/><path d="M8.5 11h7M8.5 14.5h4" stroke-linecap="round"/></svg></span>
+        <div class="fb-head-txt">
+          <div class="fb-kicker" data-i18n="fb.kicker">Talk to the team</div>
+          <h2 class="fb-title" id="fb-title" data-i18n-html="fb.title">Send us your <span class="gold">feedback</span></h2>
+          <p class="fb-sub" data-i18n="fb.sub">Bug report, idea, question or a shout-out — every message is read by a human.</p>
+        </div>
       </div>
-      <div class="fb-field">
-        <label for="fb-contact"><span data-i18n="fb.contact">Email or Discord</span> <span class="opt" data-i18n="fb.optionalReply">optional — only if you want a reply</span></label>
-        <input id="fb-contact" maxlength="120" placeholder="you@example.com" data-i18n-attr="placeholder:fb.contactPh" autocomplete="off">
+      <div class="fb-tabs" role="tablist" aria-label="Feedback options">
+        <button class="fb-tab on" id="fb-tab-send" role="tab" aria-selected="true" aria-controls="fb-pane-send" data-i18n="fb.tabSend">Send a message</button>
+        <button class="fb-tab" id="fb-tab-check" role="tab" aria-selected="false" aria-controls="fb-pane-check" data-i18n="fb.tabCheck">Check a reply</button>
       </div>
-      <div class="fb-field">
-        <label for="fb-msg" data-i18n="fb.message">Your message</label>
-        <textarea id="fb-msg" maxlength="2000" rows="5" placeholder="Type your message…" data-i18n-attr="placeholder:fb.msgPh"></textarea>
-        <div class="fb-count"><span id="fb-count-n">0</span> / 2000</div>
+      <div class="fb-pane" id="fb-pane-send" role="tabpanel" aria-labelledby="fb-tab-send">
+        <div class="fb-grid">
+          <div class="fb-field">
+            <label for="fb-name"><span data-i18n="fb.name">Name</span> <span class="opt" data-i18n="fb.optional">optional</span></label>
+            <input id="fb-name" maxlength="60" placeholder="What should we call you?" data-i18n-attr="placeholder:fb.namePh" autocomplete="off">
+          </div>
+          <div class="fb-field">
+            <label for="fb-contact"><span data-i18n="fb.contact">Email or Discord</span> <span class="opt" data-i18n="fb.optional">optional</span></label>
+            <input id="fb-contact" maxlength="120" placeholder="you@example.com" data-i18n-attr="placeholder:fb.contactPh" autocomplete="off">
+          </div>
+        </div>
+        <div class="fb-field fb-field-msg">
+          <label for="fb-msg" data-i18n="fb.message">Your message</label>
+          <textarea id="fb-msg" maxlength="2000" rows="5" placeholder="Type your message…" data-i18n-attr="placeholder:fb.msgPh"></textarea>
+          <div class="fb-count"><span id="fb-count-n">0</span> / 2000</div>
+        </div>
+        <button class="btn btn-primary fb-send" id="fb-send">
+          <span class="lbl" data-i18n="fb.send">Send message</span>
+          <span class="spin" aria-hidden="true"></span>
+        </button>
+        <p class="fb-foot"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4.5" y="10" width="15" height="10" rx="2.5"/><path d="M8 10V7.5a4 4 0 0 1 8 0V10" stroke-linecap="round"/></svg><span data-i18n="fb.footNote">Read by a human. Keep your ticket code to check for a reply.</span></p>
       </div>
-      <button class="btn btn-primary fb-send" id="fb-send">
-        <span class="lbl" data-i18n="fb.send">Send message</span>
-        <span class="spin" aria-hidden="true"></span>
-      </button>
-      <div class="fb-check-row"><span data-i18n="fb.orCheck">or check a reply:</span> <input id="fb-ticket-in" maxlength="32" placeholder="ticket code" data-i18n-attr="placeholder:fb.ticketPh" autocomplete="off"><button class="btn btn-ghost" id="fb-check" data-i18n="fb.check">Check</button></div>
-      <div class="fb-reply-out" id="fb-reply-out"></div>
+      <div class="fb-pane" id="fb-pane-check" role="tabpanel" aria-labelledby="fb-tab-check" hidden>
+        <p class="fb-pane-sub" data-i18n="fb.checkSub">Enter the ticket code you got when you sent your message.</p>
+        <div class="fb-check-form">
+          <input id="fb-ticket-in" maxlength="32" placeholder="TS-XXXXXX" data-i18n-attr="placeholder:fb.ticketPh" autocomplete="off">
+          <button class="btn btn-ghost fb-check-btn" id="fb-check"><span class="lbl" data-i18n="fb.check">Check</span><span class="spin" aria-hidden="true"></span></button>
+        </div>
+        <div class="fb-recent" id="fb-recent" hidden>
+          <span class="fb-recent-k" data-i18n="fb.recent">Recent tickets</span>
+          <div class="fb-recent-list" id="fb-recent-list"></div>
+        </div>
+        <div class="fb-reply-wrap" id="fb-reply-wrap">
+          <div class="fb-reply-head" data-i18n="fb.replyKicker">Latest reply</div>
+          <div class="fb-reply-out" id="fb-reply-out"></div>
+        </div>
+        <p class="fb-foot"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 8v5M12 16.4h.01" stroke-linecap="round"/><circle cx="12" cy="12" r="9"/></svg><span data-i18n="fb.footCheck">Replies appear here as soon as the team writes back.</span></p>
+      </div>
     </div>
-    <div class="fb-view" id="fb-view-done" hidden>
+    <div class="fb-view fb-done" id="fb-view-done" hidden>
       <div class="fb-checkmark">
         <svg viewBox="0 0 72 72" width="72" height="72">
           <circle class="fb-cm-circle" cx="36" cy="36" r="32"/>
           <path class="fb-cm-tick" d="M22 37.5 31.5 47 50 27"/>
         </svg>
       </div>
-      <h3 class="fb-title" data-i18n="fb.thanks">This helps a lot — thank you!</h3>
+      <h2 class="fb-title" data-i18n="fb.thanks">This helps a lot — thank you!</h2>
       <p class="fb-sub" data-i18n="fb.thanksSub">Your message is being reviewed. Keep your ticket code to check back for a reply.</p>
-      <div class="fb-ticket" title="Click to copy the ticket code" data-i18n-attr="title:fb.ticketTip"><span data-i18n="fb.ticketWord">Ticket</span> <b id="fb-ticket-code">—</b><span class="fb-copied" id="fb-copied" data-i18n="fb.copied">Copied ✓</span></div>
-      <button class="btn btn-primary" id="fb-done" style="width:auto;margin:14px auto 0" data-i18n="fb.done">Done</button>
+      <div class="fb-ticket" role="button" tabindex="0" title="Click to copy the ticket code" data-i18n-attr="title:fb.ticketTip">
+        <span class="fb-ticket-k"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M4 8.5V7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v1.5a2.6 2.6 0 0 0 0 5V17a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-3.5a2.6 2.6 0 0 0 0-5Z"/><path d="M13.5 5v14" stroke-dasharray="2.4 2.6"/></svg><span data-i18n="fb.ticketWord">Ticket</span></span>
+        <b id="fb-ticket-code">—</b>
+        <span class="fb-ticket-copy" data-i18n="fb.ticketCopy">Click to copy</span>
+        <span class="fb-copied" id="fb-copied" data-i18n="fb.copied">Copied ✓</span>
+      </div>
+      <div class="fb-done-actions">
+        <button class="btn btn-primary" id="fb-done" data-i18n="fb.done">Done</button>
+        <button class="fb-link" id="fb-done-check" data-i18n="fb.checkLink">Check a reply</button>
+      </div>
     </div>
   </div>
 </div>
@@ -533,13 +798,15 @@
       <a href="#/matches" data-i18n="nav.matches">Matches</a>
       <a href="#/roster" data-i18n="nav.roster">Roster</a>
       <a href="#/analytics" data-i18n="nav.analytics">Analytics</a>
+      <a href="#/find" data-i18n="nav.find">Find 1v1</a>
       <a href="#/method" data-i18n="nav.method">Method</a>
       <a href="#/faq" data-i18n="nav.faq">FAQ</a>
     </nav>
     <div><span data-i18n-html="foot.rights">© 2026 <b>1v1 Leaderboard</b> — Tank Trouble competitive rankings.</span><br>
       <span class="foot-sub" data-i18n-html="foot.owned">Owned &amp; run by <b class="gold">Alternator</b> &amp; <b class="gold">interstellar</b></span></div>
     <div class="foot-sub"><span data-i18n-html="foot.ratings">Ratings by the <b>Dynamic Glicko</b> system · data from the community match archive</span>
-      <a class="admin-foot" href="#/admin" data-i18n="nav.admin">Admin</a></div>
+      <a class="admin-foot" href="#/admin" data-i18n="nav.admin">Admin</a>
+      <span class="foot-updated" id="foot-updated"></span></div>
   </div>
 </footer>
 
@@ -563,22 +830,142 @@
 .drop-row:hover { background: rgba(255, 176, 32, .1); }
 </style>
 
+    <div class="av-overlay" id="av-form-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="av-form-title">
+    <form class="av-sheet av-form av-post" id="av-form" autocomplete="off" onsubmit="return false">
+      <button type="button" class="av-x av-sheet-x" id="av-cancel" aria-label="Close" data-i18n-attr="aria-label:fb.close">✕</button>
+      <div class="av-sheet-head av-post-head">
+        <div class="kicker" data-i18n="find.postKicker">Post availability</div>
+        <h2 id="av-form-title" data-i18n="find.formTitle">When are you on?</h2>
+        <p class="av-sheet-sub" data-i18n="find.formSub">Shown to everyone in their own time. You can extend or remove it later from this browser.</p>
+      </div>
+      <div class="av-post-body">
+        <div class="av-post-main">
+          <div class="form-field av-fld">
+            <label data-i18n="find.you">Your player name</label>
+            <div class="av-name-wrap">
+              <input id="av-name" maxlength="40" placeholder="Alternator" data-i18n-attr="placeholder:find.namePh">
+              <span class="av-name-status" id="av-name-status" aria-hidden="true" hidden></span>
+            </div>
+            <span class="av-name-note" id="av-name-note" aria-live="polite" hidden></span>
+          </div>
+          <div class="form-field av-fld">
+            <label data-i18n="find.type">Type</label>
+            <div class="av-types">
+              <label class="av-type">
+                <input type="radio" name="av-type" value="now" checked>
+                <span class="av-type-card">
+                  <span class="av-type-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4.5 13.4h6.2L11 22l8.5-11.4h-6.2L13 2Z"/></svg></span>
+                  <span class="av-type-txt"><b data-i18n="find.typeNow">Right now</b><i data-i18n="find.typeNowD">Live for the next 30 minutes</i></span>
+                </span>
+              </label>
+              <label class="av-type">
+                <input type="radio" name="av-type" value="later">
+                <span class="av-type-card">
+                  <span class="av-type-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 9.5h17M8 2.8v4M16 2.8v4"/></svg></span>
+                  <span class="av-type-txt"><b data-i18n="find.typeLater">A set time</b><i data-i18n="find.typeLaterD">Pick a day and a time window</i></span>
+                </span>
+              </label>
+            </div>
+          </div>
+          <div class="form-field av-fld av-when" id="av-when-row" hidden>
+            <div class="av-when-grid">
+              <div class="form-field"><label data-i18n="find.date">Date</label>
+                <button type="button" class="av-field" id="av-date-btn" aria-haspopup="dialog" aria-expanded="false">
+                  <span class="av-field-val" id="av-date-val">—</span>
+                  <svg class="av-field-ic" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><rect x="2.5" y="3.5" width="11" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M2.5 6.5h11M5.5 1.8v2.4M10.5 1.8v2.4" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                </button>
+              </div>
+              <div class="form-field"><label data-i18n="find.from">From</label>
+                <button type="button" class="av-field" id="av-from-btn" aria-haspopup="dialog" aria-expanded="false">
+                  <span class="av-field-val" id="av-from-val">19:00</span>
+                  <svg class="av-field-ic" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.8" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M8 4.8V8l2.3 1.6" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                </button>
+              </div>
+              <div class="form-field"><label data-i18n="find.until">Until</label>
+                <button type="button" class="av-field" id="av-until-btn" aria-haspopup="dialog" aria-expanded="false">
+                  <span class="av-field-val" id="av-until-val">21:00</span>
+                  <svg class="av-field-ic" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.8" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M8 4.8V8l2.3 1.6" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="form-field av-fld">
+            <label data-i18n="find.serverPref">Preferred server</label>
+            <div class="av-chips" id="av-servers"></div>
+          </div>
+          <div class="form-field av-fld av-zone-field">
+            <label data-i18n="find.zone">Time zone</label>
+            <div class="av-zone">
+              <span class="av-zone-clock" id="av-zone-clock">--:--</span>
+              <span class="av-zone-txt">
+                <span class="av-zone-name" id="av-zone-name">—</span>
+                <span class="av-zone-note" data-i18n="find.zoneNote">Read from this device — every time on the board is shown in it.</span>
+              </span>
+            </div>
+          </div>
+        </div>
+        <aside class="av-sum-card" aria-label="Post preview" data-i18n-attr="aria-label:find.postPreview">
+          <div class="av-sum-top">
+            <span class="av-sum-kicker"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.6"/></svg><span data-i18n="find.postPreview">Post preview</span></span>
+            <span class="av-sum-badge" id="av-sum-badge" data-i18n="find.typeNow">Right now</span>
+          </div>
+          <div class="av-sum-stage">
+            <span class="av-sum-crest" id="av-sum-crest" aria-hidden="true"></span>
+            <canvas id="av-sum-surface" aria-hidden="true"></canvas>
+          </div>
+          <div class="av-sum-name" id="av-sum-name">—</div>
+          <div class="av-sum-rows" aria-live="polite">
+            <div class="av-sum-row"><span data-i18n="find.previewWhen">When</span><b id="av-sum-when">—</b></div>
+            <div class="av-sum-row"><span data-i18n="find.previewZone">Time zone</span><b id="av-sum-zone">—</b></div>
+            <div class="av-sum-row"><span data-i18n="find.previewServer">Server</span><b id="av-sum-where">—</b></div>
+          </div>
+          <p class="av-sum-note" data-i18n="find.previewNote">Everyone sees this in their own time zone.</p>
+        </aside>
+      </div>
+      <div class="av-error" id="av-error" role="alert" hidden></div>
+      <div class="av-form-foot">
+        <p class="form-note" data-i18n="find.formNote">You can extend or delete your own post from this browser.</p>
+        <button class="btn btn-primary av-submit" id="av-submit"><span class="lbl" data-i18n="find.submit">Post</span><span class="spin" aria-hidden="true"></span></button>
+      </div>
+    </form>
+    </div>
+
+    <div class="av-overlay" id="av-verify-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="av-v-title">
+    <form class="av-sheet av-sheet-verify av-verify av-form" id="av-verify" autocomplete="off" onsubmit="return false">
+      <button type="button" class="av-x av-sheet-x" id="av-v-close" aria-label="Close" data-i18n-attr="aria-label:fb.close">✕</button>
+      <div class="av-sheet-head av-v-head">
+        <div class="av-v-kickrow">
+          <div class="kicker" data-i18n="find.verifyKicker">Verified owner</div>
+          <span class="av-v-chip" id="av-v-chip" hidden></span>
+        </div>
+        <h2 id="av-v-title" data-i18n="find.verifyTitle">Verify your identity</h2>
+        <p class="av-sheet-sub" id="av-v-sub" data-i18n="find.verifySub">Prove a board name is yours with the exact paint and turret accessory we ask for — a one-time check. After that, only you can post availability under that name.</p>
+      </div>
+      <ol class="av-v-steps" id="av-v-steps" aria-hidden="true">
+        <li data-vstep="1" class="on"><span class="n">1</span><span data-i18n="find.vStep1">Name</span></li>
+        <li data-vstep="2"><span class="n">2</span><span data-i18n="find.vStep2">In-game check</span></li>
+        <li data-vstep="3"><span class="n">3</span><span data-i18n="find.vStep3">Verified</span></li>
+      </ol>
+      <div id="av-v-body"></div>
+    </form>
+    </div>
+
 <div class="scroll-progress" id="scroll-progress"></div>
-<button class="to-top" id="to-top" aria-label="Back to top" data-i18n-attr="aria-label:misc.toTop">
-  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 19V5M5 12l7-7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<button class="to-top" id="to-top" aria-label="Back to top" title="Back to top" data-i18n-attr="aria-label:misc.toTop;title:misc.toTop">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M6 12.5l6-6 6 6M6 18.5l6-6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
 </button>
-<script src="i18n.js?v=20261017135043"></script>
+<script src="i18n.js?v=20261020234624"></script>
 <script>
   /* data.js is rewritten by the sheet sync worker outside of site deploys —
      load it with a per-request cache-buster so every refresh shows the
      latest sync (GitHub Pages caches static URLs for 10 minutes otherwise).
-     Uses ?t= (not ?v=20261017135043's ?v=20261017135043't touch it. */
+     Uses ?t= (a per-request cache-buster), so release stamps never touch it. */
   document.write('<script src="data.js?t=' + Date.now() + '\"><\/script>');
 </script>
-<script src="log.js?v=20261017135043"></script>
-<script src="tanks.js?v=20261017135043"></script>
-<script src="tankrender.js?v=20261017135043"></script>
-<script src="cards.js?v=20261017135043"></script>
-<script src="app.js?v=20261017135043"></script>
+<script src="log.js?v=20261020234624"></script>
+<script src="tanks.js?v=20261020234624"></script>
+<script src="tankrender.js?v=20261020234624"></script>
+<script src="cards.js?v=20261020234624"></script>
+<script src="app.js?v=20261020234624"></script>
 </body>
 </html>
