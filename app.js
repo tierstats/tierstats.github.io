@@ -5,7 +5,7 @@
     <span class="av-server-k">${r(t("find.server"))}</span>
     <div class="av-srvs">${x}</div>
   </div>`,D=$.length?`<button type="button" class="av-in-btn" data-av-who="${r(e.id)}" aria-haspopup="dialog" aria-label="${r(t("find.whoView",{n:$.length}))}">
-        <span class="av-in-dot" aria-hidden="true"></span>
+        <svg class="av-in-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.1"/><path d="M3.5 19c.7-3.3 2.9-5 5.5-5 1.2 0 2.3.35 3.2 1.05"/><path d="m15.4 16.6 2 2 4.1-4.1"/></svg>
         <b>${r(t("find.inCount",{n:$.length}))}</b>
         <span class="av-in-names">${r(E)}</span>
         <svg class="av-in-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
