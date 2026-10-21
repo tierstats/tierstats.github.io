@@ -203,17 +203,21 @@
     <div class="stat-card"><div class="k">${t("stat.highest")}</div>
       <div class="v"><span class="cu" data-target="${a.rating}" data-dec="1">0</span><small>${r(a.name)}</small></div></div>
     <div class="stat-card"><div class="k">${t("stat.avgRd")}</div>
-      <div class="v"><span class="cu" data-target="${s}" data-dec="1">0</span><small>${t("stat.certainty")}</small></div></div>`;let i=c=>{let m=window.cardsTiers,v=m&&c.rating!=null?m.tierOf(c.rating):"";return{key:v,label:v&&m.tierLabel?m.tierLabel(v):"",crest:v&&m.crestSVG?m.crestSVG(v):""}},l=(c,m)=>{let v=typeof window.lbTankFor=="function"&&window.lbTankFor(c.name);return`<span class="fl-stage${v?"":" fl-stage-bare"}">`+(v?`<canvas data-tank-name="${r(c.name)}" data-tank-size="medium" width="400" height="240" aria-hidden="true"></canvas>`:m.crest||"")+"</span>"},u=c=>{let m=window.cardsTiers;return m&&c.rating!=null?" tier-"+m.tierOf(c.rating):""},d=[yt[1],yt[0],yt[2]].filter(Boolean);b("#fl-cards").innerHTML=d.map(c=>{let m=i(c),v=c.rank===1,p=v?t("home.champion"):m.label||t("home.ratingUnit"),h=v?Rs:m.crest||"";return`
+      <div class="v"><span class="cu" data-target="${s}" data-dec="1">0</span><small>${t("stat.certainty")}</small></div></div>`;let i=c=>{let m=window.cardsTiers,v=m&&c.rating!=null?m.tierOf(c.rating):"";return{key:v,label:v&&m.tierLabel?m.tierLabel(v):"",crest:v&&m.crestSVG?m.crestSVG(v):""}},l=(c,m)=>{let v=typeof window.lbTankFor=="function"&&window.lbTankFor(c.name);return`<span class="fl-stage${v?"":" fl-stage-bare"}">`+(v?`<canvas data-tank-name="${r(c.name)}" data-tank-size="medium" width="400" height="240" aria-hidden="true"></canvas>`:m.crest||"")+"</span>"},u=c=>{let m=window.cardsTiers;return m&&c.rating!=null?" tier-"+m.tierOf(c.rating):""},d=[yt[1],yt[0],yt[2]].filter(Boolean);b("#fl-cards").innerHTML=d.map(c=>{let m=i(c),v=c.rank===1,p=v?t("home.champion"):m.label||t("home.ratingUnit"),h=m.crest||"",$=v?`<div class="fl-head fl-head-champ">
+          <span class="fl-rank p1">#1</span>
+          <span class="fl-champ-badge"><span class="fl-crest">${Rs}</span><b class="fl-tier">${r(p)}</b></span>
+          <span class="fl-rd">RD ${c.rd.toFixed(0)}</span>
+        </div>`:`<div class="fl-head">
+          <span class="fl-head-l">
+            <span class="fl-rank p${c.rank}">#${c.rank}</span>
+            ${h?`<span class="fl-crest">${h}</span>`:""}
+            <b class="fl-tier">${r(p)}</b>
+          </span>
+          <span class="fl-rd">RD ${c.rd.toFixed(0)}</span>
+        </div>`;return`
     <div class="fl-slot s${c.rank}">
     <div class="fl-card r${c.rank}${u(c)}${v?" champ":""} reveal" data-goto="${r(c.name)}">
-      <div class="fl-head">
-        <span class="fl-head-l">
-          <span class="fl-rank p${c.rank}">#${c.rank}</span>
-          ${h?`<span class="fl-crest">${h}</span>`:""}
-          <b class="fl-tier">${r(p)}</b>
-        </span>
-        <span class="fl-rd">RD ${c.rd.toFixed(0)}</span>
-      </div>
+      ${$}
       ${l(c,m)}
       <div class="nm">${r(c.name)}</div>
       <div class="rating">
