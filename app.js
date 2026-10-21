@@ -5,8 +5,9 @@
     <span class="av-server-k">${r(t("find.server"))}</span>
     <div class="av-srvs">${x}</div>
   </div>`,D=$.length?`<button type="button" class="av-in-btn" data-av-who="${r(e.id)}" aria-haspopup="dialog" aria-label="${r(t("find.whoView",{n:$.length}))}">
-        <svg class="av-in-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.1"/><path d="M3.5 19c.7-3.3 2.9-5 5.5-5 1.2 0 2.3.35 3.2 1.05"/><path d="m15.4 16.6 2 2 4.1-4.1"/></svg>
+        <span class="av-in-dot" aria-hidden="true"></span>
         <b>${r(t("find.inCount",{n:$.length}))}</b>
+        <span class="av-in-sep" aria-hidden="true"></span>
         <span class="av-in-names">${r(E)}</span>
         <svg class="av-in-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
       </button>`:"",G=h?`<span class="av-main" title="${r(t("find.mainOf",{name:h}))}">${r(t("find.mainOf",{name:h}))}</span>`:"",X=!o&&e.tz&&e.tz!==n?t("find.zoneLine",{time:It(e.start,e.tz)+"\u2013"+It(e.end,e.tz),zone:Wn(e.tz,e.start)}):"",at=X?`<span class="av-zone-meta" title="${r(t("find.postedAs",{time:It(e.start,e.tz)+"\u2013"+It(e.end,e.tz),zone:Wn(e.tz,e.start)}))}"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.2 2.3 3.3 5.2 3.3 8.5S14.2 18.2 12 20.5c-2.2-2.3-3.3-5.2-3.3-8.5S9.8 5.8 12 3.5Z"/></svg>${r(X)}</span>`:"",ht=[D,G,at].filter(Boolean),gt=`<div class="av-meta"><span class="av-srv-inline">${x}</span>`+ht.map((R,F)=>`${F?'<i class="av-meta-dot" aria-hidden="true"></i>':""}${R}`).join("")+"</div>",B=o?`<div class="av-time av-time-now">
