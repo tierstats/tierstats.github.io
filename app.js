@@ -238,7 +238,7 @@
     </div>
     </div>`}).join(""),typeof Pe=="function"&&Pe(b("#fl-cards")),requestAnimationFrame(()=>{J("#fl-cards .bar-fill").forEach(d=>{d.style.width=d.dataset.w+"%"})}),Le();let f=b("#last-updated");f&&(f.textContent=t("home.lastUpdated",{when:Et(pt.generated)||"today"}))}var ur=500,pr="cubic-bezier(.22,.8,.24,1)",fr=12;function vr(e,n){matchMedia("(prefers-reduced-motion: reduce)").matches||J(".lb-row",e).forEach((a,s)=>{let o=n.get(a.dataset.name);if(o===void 0||typeof a.animate!="function")return;let i=o-a.getBoundingClientRect().top;Math.abs(i)<=1||a.animate([{transform:`translateY(${i}px)`},{transform:"none"}],{duration:ur,easing:pr,delay:Math.min(s*fr,220),fill:"backwards"})})}function mr(e){let n=Bs(e).slice(-3);if(n.length<3)return"";let a=0,o=[0,...n.map(y=>(a+=y.res==="W"?1:y.res==="D"?0:-1,a))],i=Math.min(0,...o),l=Math.max(0,...o),u=156,c=30,f=3,d=Math.max(1,l-i),m=y=>f+y*(u-f*2)/(o.length-1),v=y=>f+(c-f*2)*(1-(y-i)/d),p=n[n.length-1].res,h=p==="W"?"up":p==="L"?"down":"flat",$=o.map((y,S)=>`${S?"L":"M"}${m(S).toFixed(1)} ${v(y).toFixed(1)}`).join(" "),x=n.map((y,S)=>{let E=S===n.length-1;return`<circle class="pt${E?" last":""}" cx="${m(S+1).toFixed(1)}" cy="${v(o[S+1]).toFixed(1)}" r="${E?2.6:2}"/>`}).join("");return`<span class="lb-spark ${h}" aria-hidden="true"><svg viewBox="0 0 ${u} ${c}" preserveAspectRatio="none"><line class="base" x1="${f}" y1="${v(0).toFixed(1)}" x2="${u-f}" y2="${v(0).toFixed(1)}"/><path d="${$}"/>${x}</svg></span>`}function Le(e="all",n="rank",a=1){let s=b("#lb-body"),o=ct.players,i={all:De?wt.length:o.length,rising:o.filter(p=>p.winPct>=60&&p.matches>=5).length,veterans:o.filter(p=>p.matches>=15).length,provisional:o.filter(p=>p.provisional).length,inactive:o.filter(p=>p.inactive).length};["all","rising","veterans","provisional","inactive"].forEach(p=>{let h=b("#lb-c-"+p);h&&(h.textContent=i[p])});let u=(e==="all"&&De?wt:ct.players).slice().map(p=>({...p,rank:p.rank!=null?p.rank:9999}));un&&(u=u.filter(p=>p.name.toLowerCase().includes(un))),e==="provisional"?u=u.filter(p=>(Q[p.name]||{}).provisional):e==="inactive"?u=u.filter(p=>(Q[p.name]||{}).inactive):e==="veterans"?u=u.filter(p=>p.matches>=15):e==="rising"&&(u=u.filter(p=>p.winPct>=60&&p.matches>=5)),u.sort((p,h)=>{let $=p[n],x=h[n];return(typeof $=="string"?$.localeCompare(x):$-x)*a});let c=[e,n,a,un,De?"q":"a",Fe,window.getLang?window.getLang():""].join("|");if(s.dataset.sig===c&&s.children.length)return;s.dataset.sig=c;let f=p=>{let h=Q[p.name]||{},$=h.inactive?`<span class="lb-status inact">${r(t("tag.inactive"))}</span>`:h.provisional?`<span class="lb-status prov" title="${r(t("tag.provTip"))}">${r(t("tag.provisional"))}</span>`:"",x=`<span class="lb-rec"><b class="w">${p.w}${ot("W")}</b> <b class="l">${p.l}${ot("L")}</b> <b class="d">${p.d}${ot("D")}</b></span>`,y=`${tp("matches.games",p.matches)} \xB7 ${p.opponents} ${t("lb.oppWord")} \xB7 RD ${p.rd.toFixed(1)}`,S=t("lb.rowTip",{w:p.w,l:p.l,d:p.d,opp:p.opponents,games:p.matches,rd:p.rd.toFixed(1),avg:p.avgOpp.toFixed(1)});return`
     <div class="lb-row ${p.rank<=3?"top"+p.rank:""}" data-name="${r(p.name)}" data-goto="${r(p.name)}" tabindex="0" role="link">
-      <div class="rank">${p.rank<=wt.length?ea(p.rank,"sm")+zo(p,v):'<div class="rank-badge sm">\u2013</div>'}</div>
+      <div class="rank">${p.rank<=wt.length?ea(p.rank,"sm")+zo(p,v):'<div class="rank-badge sm empty">\u2013</div>'}</div>
       <div class="name-cell">
         ${typeof cardsRowChip=="function"?cardsRowChip(p.name):""}
         <div class="name-stack">
@@ -464,7 +464,7 @@
     <section class="player-hero pv-hero tier-${j} anim">
       <div class="pv-mast">
         <div class="pv-ident">
-          ${s?ea(s.rank,"lg"):'<div class="rank-badge lg"><span class="num">\u2013</span></div>'}
+          ${s?ea(s.rank,"lg"):'<div class="rank-badge lg empty"><span class="num">\u2013</span></div>'}
           <div class="pv-id-text">
             <div class="pv-eyebrow">
               <span class="mi">${s?t("pl.rankedOf",{rank:s.rank,total:wt.length}):t("pl.unranked")}</span>
@@ -833,7 +833,7 @@
       <span class="drop-total mono">${a.length}</span>
       <span class="drop-keys" aria-hidden="true"><kbd>\u2191</kbd><kbd>\u2193</kbd><kbd>\u21B5</kbd></span>
     </div>`+a.map(o=>{let i=s.tierOf?s.tierOf(o.rating):"",l=o.provisional?t("chip.provisional"):s.tierLabel&&i?s.tierLabel(i):"",u=!o.provisional&&s.crestSVG&&i?s.crestSVG(i):"",c=`${o.w}${ot("W")} ${o.l}${ot("L")} ${o.d}${ot("D")}`;return`<a class="drop-row${i?" tier-"+i:""}${o.provisional?" prov":""}" href="#/player/${nt(o.name)}">
-      ${o.rank?ea(o.rank,"sm"):'<div class="rank-badge sm"><span class="num">\u2013</span></div>'}
+      ${o.rank?ea(o.rank,"sm"):'<div class="rank-badge sm empty"><span class="num">\u2013</span></div>'}
       <span class="drop-info">
         <span class="drop-name"><span class="drop-name-txt">${r(o.name)}</span><span class="vslot" data-vname="${r(o.name)}"></span></span>
         <span class="drop-sub">${u}<span class="drop-tier">${r(l)}</span></span>
