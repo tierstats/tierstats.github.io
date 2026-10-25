@@ -74,7 +74,7 @@
       <div class="pcb-hero-cell">
         <span class="pc-k">${t("th.rating")}</span>
         <b class="mono${e.provisional?" prov":""}">${f}</b>
-        ${e.delta?xt(e):""}
+        ${xt(e)}
       </div>
       ${n?`<div class="pcb-hero-cell">
         <span class="pc-k">${t("cards.peak")}</span>
