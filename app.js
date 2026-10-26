@@ -650,8 +650,7 @@
           <div class="an-move-k down"><span aria-hidden="true">\u25BC</span>${r(t("an.fallers"))}</div>
           ${wt}
         </div>
-      </div>
-      <div class="an-move-note">${r(t("an.movementNote"))}</div>`:se(t("an.noMovers"));y("#an-grid").innerHTML=`
+      </div>`:se(t("an.noMovers"));y("#an-grid").innerHTML=`
     <section class="an-panel an-span-6 an-upsets an-upsets-compact">
       <div class="an-panel-head"><h2 class="an-h">${r(t("an.biggestUpsets"))}</h2><span class="an-panel-n">${r(tp("an.upsets",p.length))}</span></div>
       <div class="an-upsets-flat">${I}</div>
