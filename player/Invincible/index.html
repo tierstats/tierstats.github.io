@@ -5,27 +5,27 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Invincible — 1v1 Leaderboard</title>
-<meta name="description" content="Rank #29 · 1539.2 rating · 10W 4L — rating history, full match archive and head-to-head stats.">
+<meta name="description" content="Rank #29 · 1539.3 rating · 14W 5L — rating history, full match archive and head-to-head stats.">
 <!-- Open Graph: the DEFAULT embed — shown only for home/default links.
      work/gen_share_pages.js rewrites these per player & route into static
      share pages, so shared profile links carry exclusive text + tank art. -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="1v1 Leaderboard">
 <meta property="og:title" content="Invincible — 1v1 Leaderboard">
-<meta property="og:description" content="Rank #29 · 1539.2 rating · 10W 4L — rating history, full match archive and head-to-head stats.">
+<meta property="og:description" content="Rank #29 · 1539.3 rating · 14W 5L — rating history, full match archive and head-to-head stats.">
 <meta property="og:url" content="https://tierstats.github.io/player/Invincible">
 <meta property="og:image" content="https://tierstats.github.io/share/Invincible.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Invincible — 1v1 Leaderboard">
-<meta name="twitter:description" content="Rank #29 · 1539.2 rating · 10W 4L — rating history, full match archive and head-to-head stats.">
+<meta name="twitter:description" content="Rank #29 · 1539.3 rating · 14W 5L — rating history, full match archive and head-to-head stats.">
 <meta name="twitter:image" content="https://tierstats.github.io/share/Invincible.png">
 <script>try{document.documentElement.dataset.theme=localStorage.getItem('tt1v1_theme')||'dark'}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20261026180740">
-<link rel="stylesheet" href="cards.css?v=20261026180740">
-<link rel="icon" type="image/svg+xml" href="/art/favicon.svg?v=20261026180740">
+<link rel="stylesheet" href="styles.css?v=20261028173538">
+<link rel="stylesheet" href="cards.css?v=20261028173538">
+<link rel="icon" type="image/svg+xml" href="/art/favicon.svg?v=20261028173538">
 </head>
 <body>
 
@@ -40,7 +40,7 @@
           <path fill-rule="evenodd" d="M9.2 11.4V8.6c0-.75.6-1.35 1.35-1.35h2.9c.75 0 1.35.6 1.35 1.35v2.8H9.2Zm2.8-1.5a1.05 1.05 0 1 0 0 2.1 1.05 1.05 0 0 0 0-2.1Z"/>
           <path d="M14.4 8.15h8.38c.52 0 .94.42.94.94v.42c0 .52-.42.94-.94.94H14.4V8.15Z"/>
         </svg>
-        <img class="brand-tank-img" src="/art/brand-tank.png?v=20261026180740" width="395" height="282" alt="" draggable="false">
+        <img class="brand-tank-img" src="/art/brand-tank.png?v=20261028173538" width="395" height="282" alt="" draggable="false">
       </span>
       <span class="brand-lock" aria-hidden="true"><b>1v1</b><i data-i18n="top.brandSub">Leaderboard</i></span>
     </a>
@@ -50,12 +50,20 @@
       <a href="#/cards" data-i18n="nav.cards">Cards</a>
       <a href="#/compare" data-i18n="nav.compare">Compare</a>
       <a href="#/matches" data-i18n="nav.matches">Matches</a>
-      <a href="#/roster" data-i18n="nav.roster">Roster</a>
+      <a href="#/roster" data-i18n="nav.roster">Provisional</a>
       <a href="#/analytics" data-i18n="nav.analytics">Analytics</a>
       <i class="nav-div" aria-hidden="true"></i>
-      <a href="#/find" class="nav-minor" data-i18n="nav.find">Find 1v1</a>
-      <a href="#/method" class="nav-minor" data-i18n="nav.method">Method</a>
-      <a href="#/faq" class="nav-minor" data-i18n="nav.faq">FAQ</a>
+      <a href="#/find" data-i18n="nav.find">Find 1v1</a>
+      <div class="nav-more" id="nav-info">
+        <button type="button" class="nav-more-btn" aria-haspopup="true" aria-expanded="false" aria-controls="nav-info-menu">
+          <span data-i18n="nav.more">More</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="m6 9 6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="nav-more-menu" id="nav-info-menu" role="menu">
+          <a href="#/method" role="menuitem" data-i18n="nav.method">Method</a>
+          <a href="#/faq" role="menuitem" data-i18n="nav.faq">FAQ</a>
+        </div>
+      </div>
     </nav>
     <div class="spacer"></div>
     <div class="search-box">
@@ -65,6 +73,7 @@
       <div id="search-drop" class="search-drop"></div>
     </div>
     <div class="top-controls">
+      <span id="tt-bell"></span>
       <div class="lang-switch" id="lang-switch">
         <button class="icon-btn lang-btn" id="lang-btn" aria-haspopup="true" aria-expanded="false" aria-label="Language" title="Language" data-i18n-attr="aria-label:top.language;title:top.language">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9S14.5 18.3 12 21c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3Z"/></svg>
@@ -563,6 +572,16 @@
         </div>
       </div>
     </details>
+    <div class="panel method-rules-panel anim">
+      <h3 data-i18n="method.rulesTitle">The rules, at a glance</h3>
+      <ul class="explain-list" style="margin-top:8px">
+        <li><span class="num">+</span><div data-i18n-html="method.rulesGain"><b>A win over a stronger opponent gains more.</b> A loss to a weaker one costs more.</div></li>
+        <li><span class="num">↓</span><div data-i18n-html="method.rulesInactive"><b>Inactivity raises uncertainty.</b> Visible rating subtracts half of RD, so a silent rating gradually sinks.</div></li>
+        <li><span class="num">365</span><div data-i18n-html="method.rulesHidden"><b>365 days without a dated match removes you</b> from the active leaderboard. Your history returns when you play again.</div></li>
+        <li><span class="num">5</span><div data-i18n-html="method.rulesQualify"><b>Qualification:</b> 5 matches against 3 different opponents.</div></li>
+        <li><span class="num">!</span><div data-i18n-html="method.rulesFair"><b>No rating manipulation.</b> Repeated short-window 1v1s against the same or similar opponents to inflate ratings may be rejected.</div></li>
+      </ul>
+    </div>
   </div>
 </main>
 
@@ -699,6 +718,7 @@
 <main id="page-admin" class="page">
   <div class="wrap" id="admin-wrap"></div>
 </main>
+
 
 <!-- ======================= FEEDBACK ======================= -->
 <button class="fab" id="fab-feedback" aria-label="Feedback" title="Feedback" aria-haspopup="dialog" data-i18n-attr="aria-label:fab.feedback;title:fab.feedback">
@@ -932,7 +952,7 @@
 <button class="to-top" id="to-top" aria-label="Back to top" title="Back to top" data-i18n-attr="aria-label:misc.toTop;title:misc.toTop">
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M6 12.5l6-6 6 6M6 18.5l6-6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
 </button>
-<script src="i18n.js?v=20261026180740"></script>
+<script src="i18n.js?v=20261028173538"></script>
 <script>
   /* data.js is rewritten by the sheet sync worker outside of site deploys —
      load it with a per-request cache-buster so every refresh shows the
@@ -940,10 +960,11 @@
      Uses ?t= (a per-request cache-buster), so release stamps never touch it. */
   document.write('<script src="data.js?t=' + Date.now() + '\"><\/script>');
 </script>
-<script src="log.js?v=20261026180740"></script>
-<script src="tanks.js?v=20261026180740"></script>
-<script src="tankrender.js?v=20261026180740"></script>
-<script src="cards.js?v=20261026180740"></script>
-<script src="app.js?v=20261026180740"></script>
+<script src="log.js?v=20261028173538"></script>
+<script src="tanks.js?v=20261028173538"></script>
+<script src="tankrender.js?v=20261028173538"></script>
+<script src="cards.js?v=20261028173538"></script>
+<script src="tourneys.js?v=20261028173538"></script>
+<script src="app.js?v=20261028173538"></script>
 </body>
 </html>
