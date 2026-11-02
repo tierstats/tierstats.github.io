@@ -181,25 +181,13 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://tierstats.github.io/player/FakeDodger/</loc>
-    <lastmod>2026-11-02</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://tierstats.github.io/player/_-YourDestruction-_/</loc>
     <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://tierstats.github.io/player/-Trippy-/</loc>
-    <lastmod>2026-11-02</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://tierstats.github.io/player/SlayersBiggestFan/</loc>
+    <loc>https://tierstats.github.io/player/FakeDodger/</loc>
     <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
@@ -211,7 +199,19 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://tierstats.github.io/player/SlayersBiggestFan/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://tierstats.github.io/player/Rapid/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tierstats.github.io/player/-Trippy-/</loc>
     <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
@@ -295,6 +295,12 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://tierstats.github.io/player/_zenin_/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://tierstats.github.io/player/3w0n/</loc>
     <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
@@ -302,12 +308,6 @@
   </url>
   <url>
     <loc>https://tierstats.github.io/player/Tigers786/</loc>
-    <lastmod>2026-11-02</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://tierstats.github.io/player/_zenin_/</loc>
     <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
@@ -385,13 +385,7 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://tierstats.github.io/player/_Eddie_/</loc>
-    <lastmod>2026-11-02</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://tierstats.github.io/player/devote/</loc>
+    <loc>https://tierstats.github.io/player/Devote/</loc>
     <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
@@ -409,6 +403,12 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://tierstats.github.io/player/_Eddie_/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://tierstats.github.io/player/KaneKalon/</loc>
     <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
@@ -416,12 +416,6 @@
   </url>
   <url>
     <loc>https://tierstats.github.io/player/StarGazing/</loc>
-    <lastmod>2026-11-02</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://tierstats.github.io/player/Mandilindors/</loc>
     <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
@@ -463,13 +457,19 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://tierstats.github.io/player/martial/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://tierstats.github.io/player/LB96-Laika/</loc>
     <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://tierstats.github.io/player/martial/</loc>
+    <loc>https://tierstats.github.io/player/OLA123/</loc>
     <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
@@ -482,12 +482,6 @@
   </url>
   <url>
     <loc>https://tierstats.github.io/player/Spirited/</loc>
-    <lastmod>2026-11-02</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://tierstats.github.io/player/OLA123/</loc>
     <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
@@ -608,6 +602,12 @@
   </url>
   <url>
     <loc>https://tierstats.github.io/player/Master_T-54/</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tierstats.github.io/player/Mandilindors/</loc>
     <lastmod>2026-11-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>

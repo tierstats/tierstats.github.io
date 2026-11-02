@@ -102,7 +102,7 @@
         ${$(t("cards.kd"),S,"kd")}
       </div>
     </div>`:`<div class="pcb-game empty">${t("cards.noGame")}</div>`}
-    ${E.length?`<div class="pcb-note"><span>${t("cards.alts")}</span><b>${E.map(m).join(", ")}</b></div>`:""}
+    ${E.length?`<div class="pcb-note"><span>${t("cards.alts")}</span><b>${E.map(m).join('<i class="pcb-alt-sep">|</i>')}</b></div>`:""}
     ${(()=>{let L=D[et(q(e.rating))+1]||null,g=Number.isFinite(V(q(e.rating)))?V(q(e.rating)):1100,w=L?V(L):null,M=w?Math.max(0,w-e.rating):0,y=w?Math.max(2,Math.min(100,(e.rating-g)/Math.max(1,w-g)*100)):100;return`<div class="pcb-next"><div class="pcb-next-head"><span>${L?t("cards.nextTier")+" \u2014 "+A(L).toUpperCase():t("cards.topTier")}</span><b class="mono">${L?t("cards.toGo",{n:Math.ceil(M)}):"MAX"}</b></div><span class="pcb-next-track" aria-hidden="true"><i style="width:${y}%"></i></span></div>`})()}
 `}function J(e,a){if(!e)return;let s=e.querySelector(".pcard-front"),r=e.querySelector(".pcard-back");s&&(s.inert=!!a,s.setAttribute("aria-hidden",a?"true":"false")),r&&(r.inert=!a,r.setAttribute("aria-hidden",a?"false":"true"))}function ct(e,a){a=a||{};let s=e.name,r=q(e.rating),c=e.rank!=null?String(e.rank).padStart(2,"0"):"\u2014",l=e.provisional?`${Math.round(e.rating-100)}\u2013${Math.round(e.rating+100)}`:e.rating.toFixed(1),n=e.inactive?`<span class="pc-retired">${t("cards.retired")}</span>`:"",f=e.winPct>=65?"hi":e.winPct>=50?"mid":"low";return`
   <article class="pcard-wrap pcard-v2 tier-${r}${e.rank===1?" is-champion":""}${a.hero?" card-hero":""}" data-name="${m(s)}">
