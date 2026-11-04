@@ -4,10 +4,55 @@
    official public stats and the lastLogin timestamp behind the
    cards' last-seen line — no email, realName, birthYear, country,
    gmLevel or banned fields can exist in this file.
+   PREVIEW EXCEPTION (2026-11-03): `gm` — the game's own game-moderator level —
+   is carried here so the moderator insignia and card treatment can be reviewed.
+   It is NOT whitelisted in the live pipeline yet.
    Once the sync Worker emits window.LB_TANKS inside data.js (Layer A),
    that live copy wins — this snapshot is the offline fallback. */
 window.LB_TANKS_META = {"generated": "2026-10-13 18:18", "source": "tanktrouble.getPlayerDetailsByUsername"};
 window.LB_TANKS_SNAPSHOT = window.LB_TANKS_SNAPSHOT || {
+ "Mandilindors": {
+  "gm": 2,
+  "username": "Mandilindors",
+  "turretColour": {
+   "type": "numeric",
+   "rawValue": "0xcbfcba",
+   "numericValue": "0xcbfcba",
+   "imageValue": ""
+  },
+  "treadColour": {
+   "type": "numeric",
+   "rawValue": "0x00ffea",
+   "numericValue": "0x00ffea",
+   "imageValue": ""
+  },
+  "baseColour": {
+   "type": "numeric",
+   "rawValue": "0x73dfc4",
+   "numericValue": "0x73dfc4",
+   "imageValue": ""
+  },
+  "turretAccessory": "11",
+  "barrelAccessory": "79",
+  "frontAccessory": "8",
+  "backAccessory": "383",
+  "treadAccessory": "0",
+  "backgroundAccessory": "0",
+  "badge": "0",
+  "kills": 72114,
+  "deaths": 55753,
+  "victories": 45825,
+  "suicides": 13004,
+  "surrenders": 0,
+  "experience": 2287,
+  "xp": 190000,
+  "rank": 2023,
+  "premium": true,
+  "verified": true,
+  "created": 1530892307,
+  "guest": false,
+  "lastLogin": 1793649528
+},
  "-Trippy-": {
   "backAccessory": "383",
   "backgroundAccessory": "0",
@@ -1849,6 +1894,7 @@ window.LB_TANKS_SNAPSHOT = window.LB_TANKS_SNAPSHOT || {
   "verified": true
  },
  "Lichen": {
+  "gm": 4,
   "backAccessory": "35",
   "backgroundAccessory": "0",
   "badge": "0",
