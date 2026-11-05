@@ -28,10 +28,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20261105202431">
-<link rel="stylesheet" href="cards.css?v=20261105202431">
-<link rel="stylesheet" href="rankmove.css?v=20261105202431">
-<link rel="icon" type="image/svg+xml" href="/art/favicon.svg?v=20261105202431">
+<link rel="stylesheet" href="styles.css?v=20261105205222">
+<link rel="stylesheet" href="cards.css?v=20261105205222">
+<link rel="stylesheet" href="rankmove.css?v=20261105205222">
+<link rel="icon" type="image/svg+xml" href="/art/favicon.svg?v=20261105205222">
 </head>
 <body>
 
@@ -46,7 +46,7 @@
           <path fill-rule="evenodd" d="M9.2 11.4V8.6c0-.75.6-1.35 1.35-1.35h2.9c.75 0 1.35.6 1.35 1.35v2.8H9.2Zm2.8-1.5a1.05 1.05 0 1 0 0 2.1 1.05 1.05 0 0 0 0-2.1Z"/>
           <path d="M14.4 8.15h8.38c.52 0 .94.42.94.94v.42c0 .52-.42.94-.94.94H14.4V8.15Z"/>
         </svg>
-        <img class="brand-tank-img" src="/art/brand-tank.png?v=20261105202431" width="395" height="282" alt="" draggable="false">
+        <img class="brand-tank-img" src="/art/brand-tank.png?v=20261105205222" width="395" height="282" alt="" draggable="false">
       </span>
       <span class="brand-lock" aria-hidden="true"><b>1v1</b><i data-i18n="top.brandSub">Leaderboard</i></span>
     </a>
@@ -819,227 +819,227 @@
 <main id="page-rules" class="page">
   <div class="wrap">
     <section class="hero anim" style="padding-top:10px">
-      <div class="kicker">Board rules</div>
-      <h1 style="font-size:clamp(36px,5vw,58px)">The <span class="gold">rules</span></h1>
-      <p class="sub">Nothing here is decided by opinion. These are the rules we follow when a match goes in, and the only reason a match gets turned away.</p>
+      <div class="kicker" data-i18n="rules.kicker"></div>
+      <h1 style="font-size:clamp(36px,5vw,58px)" data-i18n-html="rules.h1"></h1>
+      <p class="sub" data-i18n="rules.sub"></p>
       <div class="ru-facts-row">
         <div class="ru-facts" role="list">
-        <span class="ru-fact"><b>5</b> matches to qualify</span>
-        <span class="ru-fact"><b>3</b> different opponents</span>
-        <span class="ru-fact"><b>365</b> days before you drop off</span>
-        <span class="ru-fact"><b>1</b> proof per match</span>
+        <span class="ru-fact" role="listitem" data-i18n-html="rules.f1"></span>
+        <span class="ru-fact" role="listitem" data-i18n-html="rules.f2"></span>
+        <span class="ru-fact" role="listitem" data-i18n-html="rules.f3"></span>
+        <span class="ru-fact" role="listitem" data-i18n-html="rules.f4"></span>
         </div>
         <div class="ru-hero-cta">
-          <a class="btn btn-primary" href="https://tanktrouble.com/forum?threadId=474726" target="_blank" rel="noopener noreferrer">Open the thread</a>
-          <a class="btn btn-ghost" href="#/find">Find a 1v1</a>
+          <a class="btn btn-primary" href="https://tanktrouble.com/forum?threadId=474726" target="_blank" rel="noopener noreferrer" data-i18n="rules.openThread"></a>
+          <a class="btn btn-ghost" href="#/find" data-i18n="rules.findDuel"></a>
         </div>
       </div>
       <p class="ru-legend">
-        <span class="ru-legend-item"><span class="ru-tag ru-tag-req">Required</span><span>must be in the post</span></span>
-        <span class="ru-legend-item"><span class="ru-tag ru-tag-rec">Recommended</span><span>improves the record</span></span>
-        <span class="ru-legend-item"><span class="ru-tag ru-tag-enf">Enforced</span><span>breach means a match is refused or removed</span></span>
-        <span class="ru-legend-item"><span class="ru-tag ru-tag-aut">Automatic</span><span>the maths does it, nobody decides</span></span>
+        <span class="ru-legend-item"><span class="ru-tag ru-tag-req" data-i18n="rules.tagReq"></span><span data-i18n="rules.legReq"></span></span>
+        <span class="ru-legend-item"><span class="ru-tag ru-tag-rec" data-i18n="rules.tagRec"></span><span data-i18n="rules.legRec"></span></span>
+        <span class="ru-legend-item"><span class="ru-tag ru-tag-enf" data-i18n="rules.tagEnf"></span><span data-i18n="rules.legEnf"></span></span>
+        <span class="ru-legend-item"><span class="ru-tag ru-tag-aut" data-i18n="rules.tagAut"></span><span data-i18n="rules.legAut"></span></span>
       </p>
     </section>
 
     <section class="ru-flow reveal">
-      <div class="ru-band-head">How a match gets recorded</div>
+      <div class="ru-band-head" data-i18n="rules.flowTitle"></div>
       <div class="ru-steps">
-        <article class="ru-step"><span class="ru-step-n">01</span><b>Play the duel</b><span class="ru-step-p">Any server, any time. Keep the date, both names and the final score.</span></article>
-        <article class="ru-step"><span class="ru-step-n">02</span><b>Post it in the thread</b><span class="ru-step-p">Date, both usernames, the score and one proof. That is the whole post.</span></article>
-        <article class="ru-step"><span class="ru-step-n">03</span><b>We enter it</b><span class="ru-step-p">The match goes into the sheet, and the server and per-server scores with it.</span></article>
-        <article class="ru-step"><span class="ru-step-n">04</span><b>Your rating moves</b><span class="ru-step-p">Ratings recalculate straight away and the board reorders itself.</span></article>
+        <article class="ru-step"><span class="ru-step-n">01</span><b data-i18n="rules.st1t"></b><span class="ru-step-p" data-i18n="rules.st1p"></span></article>
+        <article class="ru-step"><span class="ru-step-n">02</span><b data-i18n="rules.st2t"></b><span class="ru-step-p" data-i18n="rules.st2p"></span></article>
+        <article class="ru-step"><span class="ru-step-n">03</span><b data-i18n="rules.st3t"></b><span class="ru-step-p" data-i18n="rules.st3p"></span></article>
+        <article class="ru-step"><span class="ru-step-n">04</span><b data-i18n="rules.st4t"></b><span class="ru-step-p" data-i18n="rules.st4p"></span></article>
       </div>
     </section>
 
-    <nav class="ru-toc" aria-label="Sections of this page">
-        <button type="button" class="ru-toc-btn" data-jump="r-01"><span class="ru-toc-n">01</span><span class="ru-toc-label">Getting on the board</span></button>
-        <button type="button" class="ru-toc-btn" data-jump="r-02"><span class="ru-toc-n">02</span><span class="ru-toc-label">Logging a match</span></button>
-        <button type="button" class="ru-toc-btn" data-jump="r-03"><span class="ru-toc-n">03</span><span class="ru-toc-label">Say the server</span></button>
-        <button type="button" class="ru-toc-btn" data-jump="r-04"><span class="ru-toc-n">04</span><span class="ru-toc-label">How ratings move</span></button>
-        <button type="button" class="ru-toc-btn" data-jump="r-05"><span class="ru-toc-n">05</span><span class="ru-toc-label">Alts, mains and names</span></button>
-        <button type="button" class="ru-toc-btn" data-jump="r-06"><span class="ru-toc-n">06</span><span class="ru-toc-label">Fair play</span></button>
+    <nav class="ru-toc" data-i18n-attr="aria-label:rules.tocAria">
+        <button type="button" class="ru-toc-btn" data-jump="r-01"><span class="ru-toc-n">01</span><span class="ru-toc-label" data-i18n="rules.s1t"></span></button>
+        <button type="button" class="ru-toc-btn" data-jump="r-02"><span class="ru-toc-n">02</span><span class="ru-toc-label" data-i18n="rules.s2t"></span></button>
+        <button type="button" class="ru-toc-btn" data-jump="r-03"><span class="ru-toc-n">03</span><span class="ru-toc-label" data-i18n="rules.s3t"></span></button>
+        <button type="button" class="ru-toc-btn" data-jump="r-04"><span class="ru-toc-n">04</span><span class="ru-toc-label" data-i18n="rules.s4t"></span></button>
+        <button type="button" class="ru-toc-btn" data-jump="r-05"><span class="ru-toc-n">05</span><span class="ru-toc-label" data-i18n="rules.s5t"></span></button>
+        <button type="button" class="ru-toc-btn" data-jump="r-06"><span class="ru-toc-n">06</span><span class="ru-toc-label" data-i18n="rules.s6t"></span></button>
       <span class="ru-toc-rail" aria-hidden="true"></span>
     </nav>
 
     <div class="ru-grid">
       <section class="panel ru-card reveal" id="r-01">
-        <div class="ru-head"><span class="ru-n">01</span><h2>Getting on the board</h2></div>
-        <p class="ru-sec-lead">What it takes before your name shows on the ranked list.</p>
+        <div class="ru-head"><span class="ru-n">01</span><h2 data-i18n="rules.s1t"></h2></div>
+        <p class="ru-sec-lead" data-i18n="rules.s1i"></p>
         <div class="ru-rules">
             <div class="ru-row">
               <span class="ru-id">1.1</span>
-              <p><b>Five matches against three different opponents.</b> Until then you sit on the provisional list.</p>
-              <span class="ru-tag ru-tag-req">Required</span>
+              <p data-i18n-html="rules.r11"></p>
+              <span class="ru-tag ru-tag-req" data-i18n="rules.tagReq"></span>
             </div>
             <div class="ru-row">
               <span class="ru-id">1.2</span>
-              <p><b>Provisional matches still count.</b> They move everyone&#39;s ratings, they just don&#39;t show you on the main list yet.</p>
-              <span class="ru-tag ru-tag-aut">Automatic</span>
+              <p data-i18n-html="rules.r12"></p>
+              <span class="ru-tag ru-tag-aut" data-i18n="rules.tagAut"></span>
             </div>
             <div class="ru-row">
               <span class="ru-id">1.3</span>
-              <p><b>Coming back costs nothing.</b> Play again and your record returns where it left off.</p>
-              <span class="ru-tag ru-tag-aut">Automatic</span>
+              <p data-i18n-html="rules.r13"></p>
+              <span class="ru-tag ru-tag-aut" data-i18n="rules.tagAut"></span>
             </div>
             <div class="ru-row">
               <span class="ru-id">1.4</span>
-              <p><b>Your record is public.</b> Your name, your rating and your match history are here for anyone to read.</p>
+              <p data-i18n-html="rules.r14"></p>
               
             </div>
         </div>
       </section>
       <section class="panel ru-card reveal" id="r-02">
-        <div class="ru-head"><span class="ru-n">02</span><h2>Logging a match</h2></div>
-        <p class="ru-sec-lead">What a match post has to carry, and where it goes.</p>
+        <div class="ru-head"><span class="ru-n">02</span><h2 data-i18n="rules.s2t"></h2></div>
+        <p class="ru-sec-lead" data-i18n="rules.s2i"></p>
         <ul class="ru-check">
-          <li><span class="ru-tick" aria-hidden="true">✓</span><span class="ru-check-t">Date you played</span><span class="ru-tag ru-tag-req">Required</span></li>
-          <li><span class="ru-tick" aria-hidden="true">✓</span><span class="ru-check-t">Both usernames, exactly as they appear in game</span><span class="ru-tag ru-tag-req">Required</span></li>
-          <li><span class="ru-tick" aria-hidden="true">✓</span><span class="ru-check-t">Final score</span><span class="ru-tag ru-tag-req">Required</span></li>
-          <li><span class="ru-tick" aria-hidden="true">✓</span><span class="ru-check-t">Proof: a screenshot, a replay, or both players confirming the result</span><span class="ru-tag ru-tag-req">Required</span></li>
+          <li><span class="ru-tick" aria-hidden="true">✓</span><span class="ru-check-t" data-i18n="rules.chk1"></span><span class="ru-tag ru-tag-req" data-i18n="rules.tagReq"></span></li>
+          <li><span class="ru-tick" aria-hidden="true">✓</span><span class="ru-check-t" data-i18n="rules.chk2"></span><span class="ru-tag ru-tag-req" data-i18n="rules.tagReq"></span></li>
+          <li><span class="ru-tick" aria-hidden="true">✓</span><span class="ru-check-t" data-i18n="rules.chk3"></span><span class="ru-tag ru-tag-req" data-i18n="rules.tagReq"></span></li>
+          <li><span class="ru-tick" aria-hidden="true">✓</span><span class="ru-check-t" data-i18n="rules.chk4"></span><span class="ru-tag ru-tag-req" data-i18n="rules.tagReq"></span></li>
         </ul>
-        <p class="ru-check-note">No screenshot and no replay? Both players confirming the final result in the thread is accepted on its own.</p>
+        <p class="ru-check-note" data-i18n="rules.chkNote"></p>
       </section>
       <section class="panel ru-card reveal" id="r-03">
-        <div class="ru-head"><span class="ru-n">03</span><h2>Say the server</h2></div>
-        <p class="ru-sec-lead">The server names we publish, and the one thing we never ask you for.</p>
+        <div class="ru-head"><span class="ru-n">03</span><h2 data-i18n="rules.s3t"></h2></div>
+        <p class="ru-sec-lead" data-i18n="rules.s3i"></p>
         <div class="ru-rules">
             <div class="ru-row">
               <span class="ru-id">3.1</span>
-              <p><b>The server you played on.</b> Without it the match still counts, but no server appears on the match or on either profile.</p>
-              <span class="ru-tag ru-tag-rec">Recommended</span>
+              <p data-i18n-html="rules.r31"></p>
+              <span class="ru-tag ru-tag-rec" data-i18n="rules.tagRec"></span>
             </div>
             <div class="ru-row">
               <span class="ru-id">3.2</span>
-              <p><b>We don&#39;t want your exact ms in the post, only the server name.</b> Ping is measured on the site itself, on <a href="#/find">Find a 1v1</a>, once you have verified your name.</p>
-              <span class="ru-tag ru-tag-aut">Automatic</span>
+              <p data-i18n-html="rules.r32"></p>
+              <span class="ru-tag ru-tag-aut" data-i18n="rules.tagAut"></span>
             </div>
             <div class="ru-row">
               <span class="ru-id">3.3</span>
-              <p><b>Played on two servers? Give the score on each one.</b> The two add up to the totals, so nobody has to guess which half was which.</p>
-              <span class="ru-tag ru-tag-rec">Recommended</span>
+              <p data-i18n-html="rules.r33"></p>
+              <span class="ru-tag ru-tag-rec" data-i18n="rules.tagRec"></span>
             </div>
             <div class="ru-row">
               <span class="ru-id">3.4</span>
-              <p><b>The server name stays public.</b> It appears on the match and on both profiles. That is the one line of your post we publish as it is.</p>
-              <span class="ru-tag ru-tag-aut">Automatic</span>
+              <p data-i18n-html="rules.r34"></p>
+              <span class="ru-tag ru-tag-aut" data-i18n="rules.tagAut"></span>
             </div>
         </div>
       </section>
       <section class="panel ru-card reveal" id="r-04">
-        <div class="ru-head"><span class="ru-n">04</span><h2>How ratings move</h2></div>
-        <p class="ru-sec-lead">Why your number goes up, down, or sideways.</p>
+        <div class="ru-head"><span class="ru-n">04</span><h2 data-i18n="rules.s4t"></h2></div>
+        <p class="ru-sec-lead" data-i18n="rules.s4i"></p>
         <div class="ru-rules">
             <div class="ru-row">
               <span class="ru-id">4.1</span>
-              <p><b>Beat someone stronger, gain more.</b> Lose to someone weaker, lose more.</p>
-              <span class="ru-tag ru-tag-aut">Automatic</span>
+              <p data-i18n-html="rules.r41"></p>
+              <span class="ru-tag ru-tag-aut" data-i18n="rules.tagAut"></span>
             </div>
             <div class="ru-row">
               <span class="ru-id">4.2</span>
-              <p><b>Sitting still costs you.</b> The longer you are quiet, the less certain the system is, and your visible rating gives up half of that uncertainty.</p>
-              <span class="ru-tag ru-tag-aut">Automatic</span>
+              <p data-i18n-html="rules.r42"></p>
+              <span class="ru-tag ru-tag-aut" data-i18n="rules.tagAut"></span>
             </div>
             <div class="ru-row">
               <span class="ru-id">4.3</span>
-              <p><b>A year without a dated match takes you off the active board.</b> The record is not deleted, it returns the moment you play.</p>
-              <span class="ru-tag ru-tag-aut">Automatic</span>
+              <p data-i18n-html="rules.r43"></p>
+              <span class="ru-tag ru-tag-aut" data-i18n="rules.tagAut"></span>
             </div>
             <div class="ru-row">
               <span class="ru-id">4.4</span>
-              <p><b>Numbers first.</b> The tier names are bands drawn around your rating, nothing more.</p>
+              <p data-i18n-html="rules.r44"></p>
               
             </div>
         </div>
       </section>
       <section class="panel ru-card reveal" id="r-05">
-        <div class="ru-head"><span class="ru-n">05</span><h2>Alts, mains and names</h2></div>
-        <p class="ru-sec-lead">How to be one player with more than one name.</p>
+        <div class="ru-head"><span class="ru-n">05</span><h2 data-i18n="rules.s5t"></h2></div>
+        <p class="ru-sec-lead" data-i18n="rules.s5i"></p>
         <div class="ru-rules">
             <div class="ru-row">
               <span class="ru-id">5.1</span>
-              <p><b>One player, one account on the board.</b> Tell us which is your main and we link the rest, so every match counts on it.</p>
-              <span class="ru-tag ru-tag-req">Required</span>
+              <p data-i18n-html="rules.r51"></p>
+              <span class="ru-tag ru-tag-req" data-i18n="rules.tagReq"></span>
             </div>
             <div class="ru-row">
               <span class="ru-id">5.2</span>
-              <p><b>Old rows don&#39;t need rewriting.</b> An alias points at the main name and the archive follows it.</p>
-              <span class="ru-tag ru-tag-aut">Automatic</span>
+              <p data-i18n-html="rules.r52"></p>
+              <span class="ru-tag ru-tag-aut" data-i18n="rules.tagAut"></span>
             </div>
             <div class="ru-row">
               <span class="ru-id">5.3</span>
-              <p><b>Renamed in game?</b> Give us the old name and the new one. Think an alt is unclaimed? Say so and we check.</p>
-              <span class="ru-tag ru-tag-req">Required</span>
+              <p data-i18n-html="rules.r53"></p>
+              <span class="ru-tag ru-tag-req" data-i18n="rules.tagReq"></span>
             </div>
         </div>
       </section>
       <section class="panel ru-card reveal" id="r-06">
-        <div class="ru-head"><span class="ru-n">06</span><h2>Fair play</h2></div>
-        <p class="ru-sec-lead">The one thing that gets a match refused, and what never does.</p>
+        <div class="ru-head"><span class="ru-n">06</span><h2 data-i18n="rules.s6t"></h2></div>
+        <p class="ru-sec-lead" data-i18n="rules.s6i"></p>
         <div class="ru-rules">
             <div class="ru-row">
               <span class="ru-id">6.1</span>
-              <p><b>Rating manipulation is the only reason a match is refused.</b> The same opponent, or a small group of opponents, over and over in a short window to push numbers up.</p>
-              <span class="ru-tag ru-tag-enf">Enforced</span>
+              <p data-i18n-html="rules.r61"></p>
+              <span class="ru-tag ru-tag-enf" data-i18n="rules.tagEnf"></span>
             </div>
             <div class="ru-row">
               <span class="ru-id">6.2</span>
-              <p><b>Ordinary games with whoever shows up are always fine.</b> No matter who wins.</p>
+              <p data-i18n-html="rules.r62"></p>
               
             </div>
             <div class="ru-row">
               <span class="ru-id">6.3</span>
-              <p><b>Keep the thread for matches and questions.</b> No spam, no arguing scores in public when a correction is one message away, and the same respect to every player on the board.</p>
-              <span class="ru-tag ru-tag-enf">Enforced</span>
+              <p data-i18n-html="rules.r63"></p>
+              <span class="ru-tag ru-tag-enf" data-i18n="rules.tagEnf"></span>
             </div>
         </div>
       </section>
     </div>
 
-    <nav class="ru-next" aria-label="Read next">
-      <span class="ru-band-head">Read next</span>
+    <nav class="ru-next" data-i18n-attr="aria-label:rules.nextAria">
+      <span class="ru-band-head" data-i18n="rules.nextTitle"></span>
       <div class="ru-next-row">
-        <a class="ru-next-link" href="#/method">How the ratings are calculated<span>Method</span><i aria-hidden="true">→</i></a>
-        <a class="ru-next-link" href="#/find">Find a 1v1 to play against<span>Find 1v1</span><i aria-hidden="true">→</i></a>
+        <a class="ru-next-link" href="#/method"><span class="ru-next-txt" data-i18n="rules.next1"></span><span data-i18n="rules.next1tag"></span><i aria-hidden="true">→</i></a>
+        <a class="ru-next-link" href="#/find"><span class="ru-next-txt" data-i18n="rules.next2"></span><span data-i18n="rules.next2tag"></span><i aria-hidden="true">→</i></a>
       </div>
     </nav>
 
     <section class="ru-spec-panel reveal">
       <div class="ru-spec-col">
-        <div class="ru-band-head">A post that gets accepted</div>
-        <p class="ru-spec-lead">Change the values, keep the fields. A post that is missing one of the four required fields is the only reason a match comes back to you.</p>
+        <div class="ru-band-head" data-i18n="rules.spec1Title"></div>
+        <p class="ru-spec-lead" data-i18n="rules.spec1Lead"></p>
         <div class="ru-spec">
-            <div class="ru-spec-row"><span class="ru-spec-k">date</span><span class="ru-spec-v">2026-11-04</span><span class="ru-spec-req" aria-hidden="true">✓</span></div>
-            <div class="ru-spec-row"><span class="ru-spec-k">player 1</span><span class="ru-spec-v">Slayer</span><span class="ru-spec-req" aria-hidden="true">✓</span></div>
-            <div class="ru-spec-row"><span class="ru-spec-k">player 2</span><span class="ru-spec-v">No_Ammo</span><span class="ru-spec-req" aria-hidden="true">✓</span></div>
-            <div class="ru-spec-row"><span class="ru-spec-k">score</span><span class="ru-spec-v">15 - 9</span><span class="ru-spec-req" aria-hidden="true">✓</span></div>
-            <div class="ru-spec-row"><span class="ru-spec-k">server</span><span class="ru-spec-v">London</span><span class="ru-spec-req"></span></div>
-            <div class="ru-spec-row"><span class="ru-spec-k">proof</span><span class="ru-spec-v">screenshot attached</span><span class="ru-spec-req" aria-hidden="true">✓</span></div>
+            <div class="ru-spec-row"><span class="ru-spec-k" data-i18n="rules.fldDate"></span><span class="ru-spec-v" >2026-11-04</span><span class="ru-spec-req" aria-hidden="true">✓</span></div>
+            <div class="ru-spec-row"><span class="ru-spec-k" data-i18n="rules.fldP1"></span><span class="ru-spec-v" >Slayer</span><span class="ru-spec-req" aria-hidden="true">✓</span></div>
+            <div class="ru-spec-row"><span class="ru-spec-k" data-i18n="rules.fldP2"></span><span class="ru-spec-v" >No_Ammo</span><span class="ru-spec-req" aria-hidden="true">✓</span></div>
+            <div class="ru-spec-row"><span class="ru-spec-k" data-i18n="rules.fldScore"></span><span class="ru-spec-v" >15 - 9</span><span class="ru-spec-req" aria-hidden="true">✓</span></div>
+            <div class="ru-spec-row"><span class="ru-spec-k" data-i18n="rules.fldServer"></span><span class="ru-spec-v" >London</span><span class="ru-spec-req"></span></div>
+            <div class="ru-spec-row"><span class="ru-spec-k" data-i18n="rules.fldProof"></span><span class="ru-spec-v" data-i18n="rules.valProof"></span><span class="ru-spec-req" aria-hidden="true">✓</span></div>
         </div>
-        <p class="ru-spec-note">The ticks mark the four fields that must be there. Nothing else is needed &mdash; not your ping, your tank or your settings.</p>
+        <p class="ru-spec-note" data-i18n="rules.spec1Note"></p>
       </div>
       <div class="ru-spec-col">
-        <div class="ru-band-head">Played on two servers</div>
-        <p class="ru-spec-lead">Give the score on each server. London 12 - 7 and Newark 3 - 2 add up to the 15 - 9 in the match, so nobody has to guess which half was which.</p>
+        <div class="ru-band-head" data-i18n="rules.spec2Title"></div>
+        <p class="ru-spec-lead" data-i18n="rules.spec2Lead"></p>
         <div class="ru-spec">
-            <div class="ru-spec-row"><span class="ru-spec-k">date</span><span class="ru-spec-v">2026-11-04</span><span class="ru-spec-req" aria-hidden="true">✓</span></div>
-            <div class="ru-spec-row"><span class="ru-spec-k">player 1</span><span class="ru-spec-v">Slayer</span><span class="ru-spec-req" aria-hidden="true">✓</span></div>
-            <div class="ru-spec-row"><span class="ru-spec-k">player 2</span><span class="ru-spec-v">No_Ammo</span><span class="ru-spec-req" aria-hidden="true">✓</span></div>
-            <div class="ru-spec-row"><span class="ru-spec-k">score</span><span class="ru-spec-v">15 - 9</span><span class="ru-spec-req" aria-hidden="true">✓</span></div>
-            <div class="ru-spec-row"><span class="ru-spec-k">server 1</span><span class="ru-spec-v">London</span><span class="ru-spec-req"></span></div>
-            <div class="ru-spec-row"><span class="ru-spec-k">server 2</span><span class="ru-spec-v">Newark</span><span class="ru-spec-req"></span></div>
-            <div class="ru-spec-row"><span class="ru-spec-k">proof</span><span class="ru-spec-v">screenshot attached</span><span class="ru-spec-req" aria-hidden="true">✓</span></div>
+            <div class="ru-spec-row"><span class="ru-spec-k" data-i18n="rules.fldDate"></span><span class="ru-spec-v" >2026-11-04</span><span class="ru-spec-req" aria-hidden="true">✓</span></div>
+            <div class="ru-spec-row"><span class="ru-spec-k" data-i18n="rules.fldP1"></span><span class="ru-spec-v" >Slayer</span><span class="ru-spec-req" aria-hidden="true">✓</span></div>
+            <div class="ru-spec-row"><span class="ru-spec-k" data-i18n="rules.fldP2"></span><span class="ru-spec-v" >No_Ammo</span><span class="ru-spec-req" aria-hidden="true">✓</span></div>
+            <div class="ru-spec-row"><span class="ru-spec-k" data-i18n="rules.fldScore"></span><span class="ru-spec-v" >15 - 9</span><span class="ru-spec-req" aria-hidden="true">✓</span></div>
+            <div class="ru-spec-row"><span class="ru-spec-k" data-i18n="rules.fldS1"></span><span class="ru-spec-v" >London</span><span class="ru-spec-req"></span></div>
+            <div class="ru-spec-row"><span class="ru-spec-k" data-i18n="rules.fldS2"></span><span class="ru-spec-v" >Newark</span><span class="ru-spec-req"></span></div>
+            <div class="ru-spec-row"><span class="ru-spec-k" data-i18n="rules.fldProof"></span><span class="ru-spec-v" data-i18n="rules.valProof"></span><span class="ru-spec-req" aria-hidden="true">✓</span></div>
         </div>
-        <p class="ru-spec-note">The server lines are the optional ones. Give them and the board can show where you actually played.</p>
+        <p class="ru-spec-note" data-i18n="rules.spec2Note"></p>
       </div>
     </section>
 
     <section class="ru-close reveal">
       <div class="ru-close-txt">
-        <h2>Corrections and questions</h2>
-        <p>Missing match, wrong score, wrong name, wrong server, or you think an alt belongs to someone. Quote the rule number and you&#39;ll get a faster answer. The feedback button at the bottom of any page reaches us, and so does a reply in the thread. Two people run this board, we read both, and the answers end up on this page.</p>
+        <h2 data-i18n="rules.closeTitle"></h2>
+        <p data-i18n="rules.closeText"></p>
       </div>
-      <a class="btn btn-primary ru-close-btn" href="https://tanktrouble.com/forum?threadId=474726" target="_blank" rel="noopener noreferrer">Open the thread</a>
+      <a class="btn btn-primary ru-close-btn" href="https://tanktrouble.com/forum?threadId=474726" target="_blank" rel="noopener noreferrer" data-i18n="rules.openThread"></a>
     </section>
   </div>
 </main>
@@ -1211,7 +1211,7 @@
 <button class="to-top" id="to-top" aria-label="Back to top" title="Back to top" data-i18n-attr="aria-label:misc.toTop;title:misc.toTop">
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M6 12.5l6-6 6 6M6 18.5l6-6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
 </button>
-<script src="i18n.js?v=20261105202431"></script>
+<script src="i18n.js?v=20261105205222"></script>
 <script>
   /* data.js is rewritten by the sheet sync worker outside of site deploys —
      load it with a per-request cache-buster so every refresh shows the
@@ -1219,12 +1219,12 @@
      Uses ?t= (a per-request cache-buster), so release stamps never touch it. */
   document.write('<script src="data.js?t=' + Date.now() + '\"><\/script>');
 </script>
-<script src="log.js?v=1793911835469"></script>
-<script src="tanks.js?v=20261105202431"></script>
-<script src="tankrender.js?v=20261105202431"></script>
-<script src="cards.js?v=20261105202431"></script>
-<script src="tourneys.js?v=20261105202431"></script>
-<script src="app.js?v=20261105202431"></script>
-<script src="rankmove.js?v=20261105202431"></script>
+<script src="log.js?v=20261105205222"></script>
+<script src="tanks.js?v=20261105205222"></script>
+<script src="tankrender.js?v=20261105205222"></script>
+<script src="cards.js?v=20261105205222"></script>
+<script src="tourneys.js?v=20261105205222"></script>
+<script src="app.js?v=20261105205222"></script>
+<script src="rankmove.js?v=20261105205222"></script>
 </body>
 </html>
