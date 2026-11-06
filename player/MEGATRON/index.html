@@ -28,12 +28,16 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20261106000943">
-<link rel="stylesheet" href="cards.css?v=20261106000943">
-<link rel="stylesheet" href="rankmove.css?v=20261106000943">
-<link rel="icon" type="image/svg+xml" href="/art/favicon.svg?v=20261106000943">
+<link rel="stylesheet" href="styles.css?v=20261106183042">
+<link rel="stylesheet" href="cards.css?v=20261106183042">
+<link rel="stylesheet" href="rankmove.css?v=20261106183042">
+<link rel="icon" type="image/svg+xml" href="/art/favicon.svg?v=20261106183042">
+<link rel="apple-touch-icon" href="/art/icon-192.png?v=20261106183042">
+<!-- installable: the same plate, the same colours, no separate icon work -->
+<link rel="manifest" href="/manifest.webmanifest?v=20261106183042">
 </head>
 <body>
+<a class="skip-link" href="#main" data-i18n="a11y.skip">Skip to content</a>
 
 <!-- ======================= TOP BAR ======================= -->
 <header class="topbar">
@@ -46,7 +50,7 @@
           <path fill-rule="evenodd" d="M9.2 11.4V8.6c0-.75.6-1.35 1.35-1.35h2.9c.75 0 1.35.6 1.35 1.35v2.8H9.2Zm2.8-1.5a1.05 1.05 0 1 0 0 2.1 1.05 1.05 0 0 0 0-2.1Z"/>
           <path d="M14.4 8.15h8.38c.52 0 .94.42.94.94v.42c0 .52-.42.94-.94.94H14.4V8.15Z"/>
         </svg>
-        <img class="brand-tank-img" src="/art/brand-tank.png?v=20261106000943" width="395" height="282" alt="" draggable="false">
+        <img class="brand-tank-img" src="/art/brand-tank.png?v=20261106183042" width="395" height="282" alt="" draggable="false">
       </span>
       <span class="brand-lock" aria-hidden="true"><b>1v1</b><i data-i18n="top.brandSub">Leaderboard</i></span>
     </a>
@@ -118,6 +122,7 @@
 </nav>
 
 <!-- ======================= HOME ======================= -->
+<div id="main" tabindex="-1">
 <main id="page-home" class="page">
   <div class="wrap">
     <section class="hero anim">
@@ -1019,6 +1024,11 @@
               <p data-i18n-html="rules.r74"></p>
               <span class="ru-tag ru-tag-aut" data-i18n="rules.tagAut"></span>
             </div>
+            <div class="ru-row">
+              <span class="ru-id">7.5</span>
+              <p data-i18n-html="rules.r75"></p>
+              <span class="ru-tag ru-tag-req" data-i18n="rules.tagReq"></span>
+            </div>
         </div>
       </section>
     </div>
@@ -1238,7 +1248,7 @@
 <button class="to-top" id="to-top" aria-label="Back to top" title="Back to top" data-i18n-attr="aria-label:misc.toTop;title:misc.toTop">
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M6 12.5l6-6 6 6M6 18.5l6-6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
 </button>
-<script src="i18n.js?v=20261106000943"></script>
+<script src="i18n.js?v=20261106183042"></script>
 <script>
   /* data.js is rewritten by the sheet sync worker outside of site deploys —
      load it with a per-request cache-buster so every refresh shows the
@@ -1246,12 +1256,37 @@
      Uses ?t= (a per-request cache-buster), so release stamps never touch it. */
   document.write('<script src="data.js?t=' + Date.now() + '\"><\/script>');
 </script>
-<script src="log.js?v=20261106000943"></script>
-<script src="tanks.js?v=20261106000943"></script>
-<script src="tankrender.js?v=20261106000943"></script>
-<script src="cards.js?v=20261106000943"></script>
-<script src="tourneys.js?v=20261106000943"></script>
-<script src="app.js?v=20261106000943"></script>
-<script src="rankmove.js?v=20261106000943"></script>
+<script src="log.js?v=20261106183042"></script>
+<script src="tanks.js?v=20261106183042"></script>
+<script src="tankrender.js?v=20261106183042"></script>
+<script src="cards.js?v=20261106183042"></script>
+<script src="tourneys.js?v=20261106183042"></script>
+<script src="app.js?v=20261106183042"></script>
+<script src="rankmove.js?v=20261106183042"></script>
+<script>
+/* Offline board + fast repeat visits.
+   The version number is this page's own asset stamp, so every publish is a new
+   cache and an old build can never be served to anybody. The worker itself
+   fetches the sheet data over the network first, so the numbers on screen are
+   always current — the cache is only what you see when you have no connection. */
+(function () {
+  if (!('serviceWorker' in navigator)) return;
+  var local = /^(https?:)?\/\/(localhost|127\.0\.0\.1)(:|$)/.test(location.href);
+  if (location.protocol !== 'https:' && !local) return;
+  var s = (document.querySelector('script[src*="app.js"]') || {}).src || '';
+  var v = ((s.split('?v=20261106183042')[1] || 'dev').split('&')[0] || 'dev').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 32);
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('/sw.js?v=20261106183042' + v, { scope: '/' }).catch(function () {
+      /* a blocked or unavailable worker must never break the site */
+    });
+  });
+  /* a visitor who leaves the tab open and comes back the next day gets the
+     current build without a manual refresh */
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState !== 'visible') return;
+    navigator.serviceWorker.getRegistration().then(function (r) { if (r) r.update(); }).catch(function () {});
+  });
+})();
+</script>
 </body>
 </html>

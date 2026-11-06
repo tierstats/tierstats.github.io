@@ -1,0 +1,25 @@
+{
+  "name": "TierStats — Tank Trouble 1v1 Leaderboard",
+  "short_name": "TierStats",
+  "description": "Glicko-2 ratings, player cards, the full match archive, head-to-head stats and Find a 1v1 for Tank Trouble.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0b0e14",
+  "theme_color": "#0b0e14",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["games", "sports"],
+  "icons": [
+    { "src": "/art/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/art/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/art/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Rankings", "url": "/", "icons": [{ "src": "/art/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Cards", "url": "/cards", "icons": [{ "src": "/art/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Find a 1v1", "url": "/find", "icons": [{ "src": "/art/icon-192.png", "sizes": "192x192" }] }
+  ]
+}
