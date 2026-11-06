@@ -211,13 +211,13 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://tierstats.github.io/player/Rapid/</loc>
+    <loc>https://tierstats.github.io/player/-Trippy-/</loc>
     <lastmod>2026-11-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://tierstats.github.io/player/-Trippy-/</loc>
+    <loc>https://tierstats.github.io/player/Rapid/</loc>
     <lastmod>2026-11-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
@@ -625,12 +625,6 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://tierstats.github.io/player/Mandilindors/</loc>
-    <lastmod>2026-11-06</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://tierstats.github.io/player/SMARC/</loc>
     <lastmod>2026-11-06</lastmod>
     <changefreq>weekly</changefreq>
@@ -650,6 +644,12 @@
   </url>
   <url>
     <loc>https://tierstats.github.io/player/l_laika-/</loc>
+    <lastmod>2026-11-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tierstats.github.io/player/Mandilindors/</loc>
     <lastmod>2026-11-06</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
